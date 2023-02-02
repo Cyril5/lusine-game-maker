@@ -7,7 +7,7 @@ Environnement de développement de jeux-vidéo ou applications 3D.
 Basé sur le concept de la Finite State Machine, Unity, PlayMaker, Scratch, Multimedia Fusion 2.5+.
 
 Le but est de développer une application comme Scratch mais avec une 3eme dimensions en utilisant
-les possibilités de WEBGL grâce à la librairie ThreeJS.
+les possibilités de WEBGL grâce à la librairie BabylonJS.
 
 Le nom LUsine GM est temporaire.
 
