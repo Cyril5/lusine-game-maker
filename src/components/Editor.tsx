@@ -10,9 +10,42 @@ import StateEditor from "../pages/StateEditor";
 import { GameObject } from "../engine/GameObject";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import StatesMachineEditor from "../pages/StatesMachineEditor";
+import { Renderer } from "../engine/Renderer";
+import { GizmoManager } from "babylonjs";
 
 export default class Editor extends Component {
 
+    // private _gizmoManager: GizmoManager;
+    // get gizmoManager(): GizmoManager {
+    //     return this._gizmoManager;
+    // }
+
+    setTransformMode(transformMode: string) {
+
+        const gizmoManager = Renderer.getInstance().gizmoManager;
+        gizmoManager.positionGizmoEnabled = false;
+        gizmoManager.rotationGizmoEnabled = false;
+        gizmoManager.scaleGizmoEnabled = false;
+        gizmoManager.boundingBoxGizmoEnabled = false;
+        
+        switch(transformMode) {
+            case "TRANSLATE":
+                gizmoManager.positionGizmoEnabled = true;
+            break;
+            case "ROTATE":
+                gizmoManager.rotationGizmoEnabled = true;
+                gizmoManager.gizmos.rotationGizmo.updateGizmoRotationToMatchAttachedMesh = false;
+            break;
+            case "SCALE":
+                gizmoManager.scaleGizmoEnabled = true;
+            break;
+            case "BOUND_BOX":
+                gizmoManager.boundingBoxGizmoEnabled = true;
+            break;
+        }
+
+        
+    }
     // let gameRef = useRef<Game>(null);
 
     private _selectedGameObject : GameObject;
@@ -30,7 +63,7 @@ export default class Editor extends Component {
         this.setState({ showModal: true });
     }
 
-    static _instance : Editor;
+    private static _instance : Editor;
     static getInstance(): Editor {
         return Editor._instance;
     }
@@ -44,11 +77,15 @@ export default class Editor extends Component {
     constructor(props: {} | Readonly<{}>) {
         super(props);
         Editor._instance = this;
-        this.state.objetJeu = props.objetJeu
+
+
+        this.state.objetJeu = props.objetJeu;
     }
 
-    updateObjetJeu = (objetJeu) => {
+    updateObjetJeu = (objetJeu : GameObject) => {
         this.setState({ objetJeu });
+        Renderer.getInstance().gizmoManager.positionGizmoEnabled = true;
+        Renderer.getInstance().gizmoManager.attachToNode(objetJeu.transform);
       };
 
 
@@ -78,7 +115,7 @@ export default class Editor extends Component {
                         <LevelEditor objJeu={this.state.objetJeu}/>
                     </Tab>
                     <Tab eventKey="statesMachineEditor" 
-                    title={<span><FontAwesomeIcon icon="diagram-project" /> Machine d'états</span>}>
+                    title={<span><FontAwesomeIcon icon="diagram-project" /> Automates Fini</span>}>
                         <StatesMachineEditor/>
                     </Tab>
                     <Tab eventKey="stateEditor" title="Editeur d'état">

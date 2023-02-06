@@ -3,6 +3,13 @@ import { TransformComponent } from "./TransformComponent";
 
 export class GameObject {
 
+    // enum Type {
+    //     None,
+    //     Programmable,
+    //   }
+
+    protected type: string = "GameObject"; 
+    
     public static test = new Array(GameObject);
 
     public static kebab = 0;

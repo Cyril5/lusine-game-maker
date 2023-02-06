@@ -17,6 +17,7 @@
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@uiw/codemirror-theme-darcula": "^4.19.7",
     "@uiw/react-codemirror": "^4.19.7",
+    "babylon-fbx-loader": "^1.0.9",
     "babylonjs": "^5.44.0",
     "blockly": "^9.2.1",
     "bootstrap": "^5.2.3",

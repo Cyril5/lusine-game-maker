@@ -5,7 +5,8 @@ import { Game } from "./Game";
 import { GameObject } from "./GameObject";
 import { Sphere } from "./game-objects/Sphere";
 import { Cube } from "./game-objects/Cube";
-import {ProgrammableGameObject } from "./ProgrammableGameObject";
+import { ProgrammableGameObject } from "./ProgrammableGameObject";
+import { FBXLoader } from "babylon-fbx-loader";
 
 export class Renderer {
 
@@ -18,17 +19,27 @@ export class Renderer {
     private _game: Game | undefined;
     private static instance: Renderer;
 
-    public init =()=> {
+    get scene(): Scene {
+        return this._scene;
+    }
+
+    private _gizmoManager: GizmoManager;
+    get gizmoManager(): GizmoManager {
+        return this._gizmoManager;
+    }
+
+    private init = async () => {
+
+        this._gizmoManager = new GizmoManager(this._scene);
+        this._gizmoManager.usePointerToAttachGizmos = false;
+
 
         this._engine.getRenderingCanvas().addEventListener("wheel", evt => evt.preventDefault());
 
-        const gizmoManager = new GizmoManager(this._scene);
-        gizmoManager.positionGizmoEnabled = true;
-        // gizmoManager.rotationGizmoEnabled = true;
-        // gizmoManager.scaleGizmoEnabled = true;
-        // gizmoManager.boundingBoxGizmoEnabled = true;
-        gizmoManager.usePointerToAttachGizmos = false;
-        
+        SceneLoader.RegisterPlugin(new FBXLoader());
+        await SceneLoader.ImportMeshAsync(null, 'models/fbxtest/', 'cube.fbx', this._scene);
+
+
         //GRID
         const groundMaterial = new GridMaterial("groundMaterial", this._scene);
         groundMaterial.majorUnitFrequency = 5;
@@ -36,31 +47,61 @@ export class Renderer {
         groundMaterial.gridRatio = 1;
         groundMaterial.opacity = 0.99;
         groundMaterial.useMaxLine = true;
-        
+
         const ground = MeshBuilder.CreateGround("ground", { width: 100, height: 100 }, this._scene);
         ground.material = groundMaterial;
-        
-        
+
+        // Skybox
+        // const skybox = BABYLON.MeshBuilder.CreateBox("skyBox", { size: 1000.0 }, this._scene);
+        // const skyboxMaterial = new BABYLON.StandardMaterial("skyBox", this._scene);
+        // skyboxMaterial.backFaceCulling = false;
+        // skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("textures/skybox", this._scene);
+        // skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+        // skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+        // skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+        // skybox.material = skyboxMaterial;
+
+
         //SceneLoader.ImportMesh("", "/models/", "haunted_house.glb", scene, function (meshes) {});
         //SceneLoader.ImportMesh("", "/models/plane/", "plane.obj", scene, function (meshes) {});
-        
-        SceneLoader.ImportMesh("", "https://models.babylonjs.com/", "aerobatic_plane.glb", this._scene,  (meshes) => {
-            
+
+        SceneLoader.ImportMesh("", "/models/fbxtest/", "cube1m.obj", this._scene, (meshes) => {
+
             const plane = this._scene.getNodeByName("aerobatic_plane.2");
             plane.parent = null;
-            plane.scaling = new Vector3(0.5, 0.5, 0.5);
+            plane.scaling = new Vector3(0.01, 0.01, 0.01);
             const propellor = this._scene.getNodeByName("Propellor_Joint.9");
             propellor.parent = plane;
-            
-            const model3d: GameObject = new GameObject("Modele 3D Avion",this._scene);
+
+            const model3d: GameObject = new GameObject("Modele 3D Avion", this._scene);
             plane.parent = model3d.transform;
-            
-            const progGo : ProgrammableGameObject = new ProgrammableGameObject("Objet Programmable",this._scene);
+
+            const progGo: ProgrammableGameObject = new ProgrammableGameObject("Objet Programmable", this._scene);
             model3d.parent = progGo;
-            
-            gizmoManager.attachToNode(progGo.transform);
+
+            this._gizmoManager.attachToNode(progGo.transform);
             this._scene.getNodeById("__root__")?.dispose();
-            
+
+        });
+
+
+        SceneLoader.ImportMesh("", "https://models.babylonjs.com/", "aerobatic_plane.glb", this._scene, (meshes) => {
+
+            const plane = this._scene.getNodeByName("aerobatic_plane.2");
+            plane.parent = null;
+            // plane.scaling = new Vector3(, 0.5, 0.5);
+            const propellor = this._scene.getNodeByName("Propellor_Joint.9");
+            propellor.parent = plane;
+
+            const model3d: GameObject = new GameObject("Modele 3D Avion", this._scene);
+            plane.parent = model3d.transform;
+
+            const progGo: ProgrammableGameObject = new ProgrammableGameObject("Objet Programmable", this._scene);
+            model3d.parent = progGo;
+
+            this._gizmoManager.attachToNode(progGo.transform);
+            this._scene.getNodeById("__root__")?.dispose();
+
         });
 
 
@@ -102,11 +143,15 @@ export class Renderer {
         this.init();
     }
 
-    public static getInstance(engine: Engine, scene: Scene) {
+    public static initAndGetInstance(engine: Engine, scene: Scene): Renderer {
         if (!Renderer.instance) {
             Renderer.instance = new Renderer(engine, scene);
         }
 
+        return Renderer.instance;
+    }
+
+    public static getInstance(): Renderer {
         return Renderer.instance;
     }
 

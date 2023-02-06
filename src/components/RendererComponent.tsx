@@ -36,7 +36,7 @@ export default class Editor extends Component {
 
 
     //new Renderer(scene.getEngine(), scene);
-    Renderer.getInstance(scene.getEngine(),scene);
+    Renderer.initAndGetInstance(scene.getEngine(),scene);
   };
 
   /**

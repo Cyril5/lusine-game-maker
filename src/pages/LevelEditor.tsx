@@ -41,6 +41,10 @@ const LevelEditor = (props) => {
 
     }, [GameObject.gameObjects]);
 
+   const setTransformMode = (transformMode: string)=> {
+        Editor.getInstance().setTransformMode(transformMode);
+    }
+
     return (
         <>
 
@@ -52,13 +56,13 @@ const LevelEditor = (props) => {
                     <Col>
                         <ButtonToolbar aria-label="Toolbar with button groups">
                             <ButtonGroup className="me-2" aria-label="First group">
-                                <Button variant="secondary"><FontAwesomeIcon icon="arrows-up-down-left-right" /></Button>
-                                <Button variant="secondary"><FontAwesomeIcon icon="arrows-rotate" /></Button>
-                                <Button variant="secondary"><FontAwesomeIcon icon="maximize" /></Button>
-                                <Button variant="secondary"><FontAwesomeIcon icon="up-right-from-square" /></Button>
+                                <Button onClick={()=>Editor.getInstance().setTransformMode("TRANSLATE")}  variant="secondary"><FontAwesomeIcon icon="arrows-up-down-left-right" /></Button>
+                                <Button onClick={()=>setTransformMode("ROTATE")} variant="secondary"><FontAwesomeIcon icon="arrows-rotate" /></Button>
+                                <Button onClick={()=>Editor.getInstance().setTransformMode("SCALE")} variant="secondary"><FontAwesomeIcon icon="maximize" /></Button>
+                                <Button onClick={()=>Editor.getInstance().setTransformMode("BOUND_BOX")} variant="secondary"><FontAwesomeIcon icon="up-right-from-square" /></Button>
                             </ButtonGroup>
                             <ButtonGroup className="me-2" aria-label="Second group">
-                                <Button variant="secondary"><FontAwesomeIcon icon="earth-europe" /> Monde</Button>
+                                <Button disabled variant="secondary"><FontAwesomeIcon icon="earth-europe" /> Monde</Button>
                                 <Button variant="secondary"><FontAwesomeIcon icon="location-crosshairs" /> Local</Button>
                             </ButtonGroup>
                         </ButtonToolbar>
@@ -78,6 +82,7 @@ const LevelEditor = (props) => {
                     <Col md={3}>
                         <h2><FontAwesomeIcon icon="wrench" /> Props</h2>
                         <PropertiesBar
+                            gameObjectType={objJeu?.type}
                             gameObjectName={objJeu?.name}
                             id={objJeu?.id}
                             parentId={objJeu?.parent?.id}

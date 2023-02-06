@@ -30,12 +30,15 @@ const PropertiesBar = (props) => {
                         Transform Informations
                     </Accordion.Body>
                 </Accordion.Item>
+
+                {props.gameObjectType === "PROG_GO" && (
                 <Accordion.Item eventKey="2">
                     <Accordion.Header>Automates Fini</Accordion.Header>
                     <Accordion.Body>
                         <FSMComponent/> 
                     </Accordion.Body>
                 </Accordion.Item>
+                )}
             </Accordion>
         </div>
     );

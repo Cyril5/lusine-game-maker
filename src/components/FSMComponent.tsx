@@ -9,6 +9,7 @@ export default class FSMComponent extends Component
              <ListGroup>
                 <ListGroup.Item variant="primary">AF Principal <Button>Editer</Button></ListGroup.Item>
                 </ListGroup>
+                <Button variant="primary">Ajouter</Button>
             </>
         )
     }

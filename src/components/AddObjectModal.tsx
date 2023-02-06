@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useEffect, useRef, useState } from 'react';
-import { Card, Col, Container, Row } from 'react-bootstrap';
+import { Card, Col, Container, ProgressBar, Row } from 'react-bootstrap';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 
@@ -12,11 +12,29 @@ function AddObjectModal(props: any) {
     const handleShow = () => setShow(true);
 
     const [selectedFile, setSelectedFile] = useState(null);
+    const [progress,setProgress] = useState(0);
     const fileInputRef = useRef(null);
     
-    const handleFileChange = (event) => {
+    const handleFileChange = async (event) => {
       setSelectedFile(event.target.files[0]);
       handleClose();
+
+      try {
+        const data = new FormData();
+        data.append("file", selectedFile);
+        const response = await fetch("/upload", {
+          method: "POST",
+          body: data,
+          onUploadProgress: (event) => {
+            setProgress((event.loaded / event.total) * 100);
+          },
+        });
+        const result = await response;
+        console.log(result);
+      } catch (error) {
+        console.error(error);
+        //setError("File upload failed");
+      }
 
     };
 
@@ -26,7 +44,8 @@ function AddObjectModal(props: any) {
 
     return (
         <>
-             <input type="file" ref={fileInputRef} accept={".obj,.glb,.gltf"} onChange={handleFileChange} style={{ display: "none" }} />
+             <input type="file" ref={fileInputRef} accept={".obj,.fbx,.glb,.gltf"} onChange={handleFileChange} style={{ display: "none" }} />
+             <ProgressBar animated now={progress} />
 
             <Button variant="primary" onClick={handleShow}>
                 <FontAwesomeIcon icon="cube"/>
