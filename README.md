@@ -1,30 +1,12 @@
-# Lusine-Game-Maker
+# electron-app
 
-Lusine Game Maker 3D - Alpha 0.1 by Cyril5
+An Electron application with React and TypeScript
 
+## Recommended IDE Setup
 
-Environnement de développement de jeux-vidéo ou applications 3D.
-Basé sur le concept de la Finite State Machine, Unity, PlayMaker, Scratch, Multimedia Fusion 2.5+.
+- [VSCode](https://code.visualstudio.com/) + [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) + [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
 
-Le but est de développer une application comme Scratch mais avec une 3eme dimensions en utilisant
-les possibilités de WEBGL grâce à la librairie BabylonJS.
-
-Le nom LUsine GM est temporaire.
-
-## Comment utiliser LGM3D ?
-La documentation est disponible sur le wiki github du projet (https://github.com/Cyril5/clight-game-maker/wiki).
-Bonne lecture ! :D
-
-
-
-## Librairies utilisés
-- React with Vite 3
-- BabylonJS
-- Google Blockly
-- Codemirror
-- Bootstrap 5
-- Bootswatch
-- FontAwesome 6
+## Project Setup
 
 ### Install
 
@@ -36,4 +18,17 @@ $ npm install
 
 ```bash
 $ npm run dev
+```
+
+### Build
+
+```bash
+# For windows
+$ npm run build:win
+
+# For macOS
+$ npm run build:mac
+
+# For Linux
+$ npm run build:linux
 ```

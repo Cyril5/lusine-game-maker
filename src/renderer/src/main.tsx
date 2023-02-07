@@ -10,7 +10,7 @@ import { fas } from '@fortawesome/free-solid-svg-icons';
 import { faTwitter, faFontAwesome } from '@fortawesome/free-brands-svg-icons';
 library.add(fas, faTwitter, faFontAwesome);
 
-import './index.scss';
+import './assets/css/index.scss';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   //<React.StrictMode>

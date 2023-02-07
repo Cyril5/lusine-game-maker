@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Accordion, Button } from "react-bootstrap";
+import { Accordion, Button, Form } from "react-bootstrap";
 import FSMComponent from "./FSMComponent";
 
 const PropertiesBar = (props) => {
@@ -19,7 +19,10 @@ const PropertiesBar = (props) => {
                 <Accordion.Item eventKey="0">
                     <Accordion.Header>Objet</Accordion.Header>
                     <Accordion.Body>
-                        <p>Nom : {gameObjectName ? gameObjectName : 'null'} </p>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Name</Form.Label>
+                            <Form.Control value={gameObjectName ? gameObjectName : 'null'} placeholder="Disabled input"/>
+                        </Form.Group>
                         <p>ID : {props.id}</p>
                         <p>Parent : <Button variant="primary" size="sm">{props.parentId}</Button></p>
                     </Accordion.Body>

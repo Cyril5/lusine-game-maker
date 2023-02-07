@@ -11,9 +11,19 @@ import { GameObject } from "../engine/GameObject";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import StatesMachineEditor from "../pages/StatesMachineEditor";
 import { Renderer } from "../engine/Renderer";
-import { GizmoManager } from "babylonjs";
+import { ProgrammableGameObject } from "@renderer/engine/ProgrammableGameObject";
+import { Model3D } from "@renderer/engine/Model3D";
 
 export default class Editor extends Component {
+
+    addProgrammableObject() {
+        new ProgrammableGameObject("ObjetProgrammable",Renderer.getInstance().scene);
+    }
+
+    addModel3DObject() {
+        const model = new Model3D("https://models.babylonjs.com/","aerobatic_plane.glb",Renderer.getInstance().scene);
+        model.name = "AVION";
+    }
 
     // private _gizmoManager: GizmoManager;
     // get gizmoManager(): GizmoManager {
@@ -59,8 +69,8 @@ export default class Editor extends Component {
     }
 
     handleAddObject = () => {
-        alert("Add an object !");
-        this.setState({ showModal: true });
+        alert("Utiliser plutôt le bouton représentant un cube avec un +");
+        this.setState({ showAddObjectModal: true });
     }
 
     private static _instance : Editor;

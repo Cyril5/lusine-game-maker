@@ -36,8 +36,8 @@ export class Renderer {
 
         this._engine.getRenderingCanvas().addEventListener("wheel", evt => evt.preventDefault());
 
-        SceneLoader.RegisterPlugin(new FBXLoader());
-        await SceneLoader.ImportMeshAsync(null, 'models/fbxtest/', 'cube.fbx', this._scene);
+        // SceneLoader.RegisterPlugin(new FBXLoader());
+        // await SceneLoader.ImportMeshAsync(null, 'models/fbxtest/', 'cube.fbx', this._scene);
 
 
         //GRID
@@ -62,25 +62,17 @@ export class Renderer {
         // skybox.material = skyboxMaterial;
 
 
-        //SceneLoader.ImportMesh("", "/models/", "haunted_house.glb", scene, function (meshes) {});
-        //SceneLoader.ImportMesh("", "/models/plane/", "plane.obj", scene, function (meshes) {});
+        //SceneLoader.ImportMesh("", "/models/", "haunted_house.glb", this._scene, function (meshes) {});
 
-        SceneLoader.ImportMesh("", "/models/fbxtest/", "cube1m.obj", this._scene, (meshes) => {
+        SceneLoader.ImportMesh("", "models/fbxtest/", "cube1m.obj", this._scene, (meshes) => {
 
-            const plane = this._scene.getNodeByName("aerobatic_plane.2");
-            plane.parent = null;
-            plane.scaling = new Vector3(0.01, 0.01, 0.01);
-            const propellor = this._scene.getNodeByName("Propellor_Joint.9");
-            propellor.parent = plane;
+            const cube = this._scene.getNodeByName("Cube");
+            cube.parent = null;
+            cube.scaling = new Vector3(0.01, 0.01, 0.01);
 
-            const model3d: GameObject = new GameObject("Modele 3D Avion", this._scene);
-            plane.parent = model3d.transform;
+            const model3d: GameObject = new GameObject("CubeModel3D", this._scene);
+            cube.parent = model3d.transform;
 
-            const progGo: ProgrammableGameObject = new ProgrammableGameObject("Objet Programmable", this._scene);
-            model3d.parent = progGo;
-
-            this._gizmoManager.attachToNode(progGo.transform);
-            this._scene.getNodeById("__root__")?.dispose();
 
         });
 
@@ -99,7 +91,6 @@ export class Renderer {
             const progGo: ProgrammableGameObject = new ProgrammableGameObject("Objet Programmable", this._scene);
             model3d.parent = progGo;
 
-            this._gizmoManager.attachToNode(progGo.transform);
             this._scene.getNodeById("__root__")?.dispose();
 
         });

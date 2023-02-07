@@ -74,6 +74,7 @@ const LevelEditor = (props) => {
                 <Row>
                     <Col md={2}>
                         <h2>Objets <FontAwesomeIcon icon="cubes" /></h2>
+                        <Button onClick={()=>Editor.getInstance().handleAddObject()}>Ajouter</Button>
                         <TreeView data={data} />
                     </Col>
                     <Col>

@@ -10,8 +10,8 @@ export class ProgrammableGameObject extends GameObject {
         return this._fsm;
     }
 
-    constructor(name : string,scene : Scene) {
-        super("Objet Programmable",scene);
+    constructor(name:string,scene : Scene) {
+        super(name,scene);
         this.type = "PROG_GO";
     }
 }

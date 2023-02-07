@@ -1,8 +1,10 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { ProgrammableGameObject } from '@renderer/engine/ProgrammableGameObject';
 import React, { useEffect, useRef, useState } from 'react';
 import { Card, Col, Container, ProgressBar, Row } from 'react-bootstrap';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
+import Editor from './Editor';
 
 function AddObjectModal(props: any) {
 
@@ -40,6 +42,8 @@ function AddObjectModal(props: any) {
 
     const openFileDialog = () => {
         fileInputRef.current.click();
+        
+        Editor.getInstance().addModel3DObject();
       };
 
     return (
@@ -68,7 +72,7 @@ function AddObjectModal(props: any) {
                                         <Card.Text>
                                             Objet non visuel avec une machine d'états pour programmer
                                         </Card.Text>
-                                        <Button variant="primary">Ajouter</Button>
+                                        <Button variant="primary" onClick={()=>Editor.getInstance().addProgrammableObject()}>Ajouter</Button>
                                     </Card.Body>
                                 </Card>
                             </Col>
@@ -76,9 +80,9 @@ function AddObjectModal(props: any) {
                                 <Card style={{ width: '18rem' }}>
                                     <Card.Img variant="top" src="holder.js/100px180" />
                                     <Card.Body>
-                                        <Card.Title>Objet 3D</Card.Title>
+                                        <Card.Title>Modèle 3D</Card.Title>
                                         <Card.Text>
-                                            Description de l'objet 3D
+                                            Description model 3D
                                         </Card.Text>
                                         <Button variant="primary" onClick={openFileDialog}>Ajouter</Button>
                                     </Card.Body>
