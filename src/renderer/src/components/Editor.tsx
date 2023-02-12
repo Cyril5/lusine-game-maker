@@ -13,16 +13,48 @@ import StatesMachineEditor from "../pages/StatesMachineEditor";
 import { Renderer } from "../engine/Renderer";
 import { ProgrammableGameObject } from "@renderer/engine/ProgrammableGameObject";
 import { Model3D } from "@renderer/engine/Model3D";
+import Models3DModal from "./Models3DModal";
+import { SceneLoader } from "@babylonjs/core";
 
 export default class Editor extends Component {
-
-    addProgrammableObject() {
-        new ProgrammableGameObject("ObjetProgrammable",Renderer.getInstance().scene);
+    
+    // use state REACT
+    state = {
+        activeTab: 1,
+        game: null,
+        // showAddObjectModal: false,
+        objetJeu: null,
+    };
+    
+    constructor(props: {} | Readonly<{}>) {
+        super(props);
+        Editor._instance = this;
+    
+    
+        this.state.objetJeu = props.objetJeu;
     }
 
-    addModel3DObject() {
-        const model = new Model3D("https://models.babylonjs.com/","aerobatic_plane.glb",Renderer.getInstance().scene);
-        model.name = "AVION";
+    handleTabChange = (tabKey) => {
+        this.setState({ activeTab: tabKey });
+    };
+    
+
+    
+    addProgrammableObject() {
+        new ProgrammableGameObject("ObjetProgrammable", Renderer.getInstance().scene);
+    }
+    
+    async addModel3DObject(filename : string,options=null) {
+
+        console.log(filename);
+
+        const os = require('os');
+        const path = require('path');
+        const documentsPath = os.homedir() + '\\Documents\\Lusine Game Maker\\MonProjet';
+        let modelsDirectory = path.resolve(documentsPath, 'Models');
+
+        //const model = new Model3D("https://models.babylonjs.com/", "aerobatic_plane.glb", Renderer.getInstance().scene);
+        const model = new Model3D(modelsDirectory+"/", filename,options, Renderer.getInstance().scene);
     }
 
     // private _gizmoManager: GizmoManager;
@@ -37,28 +69,28 @@ export default class Editor extends Component {
         gizmoManager.rotationGizmoEnabled = false;
         gizmoManager.scaleGizmoEnabled = false;
         gizmoManager.boundingBoxGizmoEnabled = false;
-        
-        switch(transformMode) {
+
+        switch (transformMode) {
             case "TRANSLATE":
                 gizmoManager.positionGizmoEnabled = true;
-            break;
+                break;
             case "ROTATE":
                 gizmoManager.rotationGizmoEnabled = true;
                 gizmoManager.gizmos.rotationGizmo.updateGizmoRotationToMatchAttachedMesh = false;
-            break;
+                break;
             case "SCALE":
                 gizmoManager.scaleGizmoEnabled = true;
-            break;
+                break;
             case "BOUND_BOX":
                 gizmoManager.boundingBoxGizmoEnabled = true;
-            break;
+                break;
         }
 
-        
+
     }
     // let gameRef = useRef<Game>(null);
 
-    private _selectedGameObject : GameObject;
+    private _selectedGameObject: GameObject;
     get selectedGameObject(): GameObject {
         return this._selectedGameObject;
     }
@@ -73,30 +105,17 @@ export default class Editor extends Component {
         this.setState({ showAddObjectModal: true });
     }
 
-    private static _instance : Editor;
+    private static _instance: Editor;
     static getInstance(): Editor {
         return Editor._instance;
     }
 
-    state = {
-        game: null,
-        showAddObjectModal: false,
-        objetJeu: null,
-    };
 
-    constructor(props: {} | Readonly<{}>) {
-        super(props);
-        Editor._instance = this;
-
-
-        this.state.objetJeu = props.objetJeu;
-    }
-
-    updateObjetJeu = (objetJeu : GameObject) => {
+    updateObjetJeu = (objetJeu: GameObject) => {
         this.setState({ objetJeu });
         Renderer.getInstance().gizmoManager.positionGizmoEnabled = true;
         Renderer.getInstance().gizmoManager.attachToNode(objetJeu.transform);
-      };
+    };
 
 
     private playGame = () => {
@@ -117,19 +136,20 @@ export default class Editor extends Component {
             <>
                 <NavBarEditor />
                 {/* <Navigation/> */}
-                <AddObjectModal kebab={this.state.showAddObjectModal} />
+                <AddObjectModal show={false} />
                 <CommandModal />
 
-                <Tabs defaultActiveKey="level">
-                    <Tab eventKey="level" title={<span><FontAwesomeIcon icon="ghost" /> Editeur de niveau</span>}>
-                        <LevelEditor objJeu={this.state.objetJeu}/>
+                <Tabs activeKey={this.state.activeTab} onSelect={this.handleTabChange} >
+                    <Tab eventKey={1} title={<span><FontAwesomeIcon icon="ghost" /> Editeur de niveau</span>}>
+                        <LevelEditor objJeu={this.state.objetJeu} />
                     </Tab>
-                    <Tab eventKey="statesMachineEditor" 
-                    title={<span><FontAwesomeIcon icon="diagram-project" /> Automates Fini</span>}>
-                        <StatesMachineEditor/>
+                    <Tab eventKey={2} title={<span><FontAwesomeIcon icon="diagram-project" /> 
+                    Automates Fini</span>}>
+                       {this.state.activeTab == 2 ? <StatesMachineEditor /> : null} 
                     </Tab>
-                    <Tab eventKey="stateEditor" title="Editeur d'état">
-                        <StateEditor />
+                    <Tab eventKey={3} title="Editeur d'état">
+                        {/* le useEffect sera rappelé */}
+                        <StateEditor resizeWorkspace={this.state.activeTab == 3} />
                     </Tab>
                 </Tabs>
 

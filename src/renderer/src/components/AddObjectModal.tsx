@@ -5,10 +5,11 @@ import { Card, Col, Container, ProgressBar, Row } from 'react-bootstrap';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Editor from './Editor';
+import Models3DModal from './Models3DModal';
 
 function AddObjectModal(props: any) {
 
-    const [kebab, setShow] = useState(false);
+    const [show, setShow] = useState(false);
 
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
@@ -43,7 +44,6 @@ function AddObjectModal(props: any) {
     const openFileDialog = () => {
         fileInputRef.current.click();
         
-        Editor.getInstance().addModel3DObject();
       };
 
     return (
@@ -56,7 +56,7 @@ function AddObjectModal(props: any) {
                  <FontAwesomeIcon icon="plus"/>
             </Button>
 
-            <Modal show={kebab} onHide={handleClose}>
+            <Modal centered show={show} onHide={handleClose}>
                 <Modal.Header closeButton>
                     <Modal.Title>Ajouter un objet</Modal.Title>
                 </Modal.Header>
@@ -84,7 +84,8 @@ function AddObjectModal(props: any) {
                                         <Card.Text>
                                             Description model 3D
                                         </Card.Text>
-                                        <Button variant="primary" onClick={openFileDialog}>Ajouter</Button>
+                                        {/* <Button variant="primary" onClick={openFileDialog}>Ajouter</Button> */}
+                                        <Models3DModal/>
                                     </Card.Body>
                                 </Card>
                             </Col>

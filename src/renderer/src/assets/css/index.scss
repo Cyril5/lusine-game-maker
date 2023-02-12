@@ -4,6 +4,21 @@
   height: 80vh;
 }
 
+
+.properties-btn {
+  position: absolute;
+  top:215px;
+  right: 0;
+  width: 32px;
+  height: 150px;
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+}
+
+.selected-model {
+  border: 2px solid yellow;
+}
+
 body {
 // background-color: #242424;
 //   color: rgba(255, 255, 255, 0.87);

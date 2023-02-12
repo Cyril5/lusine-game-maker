@@ -23,7 +23,7 @@ const StatesMachineEditor = () => {
             <Container>
 
             <div className='statesGraphContainer'>
-                <svg className='arrow' width="100%" height="100%"><line x1="160" y1="25" x2="490" y2="100" stroke="white" /></svg>
+                <svg className='arrow' width="100%" height="100%"><line x1="170" y1="25" x2="490" y2="100" stroke="white" /></svg>
                 
                 <div className="node startNode">Départ</div>
 

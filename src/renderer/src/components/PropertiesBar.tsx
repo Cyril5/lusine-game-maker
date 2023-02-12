@@ -1,5 +1,6 @@
-import { useEffect } from "react";
-import { Accordion, Button, Form } from "react-bootstrap";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useEffect, useState } from "react";
+import { Accordion, Button, Form, Offcanvas } from "react-bootstrap";
 import FSMComponent from "./FSMComponent";
 
 const PropertiesBar = (props) => {
@@ -13,36 +14,52 @@ const PropertiesBar = (props) => {
     //     const { x: sx, y: sy, z: sz } = scaling;
     //   }, [position, rotation, scaling]);
 
+    const [show, setShow] = useState(false);
+
+    const handleClose = () => setShow(false);
+    const toggleShow = () => setShow((s) => !s);
+
     return (
         <div>
-            <Accordion defaultActiveKey={['0']} alwaysOpen>
-                <Accordion.Item eventKey="0">
-                    <Accordion.Header>Objet</Accordion.Header>
-                    <Accordion.Body>
-                        <Form.Group className="mb-3">
-                            <Form.Label>Name</Form.Label>
-                            <Form.Control value={gameObjectName ? gameObjectName : 'null'} placeholder="Disabled input"/>
-                        </Form.Group>
-                        <p>ID : {props.id}</p>
-                        <p>Parent : <Button variant="primary" size="sm">{props.parentId}</Button></p>
-                    </Accordion.Body>
-                </Accordion.Item>
-                <Accordion.Item eventKey="1">
-                    <Accordion.Header>Transform</Accordion.Header>
-                    <Accordion.Body>
-                        Transform Informations
-                    </Accordion.Body>
-                </Accordion.Item>
+            <Button variant="secondary" onClick={toggleShow} className="me-2 properties-btn">
+                <FontAwesomeIcon icon="wrench" />
+            </Button>
+            <Offcanvas className="properties-bar" placement="end" scroll backdrop={false} show={show} onHide={handleClose} {...props}>
+                <Offcanvas.Header closeButton>
+                    <Offcanvas.Title>Propriétées <FontAwesomeIcon icon="wrench" /></Offcanvas.Title>
+                </Offcanvas.Header>
+                <Offcanvas.Body>
+                    <Accordion defaultActiveKey={['0']} alwaysOpen>
+                        <Accordion.Item eventKey="0">
+                            <Accordion.Header>Objet</Accordion.Header>
+                            <Accordion.Body>
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Name</Form.Label>
+                                    <Form.Control value={gameObjectName ? gameObjectName : 'null'} placeholder="Disabled input" />
+                                </Form.Group>
+                                <p>ID : {props.id}</p>
+                                <p>Parent : <Button variant="primary" size="sm">{props.parentId}</Button></p>
+                            </Accordion.Body>
+                        </Accordion.Item>
+                        <Accordion.Item eventKey="1">
+                            <Accordion.Header>Transform</Accordion.Header>
+                            <Accordion.Body>
+                                Transform Informations
+                            </Accordion.Body>
+                        </Accordion.Item>
 
-                {props.gameObjectType === "PROG_GO" && (
-                <Accordion.Item eventKey="2">
-                    <Accordion.Header>Automates Fini</Accordion.Header>
-                    <Accordion.Body>
-                        <FSMComponent/> 
-                    </Accordion.Body>
-                </Accordion.Item>
-                )}
-            </Accordion>
+                        {props.gameObjectType === "PROG_GO" && (
+                            <Accordion.Item eventKey="2">
+                                <Accordion.Header>Automates Fini</Accordion.Header>
+                                <Accordion.Body>
+                                    <FSMComponent />
+                                </Accordion.Body>
+                            </Accordion.Item>
+                        )}
+                    </Accordion>
+                </Offcanvas.Body>
+            </Offcanvas>
+
         </div>
     );
 };

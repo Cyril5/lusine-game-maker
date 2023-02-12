@@ -36,7 +36,7 @@ export class Renderer {
 
         this._engine.getRenderingCanvas().addEventListener("wheel", evt => evt.preventDefault());
 
-        // SceneLoader.RegisterPlugin(new FBXLoader());
+        SceneLoader.RegisterPlugin(new FBXLoader());
         // await SceneLoader.ImportMeshAsync(null, 'models/fbxtest/', 'cube.fbx', this._scene);
 
 

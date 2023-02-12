@@ -1,7 +1,9 @@
-import { app, shell, BrowserWindow } from 'electron'
+import { app, shell, BrowserWindow, webContents } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+
+require('@electron/remote/main').initialize();
 
 function createWindow(): void {
   // Create the browser window.
@@ -13,9 +15,14 @@ function createWindow(): void {
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
+      sandbox: false,
+      nodeIntegration: true,
+      contextIsolation: false,
+      webSecurity: false
     }
   })
+  
+  require("@electron/remote/main").enable(mainWindow.webContents);
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()

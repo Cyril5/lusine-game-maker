@@ -25,6 +25,9 @@ function NavBarEditor(props : any) {
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">
+
+          <Button variant='secondary' size="lg" onClick={props.onClickAddObject}><FontAwesomeIcon icon="folder-open"></FontAwesomeIcon></Button>
+
             <Nav.Link onClick={props.onClickAddObject}>Ajouter</Nav.Link>
 
             <Button variant="success"> <FontAwesomeIcon icon="play"/> Start</Button>

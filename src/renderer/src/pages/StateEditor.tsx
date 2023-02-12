@@ -2,8 +2,8 @@ import React, { useRef, useEffect, useState } from 'react';
 import CodeMirror, { useCodeMirror } from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { darcula } from '@uiw/codemirror-theme-darcula';
-import { ClassAPITest } from '../engine/ClassAPITest';
-import { GameObject } from '../engine/GameObject';
+
+import '../assets/css/states-editor.scss';
 
 import Blockly from 'blockly';
 import toolboxXml from '../assets/blocks/toolbox.xml?raw'; // ?raw to import as string
@@ -11,17 +11,48 @@ import LusineBlocksDarkTheme from '../engine/blocks/themes/lusine-gm-dark'
 import '../engine/blocks/blocksDefs';
 import '@blockly/block-plus-minus';
 import * as Fr from 'blockly/msg/fr';
+import { Col, Container, Row } from 'react-bootstrap';
+import StateFilesTreeView from '@renderer/components/StateFilesTreeView';
 
-const StateEditor = ({ initialXml, onChange }) => {
-
+let workspace: Blockly.WorkspaceSvg;
+const StateEditor = (props) => {
+    
     const blocklyDivRef = useRef(null);
-
+    const blocklyAreaRef = useRef(null);
+    
     const [getCode, setCode] = useState("");
+    
+    let blocklyReady: boolean = false;
 
+    const onresize = (e) => {
+        // Compute the absolute coordinates and dimensions of blocklyArea.
+        let element = blocklyAreaRef.current;
+        let x = 0;
+        let y = 0;
+        do {
+            x += element.offsetLeft;
+            y += element.offsetTop;
+            element = element.offsetParent;
+        } while (element);
+        // Position blocklyDiv over blocklyArea.
+        blocklyDivRef.current.style.left = x + 'px';
+        blocklyDivRef.current.style.top = y + 'px';
+        blocklyDivRef.current.style.width = blocklyAreaRef.current.offsetWidth + 'px';
+        blocklyDivRef.current.style.height = blocklyAreaRef.current.offsetHeight + 'px';
+        Blockly.svgResize(workspace);
+    };
 
+    //vérifier si l'onglet 3 est sélectionné lorsque la propriétée resizeWorkspace change
+    useEffect(() => {
+        if (props.resizeWorkspace && workspace !== undefined) {
+          onresize();
+        }
+      }, [props.resizeWorkspace]);
+    
     useEffect(() => {
         console.log("use effect state editor");
-        const workspace = Blockly.inject(blocklyDivRef.current, {
+
+        workspace = Blockly.inject(blocklyDivRef.current, {
             theme: LusineBlocksDarkTheme,
             // toolbox: `
             //   <xml>
@@ -61,35 +92,65 @@ const StateEditor = ({ initialXml, onChange }) => {
             scrollbars: true,
             oneBasedIndex: true
         });
+        window.addEventListener('resize', onresize, false);
+        onresize();
+        blocklyReady = true;
 
-    },[]); // Le deuxième argument est un tableau de dépendances. Si le tableau est vide, l'effet ne se déclenchera qu'une seule fois lors du premier rendu du composant.
+    }, []); // Le deuxième argument est un tableau de dépendances. Si le tableau est vide, l'effet ne se déclenchera qu'une seule fois lors du premier rendu du composant.
 
-    const blocklyStyle = {
-        width: "100%",
-        height: "50vh",
-    }
-
+    // const blocklyStyle = {
+    //     width: "100%",
+    //     height: "50vh",
+    // }
     Blockly.setLocale(Fr);
 
-   
 
-      const onChangeCode = React.useCallback((value, viewUpdate) => {
+
+    const onChangeCode = React.useCallback((value, viewUpdate) => {
         //console.log('value:', value);
-      }, []);
+    }, []);
+
+    const [data, setData] = useState([{
+        id: 1,
+        title: "StateA",
+        children: [
+
+        ]
+    }]);
+
 
     return (
         <>
+            <Container fluid>
+                <Row>
+                    <Col>{/* <table>
+                <tr>
+                    <td id="blocklyArea" ref={blocklyAreaRef}>
+                    </td>
+                    </tr>
+                </table> */}
+
+                        <div id="blocklyArea" ref={blocklyAreaRef}>
+                            Si ce message s'affiche : Redimensionner la fenêtre pour afficher l'espace de travail.
+                        </div>
+
+                        <div id="blocklyDiv" ref={blocklyDivRef} />
+                    </Col>
+                    <Col  md={2}>
+                        <StateFilesTreeView data={data}/>
+                    </Col>
+                </Row>
+            </Container>
 
 
-                    <div id="blocklyDiv" ref={blocklyDivRef} style={blocklyStyle} />
-                    <CodeMirror
-                        id="command-area"
-                        // value={getCode}
-                        theme={darcula}
-                        height="200px"
-                        extensions={[javascript({ jsx: false })]}
-                        onChange={onChangeCode}
-                    />
+            <CodeMirror
+                id="command-area"
+                // value={getCode}
+                theme={darcula}
+                height="200px"
+                extensions={[javascript({ jsx: false })]}
+                onChange={onChangeCode}
+            />
 
 
 

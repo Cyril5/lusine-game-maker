@@ -79,18 +79,13 @@ const LevelEditor = (props) => {
                     </Col>
                     <Col>
                         <RendererComponent />
-                    </Col>
-                    <Col md={3}>
-                        <h2><FontAwesomeIcon icon="wrench" /> Props</h2>
+
                         <PropertiesBar
                             gameObjectType={objJeu?.type}
                             gameObjectName={objJeu?.name}
                             id={objJeu?.id}
                             parentId={objJeu?.parent?.id}
                         />
-
-
-
                     </Col>
                 </Row>
             </Container>
