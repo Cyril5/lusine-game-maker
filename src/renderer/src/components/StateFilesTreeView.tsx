@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Button } from "react-bootstrap";
-import Editor from "./Editor";
 
 const Node = ({ children, title , level}) => {
   const [isVisible, setIsVisible] = useState(false);

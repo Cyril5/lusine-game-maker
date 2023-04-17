@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useMemo } from 'react';
 import Editor from "../components/Editor";
 import RendererComponent from "../components/RendererComponent";
 
@@ -9,6 +9,7 @@ import { GameObject } from '../engine/GameObject';
 import PropertiesBar from '../components/PropertiesBar';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import GameObjectsTreeView from '../components/GameObjectsTreeView';
 
 
 const LevelEditor = (props) => {
@@ -19,29 +20,33 @@ const LevelEditor = (props) => {
     const [data, setData] = useState([]);
 
     let lastNodeId = 1;
-    useEffect(() => {
+    const [expandedNodes, setExpandedNodes] = useState([]);
 
-        setInterval(() => {
+    // useEffect(() => {
+    //     const intervalId = setInterval(() => {
+    //       const mappedData = useMemo(() => (
+    //         Array.from(GameObject.gameObjects.values()).map(gameObject => ({
+    //           id: lastNodeId++,
+    //           gameObjectId: gameObject.id,
+    //           title: gameObject.name,
+    //           children: [
+    //             {
+    //               id: lastNodeId++,
+    //               title: gameObject.transform.getChildren()[0].name,
+    //             },
+    //           ],
+    //         }))
+    //       ), [GameObject.gameObjects]);
+      
+    //       setData(mappedData);
+    //     }, 1000);
+      
+    //     return () => clearInterval(intervalId);
+    //   }, []);
 
-            const mappedData = Array.from(GameObject.gameObjects.values()).map(gameObject => ({
-                id: lastNodeId++,
-                gameObjectId: gameObject.id,
-                title: gameObject.name,
-                children: [
-                    {
-                        // gameObjectId:gameObject.transform.getChildren()[0].uniqueId,
-                        // title:gameObject.transform.getChildren()[0].name,
-                    }
-                ]
-            }
 
-            ));
-            setData(mappedData);
-        }, 1000);
 
-    }, [GameObject.gameObjects]);
-
-   const setTransformMode = (transformMode: string)=> {
+    const setTransformMode = (transformMode: string) => {
         Editor.getInstance().setTransformMode(transformMode);
     }
 
@@ -56,10 +61,10 @@ const LevelEditor = (props) => {
                     <Col>
                         <ButtonToolbar aria-label="Toolbar with button groups">
                             <ButtonGroup className="me-2" aria-label="First group">
-                                <Button onClick={()=>Editor.getInstance().setTransformMode("TRANSLATE")}  variant="secondary"><FontAwesomeIcon icon="arrows-up-down-left-right" /></Button>
-                                <Button onClick={()=>setTransformMode("ROTATE")} variant="secondary"><FontAwesomeIcon icon="arrows-rotate" /></Button>
-                                <Button onClick={()=>Editor.getInstance().setTransformMode("SCALE")} variant="secondary"><FontAwesomeIcon icon="maximize" /></Button>
-                                <Button onClick={()=>Editor.getInstance().setTransformMode("BOUND_BOX")} variant="secondary"><FontAwesomeIcon icon="up-right-from-square" /></Button>
+                                <Button onClick={() => Editor.getInstance().setTransformMode("TRANSLATE")} variant="secondary"><FontAwesomeIcon icon="arrows-up-down-left-right" /></Button>
+                                <Button onClick={() => setTransformMode("ROTATE")} variant="secondary"><FontAwesomeIcon icon="arrows-rotate" /></Button>
+                                <Button onClick={() => Editor.getInstance().setTransformMode("SCALE")} variant="secondary"><FontAwesomeIcon icon="maximize" /></Button>
+                                <Button onClick={() => Editor.getInstance().setTransformMode("BOUND_BOX")} variant="secondary"><FontAwesomeIcon icon="up-right-from-square" /></Button>
                             </ButtonGroup>
                             <ButtonGroup className="me-2" aria-label="Second group">
                                 <Button disabled variant="secondary"><FontAwesomeIcon icon="earth-europe" /> Monde</Button>
@@ -74,8 +79,10 @@ const LevelEditor = (props) => {
                 <Row>
                     <Col md={2}>
                         <h2>Objets <FontAwesomeIcon icon="cubes" /></h2>
-                        <Button onClick={()=>Editor.getInstance().handleAddObject()}>Ajouter</Button>
-                        <TreeView data={data} />
+                        <Button onClick={() => Editor.getInstance().handleAddObject()}>Ajouter</Button>
+                        {/* <TreeView data={data} expandedNodes={expandedNodes} setExpandedNodes={setExpandedNodes} />
+                         */}
+                         {/* <GameObjectsTreeView data={data}/> */}
                     </Col>
                     <Col>
                         <RendererComponent />

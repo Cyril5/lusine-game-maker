@@ -40,9 +40,12 @@
     "immutability-helper": "^3.1.1",
     "react": "^18.2.0",
     "react-bootstrap": "^2.7.0",
+    "react-dnd": "^16.0.1",
+    "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.4.3",
     "react-treebeard": "^3.2.4",
+    "react-treeview": "^0.4.7",
     "sass": "^1.57.1"
   },
   "devDependencies": {

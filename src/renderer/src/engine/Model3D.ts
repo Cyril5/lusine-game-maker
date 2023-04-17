@@ -1,10 +1,11 @@
-import { Scene, SceneLoader } from "@babylonjs/core";
+import { AbstractMesh, Observable, Scene, SceneLoader } from "@babylonjs/core";
 import { GameObject } from "./GameObject";
-
 export class Model3D extends GameObject {
 
 
-    constructor(directoryOrUrl: string, filename: string,options=null, scene: Scene) {
+    // event lorsqu'on clic sur le model3D
+
+    constructor(directoryOrUrl: string, filename: string, options = null, scene: Scene) {
         super("Modèle 3D", scene);
 
         // Regarder l'extension du modèle
@@ -20,19 +21,23 @@ export class Model3D extends GameObject {
                 // propellor.parent = plane;
 
                 meshes[0].parent = this.transform;
+                this.onLoaded.notifyObservers(this);
 
                 // this._scene.getNodeById("__root__")?.dispose();
 
             });
-        }else{
-            SceneLoader.ImportMesh(null, directoryOrUrl+'/', filename, scene, (meshes)=>{
+        } else {
+            SceneLoader.ImportMesh(null, directoryOrUrl + '/', filename, scene, (meshes) => {
 
                 console.log(meshes[0].parent.name);
                 meshes[0].parent.parent = this.transform;
+                // Déclenchement de l'événement
+                this.onLoaded.notifyObservers(this);
             });
         }
 
-
-
     }
+
+    public onLoaded = new Observable<Model3D>(); // Observable pour l'événement
 }
+

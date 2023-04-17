@@ -17,7 +17,7 @@ import Models3DModal from "./Models3DModal";
 import { SceneLoader } from "@babylonjs/core";
 
 export default class Editor extends Component {
-    
+
     // use state REACT
     state = {
         activeTab: 1,
@@ -25,26 +25,26 @@ export default class Editor extends Component {
         // showAddObjectModal: false,
         objetJeu: null,
     };
-    
+
     constructor(props: {} | Readonly<{}>) {
         super(props);
         Editor._instance = this;
-    
-    
+
+
         this.state.objetJeu = props.objetJeu;
     }
 
     handleTabChange = (tabKey) => {
         this.setState({ activeTab: tabKey });
     };
-    
 
-    
+
+
     addProgrammableObject() {
         new ProgrammableGameObject("ObjetProgrammable", Renderer.getInstance().scene);
     }
-    
-    async addModel3DObject(filename : string,options=null) {
+
+    async addModel3DObject(filename: string, options = null) {
 
         console.log(filename);
 
@@ -54,7 +54,26 @@ export default class Editor extends Component {
         let modelsDirectory = path.resolve(documentsPath, 'Models');
 
         //const model = new Model3D("https://models.babylonjs.com/", "aerobatic_plane.glb", Renderer.getInstance().scene);
-        const model = new Model3D(modelsDirectory+"/", filename,options, Renderer.getInstance().scene);
+        const model = new Model3D(modelsDirectory + "/", filename, options, Renderer.getInstance().scene);
+        // quand je clic sur un mesh je peux le sélectionner dans l'éditeur
+        // Créer un action manager pour le parentNode
+        // Abonnement à l'événement onModelLoaded
+        model.onLoaded.add((model3d) => {
+            console.log("Le Model3D a été chargé : ", model3d);
+
+            const children = model.transform.getChildren()[0].getChildren();
+            children.forEach((child)=>{
+
+                child.actionManager = new BABYLON.ActionManager(Renderer.getInstance().scene);
+                // Ajouter une action de clic pour le mesh et ses enfants
+                child.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger,  (evt) => {
+                    // Votre code ici
+                    console.log("Le mesh et ses enfants ont été cliqués");
+                    this.selectGameObject(model.id);
+                }));  
+            })
+        });
+
     }
 
     // private _gizmoManager: GizmoManager;
@@ -143,9 +162,9 @@ export default class Editor extends Component {
                     <Tab eventKey={1} title={<span><FontAwesomeIcon icon="ghost" /> Editeur de niveau</span>}>
                         <LevelEditor objJeu={this.state.objetJeu} />
                     </Tab>
-                    <Tab eventKey={2} title={<span><FontAwesomeIcon icon="diagram-project" /> 
-                    Automates Fini</span>}>
-                       {this.state.activeTab == 2 ? <StatesMachineEditor /> : null} 
+                    <Tab eventKey={2} title={<span><FontAwesomeIcon icon="diagram-project" />
+                        Automates Fini</span>}>
+                        {this.state.activeTab == 2 ? <StatesMachineEditor /> : null}
                     </Tab>
                     <Tab eventKey={3} title="Editeur d'état">
                         {/* le useEffect sera rappelé */}

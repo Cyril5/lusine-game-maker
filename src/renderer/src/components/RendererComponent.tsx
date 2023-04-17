@@ -5,6 +5,7 @@ import { Renderer } from "../engine/Renderer";
 import '@babylonjs/inspector';
 // import 'babylonjs-loaders';
 import '@babylonjs/loaders/OBJ/objFileLoader';
+import { TransformComponent } from "@renderer/engine/TransformComponent";
 
 // import SceneComponent from 'babylonjs-hook'; // if you install 'babylonjs-hook' NPM.
 
@@ -14,15 +15,15 @@ export default class Editor extends Component {
 
   onSceneReady = (scene: Scene) => {
 
-    
+
     const camera: ArcRotateCamera = new ArcRotateCamera("Camera", 0, 0, 10, Vector3.Zero(), scene);
-    
+
     camera.setPosition(new Vector3(0, 0, -10));
-    
+
     const canvas = scene.getEngine().getRenderingCanvas();
-    
+
     camera.attachControl(scene.getEngine().getRenderingCanvas(), true);
-    
+
     scene.debugLayer.show();
 
     // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
@@ -31,12 +32,8 @@ export default class Editor extends Component {
     // Default intensity is 1. Let's dim the light a small amount
     light.intensity = 0.7;
 
-
-
-
-
     //new Renderer(scene.getEngine(), scene);
-    Renderer.initAndGetInstance(scene.getEngine(),scene);
+    Renderer.initAndGetInstance(scene.getEngine(), scene);
   };
 
   /**

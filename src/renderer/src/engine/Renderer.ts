@@ -76,24 +76,33 @@ export class Renderer {
 
         });
 
+        // SceneLoader.ImportMesh("", "https://models.babylonjs.com/", "aerobatic_plane.glb", this._scene, (meshes) => {
 
-        SceneLoader.ImportMesh("", "https://models.babylonjs.com/", "aerobatic_plane.glb", this._scene, (meshes) => {
+        //     const plane = this._scene.getNodeByName("aerobatic_plane.2");
+        //     plane.parent = null;
+        //     // plane.scaling = new Vector3(, 0.5, 0.5);
+        //     const propellor = this._scene.getNodeByName("Propellor_Joint.9");
+        //     propellor.parent = plane;
 
-            const plane = this._scene.getNodeByName("aerobatic_plane.2");
-            plane.parent = null;
-            // plane.scaling = new Vector3(, 0.5, 0.5);
-            const propellor = this._scene.getNodeByName("Propellor_Joint.9");
-            propellor.parent = plane;
+        //     const model3d: GameObject = new GameObject("Modele 3D Avion", this._scene);
+        //     plane.parent = model3d.transform;
 
-            const model3d: GameObject = new GameObject("Modele 3D Avion", this._scene);
-            plane.parent = model3d.transform;
+        //     const progGo: ProgrammableGameObject = new ProgrammableGameObject("Objet Programmable", this._scene);
+        //     model3d.parent = progGo;
 
-            const progGo: ProgrammableGameObject = new ProgrammableGameObject("Objet Programmable", this._scene);
-            model3d.parent = progGo;
+        //     this._scene.getNodeById("__root__")?.dispose();
 
-            this._scene.getNodeById("__root__")?.dispose();
+        //     // Créer un action manager pour le parentNode
+        //     model3d.transform.getChildren()[0].actionManager = new BABYLON.ActionManager(this._scene);
+    
+        //     // Ajouter une action de clic pour le mesh et ses enfants
+        //     model3d.transform.getChildren()[0].actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger, (evt)=> {
+        //         // Votre code ici
+        //         console.log(model3d.name);
+        //     }));
 
-        });
+        // });
+
 
 
         // // hide/show the Inspector

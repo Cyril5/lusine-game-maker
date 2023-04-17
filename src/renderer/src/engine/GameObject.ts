@@ -8,19 +8,19 @@ export class GameObject {
     //     Programmable,
     //   }
 
-    protected type: string = "GameObject"; 
-    
+    protected type: string = "GameObject";
+
     public static test = new Array(GameObject);
 
     public static kebab = 0;
 
-    private static _gameObjects = new Map<Number | string,GameObject>() //unique id or uuid // map uuid,gameObject
+    private static _gameObjects = new Map<Number | string, GameObject>() //unique id or uuid // map uuid,gameObject
     public static get gameObjects() {
         return GameObject._gameObjects;
     }
-    
-    protected _transform : TransformComponent;
-    public get transform() : TransformComponent {
+
+    protected _transform: TransformComponent;
+    public get transform(): TransformComponent {
         return this._transform;
     }
 
@@ -31,17 +31,17 @@ export class GameObject {
     }
 
 
-    private _parent : GameObject = null;
-    public set parent(value : GameObject) {
+    private _parent: GameObject = null;
+    public set parent(value: GameObject) {
         this._parent = value;
-        if(value === null) {
+        if (value === null) {
             this._transform.parent = null; // l'objet sera attaché à la scene
-        }else{
+        } else {
             this._transform.parent = value.transform;
         }
 
     }
-    public get parent():GameObject {
+    public get parent(): GameObject {
         return this._parent;
     }
 
@@ -56,21 +56,23 @@ export class GameObject {
     }
 
 
-    constructor(name : string,scene : Scene) {
+    constructor(name: string, scene: Scene) {
 
         // L'accès direct au renderer provoque une erreur
-        this._transform = new TransformComponent(this,name,scene);
+        this._transform = new TransformComponent(this, name, scene);
 
         this._uId = this.transform.uniqueId;
 
-        console.log("Créer le game obj : "+this._transform.name);
+        console.log("Créer le game obj : " + this._transform.name);
 
-        if(!GameObject._gameObjects.has(this._uId)) {
-           GameObject._gameObjects.set(this._uId,this);
-        }else{
-            console.error("L'objet ayant l'id :"+this._uId+"existe déjà");
+        if (!GameObject._gameObjects.has(this._uId)) {
+            GameObject._gameObjects.set(this._uId, this);
+        } else {
+            console.error("L'objet ayant l'id :" + this._uId + "existe déjà");
             return;
         }
+
+
 
         GameObject.kebab++;
 
