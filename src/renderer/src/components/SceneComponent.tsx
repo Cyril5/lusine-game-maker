@@ -1,12 +1,15 @@
 import { useEffect, useRef } from "react";
-import { Engine, Scene } from "@babylonjs/core";
+import { Engine, Scene, Vector3 } from "@babylonjs/core";
+
 
 export default ({ antialias, engineOptions, adaptToDeviceRatio, sceneOptions, onRender, onSceneReady, ...rest }) => {
   const reactCanvas = useRef(null);
 
+
   // set up basic engine and scene
   useEffect(() => {
     const { current: canvas } = reactCanvas;
+
 
     if (!canvas) return;
 
@@ -17,6 +20,8 @@ export default ({ antialias, engineOptions, adaptToDeviceRatio, sceneOptions, on
     } else {
       scene.onReadyObservable.addOnce((scene) => onSceneReady(scene));
     }
+
+
 
     engine.runRenderLoop(() => {
       if (typeof onRender === "function") onRender(scene);

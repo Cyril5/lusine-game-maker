@@ -130,7 +130,6 @@ import { GameObjectSetRotationNumbersBlock } from "./gameObject/gameobject_setro
 import { GameObjectTranslateForwardBlock } from "./gameObject/gameobject_translate_forward_block";
 import { Vector3dBlocks } from "./vector3d_blocks";
 import { InputsBlocks } from "./inputs/inputs_blocks";
-import {GameObject} from '../GameObject';
 // import { Debug } from '../debug';
 
 

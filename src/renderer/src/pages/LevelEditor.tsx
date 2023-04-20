@@ -77,13 +77,13 @@ const LevelEditor = (props) => {
                 </Row>
 
                 <Row>
-                    <Col md={2}>
-                        <h2>Objets <FontAwesomeIcon icon="cubes" /></h2>
-                        <Button onClick={() => Editor.getInstance().handleAddObject()}>Ajouter</Button>
+                    {/* <Col md={2}> */}
+                        {/* <h2>Objets <FontAwesomeIcon icon="cubes" /></h2> */}
+                        {/* <Button onClick={() => Editor.getInstance().handleAddObject()}>Ajouter</Button> */}
                         {/* <TreeView data={data} expandedNodes={expandedNodes} setExpandedNodes={setExpandedNodes} />
                          */}
                          {/* <GameObjectsTreeView data={data}/> */}
-                    </Col>
+                    {/* </Col> */}
                     <Col>
                         <RendererComponent />
 

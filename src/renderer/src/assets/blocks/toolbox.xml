@@ -47,6 +47,7 @@
       
       
       
+      
       </comment>
     </block>
   </category>
@@ -69,25 +70,6 @@
         </block>
       </value>
     </block>
-    <block type="gameobject_translate_forward">
-      <comment pinned="true" h="32" w="418">Déplacer l'objet vers l'avant à une vitesse (en m/s)</comment>
-      <value name="OBJ">
-        <block type="gameobject_this"></block>
-      </value>
-      <value name="DISTZ">
-        <block type="math_arithmetic">
-          <field name="OP">MULTIPLY</field>
-          <value name="A">
-            <block type="math_number">
-              <field name="NUM">1</field>
-            </block>
-          </value>
-          <value name="B">
-            <block type="delta_time"></block>
-          </value>
-        </block>
-      </value>
-    </block>
     <block type="gameobject_rotatey">
       <value name="OBJ">
         <block type="gameobject_this"></block>
@@ -95,25 +77,6 @@
       <value name="DEGY">
         <block type="math_number">
           <field name="NUM">3</field>
-        </block>
-      </value>
-    </block>
-    <block type="gameobject_rotatey">
-      <comment pinned="true" h="32" w="472">Tourner l'objet sur l'axe Y à une vitesse (en degrès/s)</comment>
-      <value name="OBJ">
-        <block type="gameobject_this"></block>
-      </value>
-      <value name="DEGY">
-        <block type="math_arithmetic">
-          <field name="OP">MULTIPLY</field>
-          <value name="A">
-            <shadow type="math_number">
-              <field name="NUM">1</field>
-            </shadow>
-          </value>
-          <value name="B">
-            <block type="delta_time"></block>
-          </value>
         </block>
       </value>
     </block>

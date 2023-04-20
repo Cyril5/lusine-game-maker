@@ -1,14 +1,12 @@
 import { Mesh, MeshBuilder, Scene, Vector3 } from "@babylonjs/core";
-import { TransformComponent } from "./TransformComponent";
+import { TransformNode } from "babylonjs";
 
-export class GameObject {
+export class GameObject extends TransformNode {
 
     // enum Type {
     //     None,
     //     Programmable,
     //   }
-
-    protected type: string = "GameObject";
 
     public static test = new Array(GameObject);
 
@@ -19,56 +17,20 @@ export class GameObject {
         return GameObject._gameObjects;
     }
 
-    protected _transform: TransformComponent;
-    public get transform(): TransformComponent {
-        return this._transform;
-    }
-
-    // unique ID
-    private _uId = 0;
-    get id(): Number {
-        return this._uId;
-    }
-
-
-    private _parent: GameObject = null;
-    public set parent(value: GameObject) {
-        this._parent = value;
-        if (value === null) {
-            this._transform.parent = null; // l'objet sera attaché à la scene
-        } else {
-            this._transform.parent = value.transform;
-        }
-
-    }
-    public get parent(): GameObject {
-        return this._parent;
-    }
-
-    public get position(): Vector3 {
-        return this._transform.position;
-    }
-    get name(): string {
-        return this._transform.name;
-    }
-    set name(value: string) {
-        this._transform.name = value;
-    }
-
-
     constructor(name: string, scene: Scene) {
 
+        super(name,scene);
         // L'accès direct au renderer provoque une erreur
-        this._transform = new TransformComponent(this, name, scene);
+//        this._transform = new TransformComponent(this, name, scene);
 
-        this._uId = this.transform.uniqueId;
+        this.metadata = {type: "GameObject"}
 
-        console.log("Créer le game obj : " + this._transform.name);
+        console.log("Créer le game obj : " + this.name);
 
-        if (!GameObject._gameObjects.has(this._uId)) {
-            GameObject._gameObjects.set(this._uId, this);
+        if (!GameObject._gameObjects.has(this.uniqueId)) {
+            GameObject._gameObjects.set(this.uniqueId, this);
         } else {
-            console.error("L'objet ayant l'id :" + this._uId + "existe déjà");
+            console.error("L'objet ayant l'id :" + this.uniqueId + "existe déjà");
             return;
         }
 

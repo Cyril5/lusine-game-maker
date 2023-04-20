@@ -56,6 +56,12 @@ const PropertiesBar = (props) => {
                                 </Accordion.Body>
                             </Accordion.Item>
                         )}
+                        <Accordion.Item eventKey="3">
+                            <Accordion.Header>Collision</Accordion.Header>
+                            <Accordion.Body>
+                                <p>Collision Component CannonJS</p>
+                            </Accordion.Body>
+                        </Accordion.Item>
                     </Accordion>
                 </Offcanvas.Body>
             </Offcanvas>

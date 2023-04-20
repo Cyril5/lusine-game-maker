@@ -36,7 +36,8 @@ export class GameObjectTranslateForwardBlock {
           var value_obj = BlocklyJS.valueToCode(block, 'OBJ', BlocklyJS.ORDER_ATOMIC);
           var value_distz = BlocklyJS.valueToCode(block, 'DISTZ', BlocklyJS.ORDER_ATOMIC);
           // TODO: Assemble JavaScript into code variable.
-          var code = value_obj+".transform.translateZ("+value_distz+");\n";
+          var code = value_obj+".translate(BABYLON.Axis.Z,"+value_distz+",BABYLON.Space.LOCAL);\n";
+          //car.translate(BABYLON.Axis.Z, 0.5, BABYLON.Space.LOCAL);
           return code;
         };
     }

@@ -1,37 +1,19 @@
 import React, { Component } from "react";
-import { FreeCamera, Vector3, HemisphericLight, MeshBuilder, Scene, Mesh, ArcRotateCamera, SceneLoader } from "@babylonjs/core";
+import { Scene, Mesh } from "@babylonjs/core";
 import SceneComponent from "./SceneComponent"; // uses above component in same directory
 import { Renderer } from "../engine/Renderer";
 import '@babylonjs/inspector';
 // import 'babylonjs-loaders';
 import '@babylonjs/loaders/OBJ/objFileLoader';
-import { TransformComponent } from "@renderer/engine/TransformComponent";
 
 // import SceneComponent from 'babylonjs-hook'; // if you install 'babylonjs-hook' NPM.
 
-export default class Editor extends Component {
+export default class RendererComponent extends Component {
 
   box: Mesh;
 
   onSceneReady = (scene: Scene) => {
-
-
-    const camera: ArcRotateCamera = new ArcRotateCamera("Camera", 0, 0, 10, Vector3.Zero(), scene);
-
-    camera.setPosition(new Vector3(0, 0, -10));
-
-    const canvas = scene.getEngine().getRenderingCanvas();
-
-    camera.attachControl(scene.getEngine().getRenderingCanvas(), true);
-
-    scene.debugLayer.show();
-
-    // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
-    const light = new HemisphericLight("light", new Vector3(0, 1, 0), scene);
-
-    // Default intensity is 1. Let's dim the light a small amount
-    light.intensity = 0.7;
-
+    console.log("RendererComponent scene is ready");
     //new Renderer(scene.getEngine(), scene);
     Renderer.initAndGetInstance(scene.getEngine(), scene);
   };
