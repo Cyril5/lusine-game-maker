@@ -6,6 +6,7 @@ import Navbar from 'react-bootstrap/Navbar';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 
 import logo from '../assets/logo.png?url';
+import Editor from './Editor';
 
 function NavBarEditor(props : any) {
 
@@ -30,8 +31,8 @@ function NavBarEditor(props : any) {
 
             <Nav.Link onClick={props.onClickAddObject}>Ajouter</Nav.Link>
 
-            <Button variant="success"> <FontAwesomeIcon icon="play"/> Start</Button>
-            <Button variant="danger"> <FontAwesomeIcon icon="stop"/> Stop</Button>
+            <Button variant="success" onClick={Editor.getInstance().playGame}> <FontAwesomeIcon icon="play"/> Start</Button>
+            <Button variant="danger" onClick={Editor.getInstance().stopGame}> <FontAwesomeIcon icon="stop"/> Stop</Button>
             <Button variant="warning" disabled> <FontAwesomeIcon icon="reply"/> Restart</Button>
 
             <NavDropdown title="Dropdown" id="basic-nav-dropdown">

@@ -34,16 +34,16 @@ export class Renderer {
         return this._gizmoManager;
     }
 
-    ammo : Ammo;
+    ammo: Ammo;
 
     //onLoaded:()=>void
-    private loadPhysicsEngine = async ():Promise<void> => {
-        
+    private loadPhysicsEngine = async (): Promise<void> => {
+
         try {
             this.ammo = await Ammo.bind(window)();
             this._scene.enablePhysics(new Vector3(0, -10, 0), new AmmoJSPlugin(true, this.ammo));
             //onLoaded();
-            
+
         } catch (error) {
             console.error(error);
         }
@@ -82,14 +82,13 @@ export class Renderer {
 
         this._scene.debugLayer.show();
 
-        // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
+        // // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
         const light = new HemisphericLight("light", new Vector3(0, 1, 0), this._scene);
 
-        // Default intensity is 1. Let's dim the light a small amount
-        light.intensity = 0.7;
+        // // Default intensity is 1. Let's dim the light a small amount
+        light.intensity = 1.0;
 
-
-
+        //const sunLight = new BABYLON.DirectionalLight("DirectionalLight", new BABYLON.Vector3(0, -1, 0), this._scene);
 
         // Skybox
         // const skybox = BABYLON.MeshBuilder.CreateBox("skyBox", { size: 1000.0 }, this._scene);
@@ -192,11 +191,11 @@ export class Renderer {
         //     Renderer.isReadyObservable.notifyObservers();
         // });
 
-        await Renderer.instance.loadPhysicsEngine().then(()=>{
+        await Renderer.instance.loadPhysicsEngine().then(() => {
 
             console.log("AmmoJS loaded");
             Renderer.isReadyObservable.notifyObservers();
-    
+
             return Renderer.instance;
         });
 

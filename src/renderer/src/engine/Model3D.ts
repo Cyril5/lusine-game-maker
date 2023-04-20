@@ -22,7 +22,7 @@ export class Model3D extends GameObject {
                 // const propellor = scene.getNodeByName("Propellor_Joint.9");
                 // propellor.parent = plane;
 
-                meshes[0].parent = this;
+
                 this.onLoaded.notifyObservers(this);
 
                 // this._scene.getNodeById("__root__")?.dispose();
@@ -33,6 +33,20 @@ export class Model3D extends GameObject {
 
                 console.log(meshes[0].name);
                 meshes[0].parent = this;
+
+                const origMatTexture = meshes[0].material.diffuseTexture;
+                const pbr = new BABYLON.PBRMaterial("pbr", scene);
+                pbr.metallic = 0;
+                pbr.roughness = 1.0;
+                pbr.albedoTexture = origMatTexture;
+                meshes.forEach((mesh)=>{
+    
+                    //pbr.baseColor = new BABYLON.Color3(1.0, 0.766, 0.336);
+    
+                    //mesh.material = pbr; // appliquer le matériau au premier noeud du modèle
+                })
+
+                
                 // Déclenchement de l'événement
                 this.onLoaded.notifyObservers(this);
             });

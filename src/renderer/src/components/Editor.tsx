@@ -17,8 +17,6 @@ import StateEditor from "@renderer/pages/StateEditor";
 import { Axis, FollowCamera, MeshBuilder, PhysicsImpostor, Space, Vector3 } from "babylonjs";
 import * as cannon from "cannon";
 import { cp } from "fs";
-import { AmmoJSPlugin } from '@babylonjs/core/Physics/Plugins/ammoJSPlugin';
-import * as Ammo from "ammojs-typed";
 import Collider from "@renderer/engine/Collider";
 
 
@@ -51,10 +49,8 @@ export default class Editor extends Component {
 
             const ammo = Renderer.getInstance().ammo;
 
-            console.log("pause physics engine");
+            // Mettre en pause le moteur physique
             scene.physicsEnabled = false;
-
-
 
             //GRID
             const groundMaterial = new GridMaterial("groundMaterial", scene);
@@ -80,7 +76,9 @@ export default class Editor extends Component {
                     //road.setParent(parent);
                 }
 
-                //const buildings = scene.getMeshByName("Model::City").dispose();
+                const buildings = scene.getNodeByName("Model::City");
+                console.log(buildings);
+                buildings.dispose();
             });
 
 
@@ -134,51 +132,46 @@ export default class Editor extends Component {
             camera.radius = -500;
             camera.heightOffset = 200;
 
-            let speed = 5;
+            //let speed = 5;
 
-            let keys = [];
+
             Renderer.getInstance().scene.getEngine().runRenderLoop(() => {
                 // Déplacement de la voiture
-                if (keys[90]) { // Z
-                    car.translate(Axis.Z, speed, BABYLON.Space.LOCAL);
-                }
-                else if (keys[83]) { // S
-                    car.translate(Axis.Z, -speed, BABYLON.Space.LOCAL);
-                }
+                // if (keys[90]) { // Z
+                //     car.translate(Axis.Z, speed, BABYLON.Space.LOCAL);
+                // }
+                // else if (keys[83]) { // S
+                //     car.translate(Axis.Z, -speed, BABYLON.Space.LOCAL);
+                // }
 
-                if (keys[81]) { // Q
-                    car.rotate(Axis.Y, -0.03, BABYLON.Space.LOCAL);
-                }
-                else if (keys[68]) { // D
-                    car.rotate(Axis.Y, 0.03, BABYLON.Space.LOCAL);
-                }
+                // if (keys[81]) { // Q
+                //     car.rotate(Axis.Y, -0.03, BABYLON.Space.LOCAL);
+                // }
+                // else if (keys[68]) { // D
+                //     car.rotate(Axis.Y, 0.03, BABYLON.Space.LOCAL);
+                // }
 
                 if (car && car2) {
 
                     if (car.position.y < -300) {
                         car.position.y = 500;
+                        car.rotation = new Vector3(0,0,0);
                     }
 
                     if(car2.position.y < -300) {
                         car2.position = new Vector3(0,500,0);
+                        car2.rotation = new Vector3(0,0,0);
                     }
                 }
             });
 
 
-            // Ajoute des contrôles de clavier pour la voiture
-            window.addEventListener("keydown", function (event) {
-                keys[event.keyCode] = true;
-            });
 
-            window.addEventListener("keyup", function (event) {
-                keys[event.keyCode] = false;
-            });
 
-            setTimeout(()=>{
-                scene.physicsEnabled = true;
+            // setTimeout(()=>{
+            //     scene.physicsEnabled = true;
 
-            },2000)
+            // },2000)
         });
     }
 
@@ -294,7 +287,7 @@ export default class Editor extends Component {
     };
 
 
-    private playGame = () => {
+    playGame = () => {
 
         Game.getInstance().start();
         // Renderer.getInstance()?.getEngine()?.runRenderLoop += ()=>{
@@ -302,7 +295,7 @@ export default class Editor extends Component {
         // }
     }
 
-    private stopGame = () => {
+    stopGame = () => {
         Game.getInstance().stop();
     }
 
