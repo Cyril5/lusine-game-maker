@@ -9,18 +9,22 @@ import Blockly from 'blockly';
 import toolboxXml from '../assets/blocks/toolbox.xml?raw'; // ?raw to import as string
 import LusineBlocksDarkTheme from '../engine/blocks/themes/lusine-gm-dark'
 import '../engine/blocks/blocksDefs';
+import {javascriptGenerator} from 'blockly/javascript';
 import '@blockly/block-plus-minus';
 import * as Fr from 'blockly/msg/fr';
 import { Col, Container, Row } from 'react-bootstrap';
 import StateFilesTreeView from '@renderer/components/StateFilesTreeView';
 
 let workspace: Blockly.WorkspaceSvg;
+
 const StateEditor = (props) => {
+
+    const [currentState, setCurrentState] = useState(undefined);
     
     const blocklyDivRef = useRef(null);
     const blocklyAreaRef = useRef(null);
     
-    const [getCode, setCode] = useState("");
+    const [code, setCode] = useState("");
     
     let blocklyReady: boolean = false;
 
@@ -94,6 +98,30 @@ const StateEditor = (props) => {
         });
         window.addEventListener('resize', onresize, false);
         onresize();
+
+        const onChangeWorkspace = (event: { type: string; }) => {
+
+            //BlocklyJS.addReservedWords('code');
+            const code : string = javascriptGenerator.workspaceToCode(workspace);
+            
+            if(code !== "") {
+                setCode(code);
+                this.currentState.outputCode = code;
+                console.log(code);
+            }
+
+
+            // AUTO SAVE
+            // if (event.type == Blockly.Events.BLOCK_MOVE) {
+            //     if (store.currentFSM.value.getBaseState().filename != '') {
+            //         saveWorkspace();
+            //     }
+            // }
+        }
+
+        workspace.addChangeListener(onChangeWorkspace);
+
+
         blocklyReady = true;
 
     }, []); // Le deuxième argument est un tableau de dépendances. Si le tableau est vide, l'effet ne se déclenchera qu'une seule fois lors du premier rendu du composant.
@@ -145,7 +173,7 @@ const StateEditor = (props) => {
 
             <CodeMirror
                 id="command-area"
-                // value={getCode}
+                value={code}
                 theme={darcula}
                 height="200px"
                 extensions={[javascript({ jsx: false })]}

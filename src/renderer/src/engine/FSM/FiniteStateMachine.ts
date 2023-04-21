@@ -1,13 +1,49 @@
-import { Space, Vector3 } from "@babylonjs/core";
-// import { GameObject } from "../GameObject";
+import { State } from "./State";
+import { ProgrammableGameObject } from "../ProgrammableGameObject";
+import { IStateFile } from "./IStateFile";
 
+// Machine d'états fini attachable sur des ProgrammableGameObject seulement
 export class FiniteStateMachine {
 
-    // private _gameObject: GameObject;
+    private _gameObject: ProgrammableGameObject;
+    public get gameObject(): ProgrammableGameObject {
+        return this._gameObject;
+    }
+    
+    private _currState: State;
+    public get getCurrentState(): State {
+        return this._currState;
+    }
+    
+    states:Array<State> = [];
+    
 
-    // constructor(gameObject : GameObject) {
-        // this._gameObject = gameObject;
-    // }
+    constructor(gameObject : ProgrammableGameObject) {
+        this._gameObject = gameObject;
+        console.log(this._gameObject);
+        this.addState("Nouvel Etat");
+    }
+
+    addState(name:string='Nouvel Etat',statefile?: IStateFile | undefined):State {
+
+        const newState = new State(this,statefile);
+        newState.name = name;
+
+        this.states.push(newState);
+
+        if(this.states.length == 1) {
+            this.setState(newState);
+        }
+            
+        return newState;
+    }
+
+    setState(state:State) {
+        if(this._currState)
+            this._currState.onExitState();
+        this._currState = state;
+        this._currState.onEnterState();
+    }
 
     // event
     public onUpdate() {

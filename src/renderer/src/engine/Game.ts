@@ -1,6 +1,8 @@
 import { Axis, Engine } from "@babylonjs/core";
 import { GameObject } from "./GameObject";
 import { Renderer } from "./Renderer";
+import { ProgrammableGameObject } from "./ProgrammableGameObject";
+import Editor from "@renderer/components/Editor";
 
 export class Game {
 
@@ -9,7 +11,7 @@ export class Game {
     private _engine: Engine | undefined;
     private _isRunning: boolean = false;
 
-    playerCar: GameObject;
+    playerCar: ProgrammableGameObject;
     speed = 5;
     keys = [];
 
@@ -69,6 +71,13 @@ export class Game {
         });
 
         this.playerCar = GameObject.gameObjects.get(8);
+
+        // Créer un fichier json pour stocker le code
+        Editor.createStateFile("StateA.json"); // retournera un StateFile
+
+        this.playerCar.fsm.states[0].stateFile = Editor.createStateFile("StateA.json");
+        this.playerCar.fsm.states[0].runCode();
+
 
         scene.physicsEnabled = true;
         scene.setActiveCameraByName("FollowCam");

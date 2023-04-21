@@ -13,7 +13,6 @@ export default class RendererComponent extends Component {
   box: Mesh;
 
   onSceneReady = (scene: Scene) => {
-    console.log("RendererComponent scene is ready");
     //new Renderer(scene.getEngine(), scene);
     Renderer.initAndGetInstance(scene.getEngine(), scene);
   };

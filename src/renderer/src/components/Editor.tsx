@@ -18,9 +18,14 @@ import { Axis, FollowCamera, MeshBuilder, PhysicsImpostor, Space, Vector3 } from
 import * as cannon from "cannon";
 import { cp } from "fs";
 import Collider from "@renderer/engine/Collider";
-
+import StateFile from "./engine/FSM/StateFile";
 
 export default class Editor extends Component {
+
+    static createStateFile(filename: string): StateFile | undefined {
+        // 1.Créer le fichier dans le projet (C:\Users\cyril\Documents\Lusine Game Maker\MonProjet\States)
+        // 2.Attribuer un code de base
+    }
 
     // use state REACT
     state = {
