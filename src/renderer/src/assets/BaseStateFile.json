@@ -1,0 +1,23 @@
+{
+    "languageVersion": 0,
+    "blocks": [
+        {
+            "type": "state_onupdatestate",
+            "id": "MpXJzH99X@#/[l0t?m04",
+            "x": 13,
+            "y": 113
+        },
+        {
+            "type": "state_onenterstate",
+            "id": "8+KCkqNRj0]fLmhC+X_-",
+            "x": 13,
+            "y": 13
+        },
+        {
+            "type": "state_onexitstate",
+            "id": "X(x:ZP4`0b{fF,*b*;j@",
+            "x": 13,
+            "y": 238
+        }
+    ]
+}

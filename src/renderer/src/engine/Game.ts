@@ -2,18 +2,31 @@ import { Axis, Engine } from "@babylonjs/core";
 import { GameObject } from "./GameObject";
 import { Renderer } from "./Renderer";
 import { ProgrammableGameObject } from "./ProgrammableGameObject";
-import Editor from "@renderer/components/Editor";
+import InputManager, { KeyCode } from "./InputManager";
 
 export class Game {
 
-    private _deltaTime: Number = 0;
+    private static os = require('os');
+    private static path = require('path');
     private static _instance: any;
+
+    private _deltaTime: Number = 0;
     private _engine: Engine | undefined;
     private _isRunning: boolean = false;
 
     playerCar: ProgrammableGameObject;
     speed = 5;
-    keys = [];
+
+
+
+    // Créer un nom de chemin complet
+    public static getFilePath(directory: string, file?: string): string {
+        // const os = require('os');
+        // const path = require('path');
+        const documentsPath = Game.os.homedir() + '\\Documents\\Lusine Game Maker\\MonProjet';
+        const dir = Game.path.resolve(documentsPath, directory);
+        return Game.path.resolve(dir, file);
+    }
 
     public static getInstance() {
 
@@ -32,26 +45,28 @@ export class Game {
 
         this._deltaTime = deltaTime;
         // console.log(this._isRunning);
-
         //console.log(this._deltaTime);
 
-        // GameObject.gameObjects.forEach(go => {
-        //     go.finiteStateMachine.onUpdate();
-        // });
-
-        if (this.keys[90]) { // Z
-            this.playerCar.translate(Axis.Z, this.speed, BABYLON.Space.LOCAL);
-        }
-        else if (this.keys[83]) { // S
-            this.playerCar.translate(Axis.Z, -this.speed, BABYLON.Space.LOCAL);
+        const gameObjects = GameObject.gameObjects.values();
+        for (const go of gameObjects) {
+            if(go instanceof ProgrammableGameObject) {
+                go.fsm.currentState.onUpdateState.notifyObservers();
+            }
         }
 
-        if (this.keys[81]) { // Q
-            this.playerCar.rotate(Axis.Y, -0.03, BABYLON.Space.LOCAL);
-        }
-        else if (this.keys[68]) { // D
-            this.playerCar.rotate(Axis.Y, 0.03, BABYLON.Space.LOCAL);
-        }
+        // if (InputManager.getKeyDown(KeyCode.Z)) { // Z
+        //     this.playerCar.translate(Axis.Z, this.speed, BABYLON.Space.LOCAL);
+        // }
+        // else if (this.keys[83]) { // S
+        //     this.playerCar.translate(Axis.Z, -this.speed, BABYLON.Space.LOCAL);
+        // }
+
+        // if (this.keys[81]) { // Q
+        //     this.playerCar.rotate(Axis.Y, -0.03, BABYLON.Space.LOCAL);
+        // }
+        // else if (this.keys[68]) { // D
+        //     this.playerCar.rotate(Axis.Y, 0.03, BABYLON.Space.LOCAL);
+        // }
 
     }
 
@@ -61,22 +76,27 @@ export class Game {
 
         const scene = Renderer.getInstance().scene;
 
-        // Ajoute des contrôles de clavier pour la voiture
-        addEventListener("keydown", (event) => {
-            this.keys[event.keyCode] = true;
-        });
+        InputManager.initKeyboardListeners();
 
-        addEventListener("keyup", (event) => {
-            this.keys[event.keyCode] = false;
-        });
+
 
         this.playerCar = GameObject.gameObjects.get(8);
 
-        // Créer un fichier json pour stocker le code
-        Editor.createStateFile("StateA.json"); // retournera un StateFile
+        // Interpretation des codes de chaques states de chaques fsm
+        const gameObjects = GameObject.gameObjects.values();
+        for (const gameObject of gameObjects) {
+            if(gameObject instanceof ProgrammableGameObject) {
+                const states = gameObject.fsm.states.length;
+                for (let index = 0; index < states; index++) {
+                    const state = gameObject.fsm.states[index];
+                    state.runCode();
+                }
+            }
+        }
 
-        this.playerCar.fsm.states[0].stateFile = Editor.createStateFile("StateA.json");
-        this.playerCar.fsm.states[0].runCode();
+
+
+        //this.playerCar.fsm.states[0].runCode();
 
 
         scene.physicsEnabled = true;
@@ -88,6 +108,7 @@ export class Game {
     public stop() {
         const scene = Renderer.getInstance().scene;
 
+        InputManager.removeKeyboardListeners();
         this._isRunning = false;
 
         Renderer.getInstance().scene.physicsEnabled = false;

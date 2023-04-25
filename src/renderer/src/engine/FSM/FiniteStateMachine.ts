@@ -11,7 +11,7 @@ export class FiniteStateMachine {
     }
     
     private _currState: State;
-    public get getCurrentState(): State {
+    public get currentState(): State {
         return this._currState;
     }
     
@@ -20,7 +20,6 @@ export class FiniteStateMachine {
 
     constructor(gameObject : ProgrammableGameObject) {
         this._gameObject = gameObject;
-        console.log(this._gameObject);
         this.addState("Nouvel Etat");
     }
 

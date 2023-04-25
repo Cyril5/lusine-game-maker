@@ -9,24 +9,36 @@ import Blockly from 'blockly';
 import toolboxXml from '../assets/blocks/toolbox.xml?raw'; // ?raw to import as string
 import LusineBlocksDarkTheme from '../engine/blocks/themes/lusine-gm-dark'
 import '../engine/blocks/blocksDefs';
-import {javascriptGenerator} from 'blockly/javascript';
+import { javascriptGenerator } from 'blockly/javascript';
 import '@blockly/block-plus-minus';
 import * as Fr from 'blockly/msg/fr';
-import { Col, Container, Row } from 'react-bootstrap';
+import { Button, Col, Container, Row } from 'react-bootstrap';
 import StateFilesTreeView from '@renderer/components/StateFilesTreeView';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import Editor from '@renderer/components/Editor';
+import {EditorAlert,EditorAlertType} from '@renderer/components/EditorAlert';
+import FileManager from '@renderer/engine/FileManager';
+import { IStateFile } from '@renderer/engine/FSM/IStateFile';
 
 let workspace: Blockly.WorkspaceSvg;
 
-const StateEditor = (props) => {
+const StateEditor = (props: any) => {
 
-    const [currentState, setCurrentState] = useState(undefined);
-    
+    // Code copié à mettre dans une endroit global
+    // const os = require('os');
+    // const path = require('path');
+    // const documentsPath = os.homedir() + '\\Documents\\Lusine Game Maker\\MonProjet';
+    // let stateFilesDirectory = path.resolve(documentsPath, 'States');
+
+    const [currentStateFile, setCurrentState] = useState(props.initStateFile); // IStateFile
+
     const blocklyDivRef = useRef(null);
     const blocklyAreaRef = useRef(null);
-    
+
     const [code, setCode] = useState("");
-    
-    let blocklyReady: boolean = false;
+
+    const serializer: Blockly.serialization.blocks.BlockSerializer = new Blockly.serialization.blocks.BlockSerializer();
+
 
     const onresize = (e) => {
         // Compute the absolute coordinates and dimensions of blocklyArea.
@@ -49,11 +61,21 @@ const StateEditor = (props) => {
     //vérifier si l'onglet 3 est sélectionné lorsque la propriétée resizeWorkspace change
     useEffect(() => {
         if (props.resizeWorkspace && workspace !== undefined) {
-          onresize();
+            onresize();
         }
-      }, [props.resizeWorkspace]);
-    
+    }, [props.resizeWorkspace]);
+
+    // Lorsque la propriétée initStateFile du composant a changé
+    useEffect(()=>{
+        if(props.initStateFile) {
+            //console.error(props.initStateFile);
+            setCurrentState(props.initStateFile);
+            openStateFile(props.initStateFile);
+        }
+    },[props.initStateFile]);
+
     useEffect(() => {
+
         console.log("use effect state editor");
 
         workspace = Blockly.inject(blocklyDivRef.current, {
@@ -101,13 +123,12 @@ const StateEditor = (props) => {
 
         const onChangeWorkspace = (event: { type: string; }) => {
 
-            //BlocklyJS.addReservedWords('code');
-            const code : string = javascriptGenerator.workspaceToCode(workspace);
-            
-            if(code !== "") {
+            //javascriptGenerator.addReservedWords('code');
+            const code: string = javascriptGenerator.workspaceToCode(workspace);
+
+            if (code !== "") {
                 setCode(code);
-                this.currentState.outputCode = code;
-                console.log(code);
+
             }
 
 
@@ -121,9 +142,6 @@ const StateEditor = (props) => {
 
         workspace.addChangeListener(onChangeWorkspace);
 
-
-        blocklyReady = true;
-
     }, []); // Le deuxième argument est un tableau de dépendances. Si le tableau est vide, l'effet ne se déclenchera qu'une seule fois lors du premier rendu du composant.
 
     // const blocklyStyle = {
@@ -132,11 +150,51 @@ const StateEditor = (props) => {
     // }
     Blockly.setLocale(Fr);
 
+    const openStateFile = (stateFile:IStateFile) : void => {
+        
+        try {
+            FileManager.readFile(stateFile.filename,(data)=>{
+    
+                const state = JSON.parse(data);
+                if (!json.blocks || !json.blocks.blocks) {
+                    console.warn(currentStateFile.filename + " has not blocks");
+                }
+                Blockly.serialization.workspaces.load(state, workspace);
+                setCurrentState(stateFile);
+                setCode(currentStateFile.outputCode);
 
+            });
 
-    const onChangeCode = React.useCallback((value, viewUpdate) => {
-        //console.log('value:', value);
-    }, []);
+        } catch (error) {
+            console.error(error);
+            Editor.showAlert(`Une erreur c'est produite pendant l'ouverture de ${currentStateFile.filename} \n\n ${error}`);
+        }
+    }
+
+    const saveWorkspace = (): void => {
+
+        currentStateFile.outputCode = code;
+
+        try{
+            const content = JSON.stringify(serializer.save(workspace));
+            console.log(content);
+            FileManager.writeInFile(currentStateFile.filename,content);
+        }catch(e) {
+            Editor.showAlert(`Une erreur c'est produite pendant la sauvegarde de StateA :\n\n ${e}`,EditorAlertType.Error,);
+            console.error(e);
+        }
+        // fs.writeFile(
+        //     Project.getStatesDir() + '/' + currentStateFile.filename, JSON.stringify(json), err => {
+        //         if (err) {
+        //             Editor.showAlert(EditorAlertType.Error,`Une erreur c'est produite pendant la sauvegarde de StateA :\n\n ${err}`);
+        //             console.error(err);
+        //             return;
+        //         }
+        //     }
+        // );
+        // console.log(code);
+    }
+
 
     const [data, setData] = useState([{
         id: 1,
@@ -150,6 +208,9 @@ const StateEditor = (props) => {
     return (
         <>
             <Container fluid>
+                <Button variant='primary' size="lg" onClick={saveWorkspace}><FontAwesomeIcon icon="save"></FontAwesomeIcon></Button>
+                {currentStateFile !== null && <p>{currentStateFile.filename}</p>}
+                
                 <Row>
                     <Col>{/* <table>
                 <tr>
@@ -164,8 +225,8 @@ const StateEditor = (props) => {
 
                         <div id="blocklyDiv" ref={blocklyDivRef} />
                     </Col>
-                    <Col  md={2}>
-                        <StateFilesTreeView data={data}/>
+                    <Col md={2}>
+                        <StateFilesTreeView data={data} />
                     </Col>
                 </Row>
             </Container>
@@ -177,7 +238,7 @@ const StateEditor = (props) => {
                 theme={darcula}
                 height="200px"
                 extensions={[javascript({ jsx: false })]}
-                onChange={onChangeCode}
+                readOnly
             />
 
 

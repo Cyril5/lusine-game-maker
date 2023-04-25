@@ -18,14 +18,23 @@ import { Axis, FollowCamera, MeshBuilder, PhysicsImpostor, Space, Vector3 } from
 import * as cannon from "cannon";
 import { cp } from "fs";
 import Collider from "@renderer/engine/Collider";
-import StateFile from "./engine/FSM/StateFile";
+import { IStateFile } from "@renderer/engine/FSM/IStateFile";
+import EditorAlert, { EditorAlertType } from "./EditorAlert";
+import StateEditorUtils from "./StateEditorUtils";
 
 export default class Editor extends Component {
 
-    static createStateFile(filename: string): StateFile | undefined {
-        // 1.Créer le fichier dans le projet (C:\Users\cyril\Documents\Lusine Game Maker\MonProjet\States)
-        // 2.Attribuer un code de base
+    
+    static _stateFiles : Array<IStateFile> = new Array<IStateFile>();
+    
+    // TODO : A déplacer dans un export de EditorAlert 
+    static showAlert(message: string,type?: EditorAlertType) {
+        Editor.getInstance().setState({
+            alert:{show: true,message: message}
+        })
     }
+
+
 
     // use state REACT
     state = {
@@ -33,6 +42,12 @@ export default class Editor extends Component {
         game: null,
         // showAddObjectModal: false,
         objetJeu: null,
+        initStateFile: null,
+        alert:{
+            show : false,
+            type: null,
+            message: '',
+        }
     };
 
     constructor(props: {} | Readonly<{}>) {
@@ -46,7 +61,7 @@ export default class Editor extends Component {
 
     componentDidMount() {
         console.log("Editor did mount");
-        window.CANNON = cannon;
+        // window.CANNON = cannon;
 
         Renderer.isReadyObservable.add(async () => {
 
@@ -82,12 +97,14 @@ export default class Editor extends Component {
                 }
 
                 const buildings = scene.getNodeByName("Model::City");
-                console.log(buildings);
                 buildings.dispose();
             });
 
 
             const car = new ProgrammableGameObject("Car_PO", scene);
+            // Créer un fichier json pour stocker le code puis l'appliquer à l'état
+            StateEditorUtils.createStateFile("StateA",car.fsm.states[0].stateFile);
+
             const car2 = new ProgrammableGameObject("Car2", scene);
             let carCollider = new Collider(scene);
 
@@ -160,23 +177,16 @@ export default class Editor extends Component {
 
                     if (car.position.y < -300) {
                         car.position.y = 500;
-                        car.rotation = new Vector3(0,0,0);
+                        car.rotation = new Vector3(0, 0, 0);
                     }
 
-                    if(car2.position.y < -300) {
-                        car2.position = new Vector3(0,500,0);
-                        car2.rotation = new Vector3(0,0,0);
+                    if (car2.position.y < -300) {
+                        car2.position = new Vector3(0, 500, 0);
+                        car2.rotation = new Vector3(0, 0, 0);
                     }
                 }
             });
 
-
-
-
-            // setTimeout(()=>{
-            //     scene.physicsEnabled = true;
-
-            // },2000)
         });
     }
 
@@ -311,6 +321,7 @@ export default class Editor extends Component {
                 <NavBarEditor />
                 {/* <Navigation/> */}
                 <AddObjectModal show={false} />
+                <EditorAlert show={this.state.alert.show} message={this.state.alert.message}/>
                 <CommandModal />
 
                 <Tabs activeKey={this.state.activeTab} onSelect={this.handleTabChange} >
@@ -323,7 +334,7 @@ export default class Editor extends Component {
                     </Tab>
                     <Tab eventKey={3} title="Editeur d'état">
                         {/* le useEffect sera rappelé */}
-                        <StateEditor resizeWorkspace={this.state.activeTab == 3} />
+                        <StateEditor initStateFile={this.state.initStateFile} resizeWorkspace={this.state.activeTab == 3} />
                     </Tab>
                 </Tabs>
 

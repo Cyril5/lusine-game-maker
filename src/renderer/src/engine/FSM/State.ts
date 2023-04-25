@@ -8,6 +8,9 @@ import { FiniteStateMachine } from './FiniteStateMachine';
 import { ProgrammableGameObject } from '../ProgrammableGameObject';
 import { Observable } from 'babylonjs';
 
+// NE PAS RETIRER CES IMPORTS ! (pour l'interprétation du code js avec eval)
+import InputManager, { KeyCode } from '../InputManager';
+
 
 export class State {
 
@@ -16,7 +19,7 @@ export class State {
   private gameObject: ProgrammableGameObject | undefined;
   name = 'Etat Vide';
   
-  stateFile: IStateFile | undefined;
+  stateFile: IStateFile = {filename: "", outputCode: ""};
 
   private test : string = "BOUYA !!!";
   
@@ -33,13 +36,14 @@ export class State {
       console.log("apply gameobject : "+fsm.gameObject.name);
       this.gameObject = fsm.gameObject;
     }
-    this.onUpdateState = new Observable();
-
+    
     if (stateFile) {
       // L'état peut être non relié à un fichier
       this.stateFile = stateFile;
-
+      
     }
+    
+    this.onUpdateState = new Observable();
   }
 
   onEnterState() {
@@ -62,20 +66,12 @@ export class State {
     //if(this.statefile===undefined) // ne pas executé du code si il n'y a pas de statefile
     //return;
 
-    this.onUpdateState.notifyObservers();
-
     // Clear all states callbacks
     this.onEnterState = () => { };
     //this.onUpdateState.clear();
     this.onExitState = () => { };
 
-    try {
-      //eval(this);
-      //eval(ProgrammableGameObject);
-    }catch(error) {
-      console.error(error);
-    }
-
+    this.onUpdateState.clear();
 
     console.log(this.stateFile.outputCode);
 
@@ -84,6 +80,8 @@ export class State {
     //javascriptGenerator.INFINITE_LOOP_TRAP = 'if (--window.LoopTrap === 0) throw "Infinite loop.";\n';
     //javascriptGenerator.INFINITE_LOOP_TRAP = null;
     try {
+      eval(InputManager); // TODO : Vérifier si l'import ce fait une fois
+      eval(KeyCode);
       eval(this.stateFile.outputCode);
     } catch (e: any) {
       console.error(this.name + "->" + e.message + " - line : (" + e.lineNumbers + ")", '#ff0000');

@@ -1,8 +1,19 @@
 import Blockly from 'blockly';
-import BlocklyJS from 'blockly/javascript';
 
-class InputsBlocks {
+export class InputsBlocks {
     constructor() {
+
+        Blockly.Blocks['keycode'] = {
+            init: function() {
+              this.appendDummyInput()
+                  .appendField("Touche")
+                  .appendField(new Blockly.FieldDropdown([["D","D"],["Espace","SPACE"], ["Q","Q"], ["S","S"], ["Z","Z"]]), "KEYCODES");
+              this.setOutput(true, "KeyCode");
+              this.setColour(210);
+           this.setTooltip("");
+           this.setHelpUrl("");
+            }
+          };
 
         Blockly.Blocks['inputs_onkeydown'] = {
             init: function () {
@@ -63,52 +74,6 @@ class InputsBlocks {
             }
         };
 
-
-        Blockly.Blocks['keycode_uparrow'] = {
-            init: function () {
-                this.appendDummyInput()
-                    .appendField("Touche flèche du haut");
-                this.setOutput(true, "KeyCode");
-                this.setColour(210);
-                this.setTooltip("");
-                this.setHelpUrl("");
-            }
-        };
-
-
-        Blockly.Blocks['keycode_rightarrow'] = {
-            init: function () {
-                this.appendDummyInput()
-                    .appendField("Touche flèche de droite");
-                this.setOutput(true, "KeyCode");
-                this.setColour(210);
-                this.setTooltip("");
-                this.setHelpUrl("");
-            }
-        };
-
-        Blockly.Blocks['keycode_downarrow'] = {
-            init: function () {
-                this.appendDummyInput()
-                    .appendField("Touche flèche du bas");
-                this.setOutput(true, "KeyCode");
-                this.setColour(210);
-                this.setTooltip("");
-                this.setHelpUrl("");
-            }
-        };
-
-        Blockly.Blocks['keycode_leftnarrow'] = {
-            init: function () {
-                this.appendDummyInput()
-                    .appendField("Touche flèche de gauche");
-                this.setOutput(true, "KeyCode");
-                this.setColour(210);
-                this.setTooltip("");
-                this.setHelpUrl("");
-            }
-        };
-
         Blockly.Blocks['inputs_onkey'] = {
             init: function () {
                 this.appendValueInput("KEYCODE")
@@ -134,153 +99,34 @@ class InputsBlocks {
         };
 
         Blockly.Blocks['inputs_if_keydown'] = {
-            init: function() {
-              this.appendValueInput("KEYCODE")
-                  .setCheck("KeyCode")
-                  .appendField("La touche");
-              this.appendDummyInput()
-                  .appendField("est préssée ?");
-              this.setOutput(true, "Boolean");
-              this.setColour(260);
-           this.setTooltip("Retourne vrai si la touche est appuyé");
-           this.setHelpUrl("");
+            init: function () {
+                this.appendValueInput("KEYCODE")
+                    .setCheck("KeyCode")
+                    .appendField("La touche");
+                this.appendDummyInput()
+                    .appendField("est enfoncée ?");
+                this.setOutput(true, "Boolean");
+                this.setColour(260);
+                this.setTooltip("Retourne vrai si la touche est toujours appuyée.");
+                this.setHelpUrl("");
             }
-          };
-          
-          Blockly.Blocks['inputs_if_key'] = {
-            init: function() {
-              this.appendValueInput("KEYCODE")
-                  .setCheck("KeyCode")
-                  .appendField("La touche");
-              this.appendDummyInput()
-                  .appendField("est enfoncée ?");
-              this.setOutput(true, "Boolean");
-              this.setColour(260);
-           this.setTooltip("Retourne vrai si la touche est toujours préssé");
-           this.setHelpUrl("");
+        };
+
+        Blockly.Blocks['inputs_if_keypress'] = {
+            init: function () {
+                this.appendValueInput("KEYCODE")
+                    .setCheck("KeyCode")
+                    .appendField("La touche");
+                this.appendDummyInput()
+                    .appendField("est appuyée ?");
+                this.setOutput(true, "Boolean");
+                this.setColour(260);
+                this.setTooltip("Retourne vrai si la touche est appuyée");
+                this.setHelpUrl("");
             }
-          };
-
-
-          BlocklyJS['inputs_onkeydown'] = function (block : any) {
-
-            var value_keycode = BlocklyJS.valueToCode(block, 'KEYCODE', BlocklyJS.ORDER_ATOMIC);
-            var statements_onkeydown = BlocklyJS.statementToCode(block, 'ONKEYDOWN');
-            // TODO: Assemble JavaScript into code variable.
-            var code = '...;\n';
-            return code;
         };
 
 
-        BlocklyJS['keycode_z'] = function (block : any) {
-            // TODO: Assemble JavaScript into code variable.
-            var code = '...';
-            // TODO: Change ORDER_NONE to the correct strength.
 
-            return [code, BlocklyJS.ORDER_NONE];
-        };
-
-
-        BlocklyJS['keycode_d'] = function (block : any) {
-            // TODO: Assemble JavaScript into code variable.
-            var code = '...';
-            // TODO: Change ORDER_NONE to the correct strength.
-
-            return [code, BlocklyJS.ORDER_NONE];
-        };
-
-
-        BlocklyJS['keycode_s'] = function (block : any) {
-            // TODO: Assemble JavaScript into code variable.
-            var code = '...';
-            // TODO: Change ORDER_NONE to the correct strength.
-
-            return [code, BlocklyJS.ORDER_NONE];
-        };
-
-
-        BlocklyJS['keycode_q'] = function (block : any) {
-            // TODO: Assemble JavaScript into code variable.
-            var code = '...';
-            // TODO: Change ORDER_NONE to the correct strength.
-
-            return [code, BlocklyJS.ORDER_NONE];
-        };
-
-
-        BlocklyJS['keycode_uparrow'] = function (block : any) {
-            // TODO: Assemble JavaScript into code variable.
-            var code = '...';
-            // TODO: Change ORDER_NONE to the correct strength.
-            // @ts-ignore
-            return [code, BlocklyJS.ORDER_NONE];
-        };
-
-        // @ts-ignore
-        BlocklyJS['keycode_rightarrow'] = function (block : any) {
-            // TODO: Assemble JavaScript into code variable.
-            var code = '...';
-            // TODO: Change ORDER_NONE to the correct strength.
-            // @ts-ignore
-            return [code, BlocklyJS.ORDER_NONE];
-        };
-
-        // @ts-ignore
-        BlocklyJS['keycode_downarrow'] = function (block : any) {
-            // TODO: Assemble JavaScript into code variable.
-            var code = '...';
-            // TODO: Change ORDER_NONE to the correct strength.
-            // @ts-ignore
-            return [code, BlocklyJS.ORDER_NONE];
-        };
-
-        // @ts-ignore
-        BlocklyJS['keycode_leftnarrow'] = function (block : any) {
-            // TODO: Assemble JavaScript into code variable.
-            var code = '...';
-            // TODO: Change ORDER_NONE to the correct strength.
-            // @ts-ignore
-            return [code, BlocklyJS.ORDER_NONE];
-        };
-
-        // @ts-ignore
-        BlocklyJS['inputs_onkey'] = function (block : any) {
-            // @ts-ignore
-            var value_keycode = BlocklyJS.valueToCode(block, 'KEYCODE', BlocklyJS.ORDER_ATOMIC);
-            // @ts-ignore
-            var statements_onkey = BlocklyJS.statementToCode(block, 'ONKEY');
-            // TODO: Assemble JavaScript into code variable.
-            var code = '...;\n';
-            return code;
-        };
-
-        // @ts-ignore
-        BlocklyJS['keycode_space'] = function (block : any) {
-            // TODO: Assemble JavaScript into code variable.
-            var code = '32';
-            // TODO: Change ORDER_NONE to the correct strength.
-            // @ts-ignore
-            return [code, BlocklyJS.ORDER_NONE];
-        };
-
-        // @ts-ignore
-        BlocklyJS['inputs_if_keydown'] = function (block : any) {
-            // @ts-ignore
-            var value_keycode = BlocklyJS.valueToCode(block, 'KEYCODE', BlocklyJS.ORDER_ATOMIC);
-            // TODO: Assemble JavaScript into code variable.
-            var code = 'InputManager.getKeyDown('+value_keycode+')';
-            // @ts-ignore
-            return [code, BlocklyJS.ORDER_NONE];
-        };
-
-        // @ts-ignore
-        BlocklyJS['inputs_if_key'] = function (block : any) {
-            // @ts-ignore
-            var value_keycode = BlocklyJS.valueToCode(block, 'KEYCODE', BlocklyJS.ORDER_ATOMIC);
-            // TODO: Assemble JavaScript into code variable.
-            var code = '...;\n';
-            return code;
-        };
     }
 }
-export { InputsBlocks }

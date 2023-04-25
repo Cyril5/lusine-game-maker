@@ -1494,7 +1494,7 @@
             <field name="ALIGN">LEFT</field>
             <statement name="FIELDS">
               <block type="field_static" id="yJ~;P`Gbp@7U@=U|4FU%">
-                <field name="TEXT">est préssée ?</field>
+                <field name="TEXT">est enfoncée ?</field>
               </block>
             </statement>
           </block>
@@ -1503,7 +1503,7 @@
     </statement>
     <value name="TOOLTIP">
       <block type="text" id="CFz_[$+w6.)IV#StR9Sw" deletable="false" movable="false">
-        <field name="TEXT">Retourne vrai si la touche est appuyé</field>
+        <field name="TEXT">Retourne vrai si la touche est enfoncée</field>
       </block>
     </value>
     <value name="HELPURL">
@@ -1523,7 +1523,7 @@
     </value>
   </block><block type="factory_base" id="!^2OwocTa6hh9W#g0)Dd" deletable="false" movable="false" x="10" y="10">
     <mutation connections="LEFT"></mutation>
-    <field name="NAME">inputs_if_key</field>
+    <field name="NAME">inputs_if_keypress</field>
     <field name="INLINE">AUTO</field>
     <field name="CONNECTIONS">LEFT</field>
     <statement name="INPUTS">
@@ -1546,7 +1546,7 @@
             <field name="ALIGN">LEFT</field>
             <statement name="FIELDS">
               <block type="field_static" id="yJ~;P`Gbp@7U@=U|4FU%">
-                <field name="TEXT">est enfoncée ?</field>
+                <field name="TEXT">est préssé ?</field>
               </block>
             </statement>
           </block>
@@ -1555,7 +1555,7 @@
     </statement>
     <value name="TOOLTIP">
       <block type="text" id="CFz_[$+w6.)IV#StR9Sw" deletable="false" movable="false">
-        <field name="TEXT">Retourne vrai si la touche est toujours préssé</field>
+        <field name="TEXT">Retourne vrai si la touche est préssé</field>
       </block>
     </value>
     <value name="HELPURL">
@@ -1634,6 +1634,59 @@
       <block type="colour_hue" id="}`:]x#F0`v_eYXA4I2s+">
         <mutation colour="#9fa55b"></mutation>
         <field name="HUE">65</field>
+      </block>
+    </value>
+  </block><block type="factory_base" id="!^2OwocTa6hh9W#g0)Dd" deletable="false" movable="false" x="10" y="10">
+    <mutation connections="LEFT"></mutation>
+    <field name="NAME">keycode</field>
+    <field name="INLINE">AUTO</field>
+    <field name="CONNECTIONS">LEFT</field>
+    <statement name="INPUTS">
+      <block type="input_dummy" id="Qs][|_E.F.T4}tmeiTF5">
+        <field name="ALIGN">LEFT</field>
+        <statement name="FIELDS">
+          <block type="field_static" id="H7$oh1as70(y(gN8X[7C">
+            <field name="TEXT">Touche</field>
+            <next>
+              <block type="field_dropdown" id="S51hNNx849ccjVfzD{K5">
+                <mutation options="[&quot;text&quot;,&quot;text&quot;,&quot;text&quot;,&quot;text&quot;,&quot;text&quot;]"></mutation>
+                <field name="FIELDNAME">KEYCODES</field>
+                <field name="USER0">D</field>
+                <field name="CPU0">D</field>
+                <field name="USER1">Espace</field>
+                <field name="CPU1">Space</field>
+                <field name="USER2">Q</field>
+                <field name="CPU2">Q</field>
+                <field name="USER3">S</field>
+                <field name="CPU3">S</field>
+                <field name="USER4">Z</field>
+                <field name="CPU4">Z</field>
+              </block>
+            </next>
+          </block>
+        </statement>
+      </block>
+    </statement>
+    <value name="TOOLTIP">
+      <block type="text" id="CFz_[$+w6.)IV#StR9Sw" deletable="false" movable="false">
+        <field name="TEXT"></field>
+      </block>
+    </value>
+    <value name="HELPURL">
+      <block type="text" id="O6T~374,c+OGY/my)_D9" deletable="false" movable="false">
+        <field name="TEXT"></field>
+      </block>
+    </value>
+    <value name="OUTPUTTYPE">
+      <shadow type="type_null" id="g^@|GkW]mn.*@F,TQ3kP"></shadow>
+      <block type="type_other" id="fn~xs2k(oA]SZ)AR=u~v">
+        <field name="TYPE">KeyCode</field>
+      </block>
+    </value>
+    <value name="COLOUR">
+      <block type="colour_hue" id="x{gJwAA|m#W_/ehF3bP@">
+        <mutation colour="#5b80a5"></mutation>
+        <field name="HUE">210</field>
       </block>
     </value>
   </block></xml>

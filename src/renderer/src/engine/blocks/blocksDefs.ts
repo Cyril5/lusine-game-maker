@@ -2,22 +2,22 @@ import Blockly from 'blockly';
 import javascriptGenerator from 'blockly/javascript';
 
 // BLOCK DEFS
-// TODO : La définition fonctionne pour le moment lorsque les blocks STUBS sont dans une classe
+// Les définitions des codes fonctionne seulement si il sont dans la classe "JSCodeBlocks"
 
-import {FSMBlocks} from "./fsm_blocks";
+import {InputsBlocks} from "./inputs/inputs_blocks";
+import {JSCodeBlocks} from "./JSCodeBlocks";
 import { GameObjectRotateYBlock } from "./gameObject/gameobject_rotate_y_block";
 import { GameObjectSetPosNumbersBlock } from "./gameObject/gameobject_setpos_numbers";
 import { GameObjectSetRotationNumbersBlock } from "./gameObject/gameobject_setrot_numbers";
 import { GameObjectTranslateForwardBlock } from "./gameObject/gameobject_translate_forward_block";
 import { Vector3dBlocks } from "./vector3d_blocks";
-import { InputsBlocks } from "./inputs/inputs_blocks";
 
 // import { Debug } from '../debug';
+new JSCodeBlocks();
 const GO_SETPOS_NUMBERS_BLOCK = new GameObjectSetPosNumbersBlock();
 const GO_TRANSLATE_FORWARD_BLOCK = new GameObjectTranslateForwardBlock();
 const GO_ROTATE_Y_BLOCK = new GameObjectRotateYBlock();
 const GO_SETROT_NUMBERS_BLOCK = new GameObjectSetRotationNumbersBlock();
-const FSM_BLOCKS = new FSMBlocks();
 const VECTOR3D_BLOCKS = new Vector3dBlocks();
 const INPUTS_BLOCKS = new InputsBlocks();
 
@@ -33,11 +33,6 @@ Blockly.Blocks['gameobject_this'] = {
     this.setHelpUrl("");
   }
 };
-
-
-const mathfClass = 'Mathf';
-const currState = 'this';
-const dir = '../';
 
 // BLOCK STUBS
 // TODO : Fonctionne si on les met dans une classe

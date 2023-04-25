@@ -6,10 +6,17 @@ export class GameObjectTranslateForwardBlock {
 
   // const blockName = this.blockName;
   // const code = this.code;
-
+  
   constructor() {
     const name = 'gameobject_translate_forward';
 
+    javascriptGenerator[name] = function (block) {
+      const value_obj = javascriptGenerator.valueToCode(block, 'OBJ', javascriptGenerator.ORDER_ATOMIC);
+      const value_distz = javascriptGenerator.valueToCode(block, 'DISTZ', javascriptGenerator.ORDER_ATOMIC);
+      // Generate JavaScript code to move the object forward by the specified distance in local space
+      return `${value_obj}.translate(BABYLON.Axis.Z, ${value_distz}, BABYLON.Space.LOCAL);`
+    };
+    
     Blockly.Blocks[name] = {
       init: function () {
         this.appendValueInput("OBJ")
@@ -30,13 +37,6 @@ export class GameObjectTranslateForwardBlock {
     };
 
     
-    javascriptGenerator[name] = function (block) {
-      const value_obj = javascriptGenerator.valueToCode(block, 'OBJ', javascriptGenerator.ORDER_ATOMIC);
-      const value_distz = javascriptGenerator.valueToCode(block, 'DISTZ', javascriptGenerator.ORDER_ATOMIC);
-      // Generate JavaScript code to move the object forward by the specified distance in local space
-      const code = value_obj + '.translateZ(' + value_distz + ');\n';
-      return code;
-    };
 
 
     javascriptGenerator['gameobject_this'] = function (block) {

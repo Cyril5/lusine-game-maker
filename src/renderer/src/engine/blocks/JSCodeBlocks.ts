@@ -1,11 +1,100 @@
 import Blockly from 'blockly';
 import { javascriptGenerator } from 'blockly/javascript';
 
-export class FSMBlocks {
+export class JSCodeBlocks {
 
     constructor() {
 
-        // alert("import fsm blocks");
+        //------------------ INPUTS ------------------------------------------------------------------
+
+        javascriptGenerator['keycode'] = function(block) {
+            const dropdown_keycodes = block.getFieldValue('KEYCODES');
+            // TODO: Assemble JavaScript into code variable.
+            const code = 'KeyCode.'+dropdown_keycodes;
+            // TODO: Change ORDER_NONE to the correct strength.
+            return [code, javascriptGenerator.ORDER_ATOMIC];
+          };
+
+        
+        javascriptGenerator['inputs_if_keydown'] = (block : any)=> {
+
+            const value_keycode = javascriptGenerator.valueToCode(block, 'KEYCODE', javascriptGenerator.ORDER_ATOMIC);
+            // TODO: Assemble JavaScript into code constiable.
+            const code = `InputManager.getKeyDown(${value_keycode})`;
+            return [code, javascriptGenerator.ORDER_NONE];
+        };
+
+        javascriptGenerator['keycode_d'] = function (block : any) {
+            // TODO: Assemble JavaScript into code constiable.
+            return 'KeyCode.D';
+            // TODO: Change ORDER_NONE to the correct strength.
+            //return [code,javascriptGenerator.ORDER_ATOMIC];
+        };
+        javascriptGenerator['keycode_space'] = function (block : any) {
+            // TODO: Assemble JavaScript into code constiable.
+            const code = 'KeyCode.Space';
+            // TODO: Change ORDER_NONE to the correct strength.
+            return [code, javascriptGenerator.ORDER_ATOMIC];
+        };
+        javascriptGenerator['keycode_z'] = function (block : any) {
+            // TODO: Assemble JavaScript into code constiable.
+            const code = 'KeyCode.Z';
+            // TODO: Change ORDER_NONE to the correct strength.
+        
+            return [code, javascriptGenerator.ORDER_ATOMIC];
+        };
+
+        javascriptGenerator['inputs_onkeydown'] = function (block : any) {
+
+            const value_keycode = javascriptGenerator.valueToCode(block, 'KEYCODE', javascriptGenerator.ORDER_ATOMIC);
+            const statements_onkeydown = javascriptGenerator.statementToCode(block, 'ONKEYDOWN');
+            // TODO: Assemble JavaScript into code constiable.
+            const code = '...;\n';
+            return code;
+        };
+
+
+        // javascriptGenerator['keycode_d'] = function (block : any) {
+        //     // TODO: Assemble JavaScript into code constiable.
+        //     return 'KeyCode.D';
+        //     // TODO: Change ORDER_NONE to the correct strength.
+        //     //return [code,javascriptGenerator.ORDER_ATOMIC];
+        // };
+
+
+        javascriptGenerator['keycode_s'] = function (block : any) {
+            // TODO: Assemble JavaScript into code constiable.
+            const code = 'KeyCode.S';
+            // TODO: Change ORDER_NONE to the correct strength.
+
+            return [code, javascriptGenerator.ORDER_NONE];
+        };
+
+
+        javascriptGenerator['keycode_q'] = function (block : any) {
+            // TODO: Assemble JavaScript into code constiable.
+            const code = 'KeyCode.Q';
+            // TODO: Change ORDER_NONE to the correct strength.
+
+            return [code, javascriptGenerator.ORDER_NONE];
+        };
+
+
+        javascriptGenerator['inputs_onkey'] = function (block : any) {
+            const value_keycode = javascriptGenerator.valueToCode(block, 'KEYCODE', javascriptGenerator.ORDER_ATOMIC);
+            const statements_onkey = javascriptGenerator.statementToCode(block, 'ONKEY');
+            // TODO: Assemble JavaScript into code constiable.
+            const code = '...;\n';
+            return code;
+        };
+
+        // javascriptGenerator['inputs_if_keypress'] = function (block : any) {
+        //     const value_keycode = javascriptGenerator.valueToCode(block, 'KEYCODE', javascriptGenerator.ORDER_ATOMIC);
+        //     // TODO: Assemble JavaScript into code constiable.
+        //     const code = '...;\n';
+        //     return code;
+        // };
+
 
         Blockly.Blocks['fsm_init'] = {
             init: function () {
@@ -109,7 +198,7 @@ export class FSMBlocks {
 
             const statements_enterstate = javascriptGenerator.statementToCode(block, 'ENTERSTATE');
             // TODO: Assemble JavaScript into code variable.
-            const code = "this.onEnterState = () => {\n" + statements_enterstate + "}\n";
+            const code = `this.onEnterState.add(() => {\n ${statements_enterstate} } );\n`;
             return code;
         };
 
@@ -117,7 +206,7 @@ export class FSMBlocks {
 
             const statements_updatestate = javascriptGenerator.statementToCode(block, 'UPDATESTATE');
             // TODO: Assemble JavaScript into code variable.
-            const code = "this.onUpdateState = () => {\n" + statements_updatestate + "}\n";
+            const code = `this.onUpdateState.add(() => {\n ${statements_updatestate}} \n);\n`;
             return code;
         };
 
