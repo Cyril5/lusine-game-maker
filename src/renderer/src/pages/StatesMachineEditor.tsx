@@ -1,11 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
 
-import Blockly from 'blockly';
-import toolboxXml from '../assets/blocks/toolbox.xml?raw'; // ?raw to import as string
-import LusineBlocksDarkTheme from '../engine/blocks/themes/lusine-gm-dark'
-import '../engine/blocks/blocksDefs';
-import '@blockly/block-plus-minus';
-import * as Fr from 'blockly/msg/fr';
 import { Alert, Breadcrumb, Button, ButtonGroup, Card, Container, Dropdown } from 'react-bootstrap';
 import '../assets/css/fsm-graph.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';

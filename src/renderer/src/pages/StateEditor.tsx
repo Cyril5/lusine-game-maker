@@ -16,10 +16,11 @@ import { Button, Col, Container, Row } from 'react-bootstrap';
 import StateFilesTreeView from '@renderer/components/StateFilesTreeView';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Editor from '@renderer/components/Editor';
-import {EditorAlert,EditorAlertType} from '@renderer/components/EditorAlert';
+import { EditorAlert, EditorAlertType } from '@renderer/components/EditorAlert';
 import FileManager from '@renderer/engine/FileManager';
 import { IStateFile } from '@renderer/engine/FSM/IStateFile';
 
+const serializer: Blockly.serialization.blocks.BlockSerializer = new Blockly.serialization.blocks.BlockSerializer();
 let workspace: Blockly.WorkspaceSvg;
 
 const StateEditor = (props: any) => {
@@ -37,7 +38,6 @@ const StateEditor = (props: any) => {
 
     const [code, setCode] = useState("");
 
-    const serializer: Blockly.serialization.blocks.BlockSerializer = new Blockly.serialization.blocks.BlockSerializer();
 
 
     const onresize = (e) => {
@@ -66,13 +66,13 @@ const StateEditor = (props: any) => {
     }, [props.resizeWorkspace]);
 
     // Lorsque la propriétée initStateFile du composant a changé
-    useEffect(()=>{
-        if(props.initStateFile) {
-            //console.error(props.initStateFile);
+    useEffect(() => {
+        if (props.initStateFile) {
+            console.error(props.initStateFile);
             setCurrentState(props.initStateFile);
             openStateFile(props.initStateFile);
         }
-    },[props.initStateFile]);
+    }, [props.initStateFile]);
 
     useEffect(() => {
 
@@ -150,21 +150,30 @@ const StateEditor = (props: any) => {
     // }
     Blockly.setLocale(Fr);
 
-    const openStateFile = (stateFile:IStateFile) : void => {
-        
+    const openStateFile = (stateFile: IStateFile): void => {
+
         try {
-            FileManager.readFile(stateFile.filename,(data)=>{
-    
-                const state = JSON.parse(data);
-                if (!json.blocks || !json.blocks.blocks) {
-                    console.warn(currentStateFile.filename + " has not blocks");
-                }
-                Blockly.serialization.workspaces.load(state, workspace);
+            FileManager.readFile(stateFile.filename, (xmlFile) => {
+
+                // Charger les blocs depuis un fichier JSON
+                //     const xml = `<xml xmlns="https://developers.google.com/blockly/xml">
+                //     <block type="state_onupdatestate" id="=2I,Vk7*J.TR~d/IVv0V" x="13" y="88"></block>
+                //   </xml>`;
+                // const json = {
+                //     "type": "workspace",
+                //     "id": "workspaceID",
+                //     "xml": xml
+                // }; // Remplacer par le contenu du fichier JSON
+
+                //workspace.clear();
+                Blockly.Events.disable(); // Désactiver les événements pour éviter les collisions d'ID
+                const jsonDom: Element = Blockly.Xml.textToDom(xmlFile);
+                Blockly.Xml.clearWorkspaceAndLoadFromXml(jsonDom, workspace);
+                Blockly.Events.enable();
+
                 setCurrentState(stateFile);
                 setCode(currentStateFile.outputCode);
-
             });
-
         } catch (error) {
             console.error(error);
             Editor.showAlert(`Une erreur c'est produite pendant l'ouverture de ${currentStateFile.filename} \n\n ${error}`);
@@ -175,12 +184,19 @@ const StateEditor = (props: any) => {
 
         currentStateFile.outputCode = code;
 
-        try{
-            const content = JSON.stringify(serializer.save(workspace));
+        try {
+            //const content = JSON.stringify(serializer.save(workspace));
+
+            // Convertir l'espace de travail en nœud DOM
+            const xmlDom = Blockly.Xml.workspaceToDom(workspace);
+
+            // Convertir le nœud DOM en chaîne de texte XML
+            const content = Blockly.Xml.domToPrettyText(xmlDom);
+
             console.log(content);
-            FileManager.writeInFile(currentStateFile.filename,content);
-        }catch(e) {
-            Editor.showAlert(`Une erreur c'est produite pendant la sauvegarde de StateA :\n\n ${e}`,EditorAlertType.Error,);
+            FileManager.writeInFile(currentStateFile.filename, content);
+        } catch (e) {
+            Editor.showAlert(`Une erreur c'est produite pendant la sauvegarde de StateA :\n\n ${e}`, EditorAlertType.Error,);
             console.error(e);
         }
         // fs.writeFile(
@@ -210,7 +226,7 @@ const StateEditor = (props: any) => {
             <Container fluid>
                 <Button variant='primary' size="lg" onClick={saveWorkspace}><FontAwesomeIcon icon="save"></FontAwesomeIcon></Button>
                 {currentStateFile !== null && <p>{currentStateFile.filename}</p>}
-                
+
                 <Row>
                     <Col>{/* <table>
                 <tr>

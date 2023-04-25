@@ -16,17 +16,13 @@ import StatesMachineEditor from "@renderer/pages/StatesMachineEditor";
 import StateEditor from "@renderer/pages/StateEditor";
 import { Axis, FollowCamera, MeshBuilder, PhysicsImpostor, Space, Vector3 } from "babylonjs";
 import * as cannon from "cannon";
-import { cp } from "fs";
 import Collider from "@renderer/engine/Collider";
-import { IStateFile } from "@renderer/engine/FSM/IStateFile";
 import EditorAlert, { EditorAlertType } from "./EditorAlert";
 import StateEditorUtils from "./StateEditorUtils";
+import FileManager from "@renderer/engine/FileManager";
 
 export default class Editor extends Component {
 
-    
-    static _stateFiles : Array<IStateFile> = new Array<IStateFile>();
-    
     // TODO : A déplacer dans un export de EditorAlert 
     static showAlert(message: string,type?: EditorAlertType) {
         Editor.getInstance().setState({
@@ -102,8 +98,13 @@ export default class Editor extends Component {
 
 
             const car = new ProgrammableGameObject("Car_PO", scene);
+
             // Créer un fichier json pour stocker le code puis l'appliquer à l'état
-            StateEditorUtils.createStateFile("StateA",car.fsm.states[0].stateFile);
+            if(!FileManager.fileExists(Game.getFilePath("States", "StateA."+StateEditorUtils._stateFilesFormat))) {
+                StateEditorUtils.createStateFile("StateA",car.fsm.states[0].stateFile);
+            }else{
+                StateEditorUtils.addStateFile("StateA",car.fsm.states[0].stateFile);
+            }
 
             const car2 = new ProgrammableGameObject("Car2", scene);
             let carCollider = new Collider(scene);

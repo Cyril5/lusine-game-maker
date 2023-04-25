@@ -3,21 +3,36 @@
     "blocks": [
         {
             "type": "state_onupdatestate",
-            "id": "MpXJzH99X@#/[l0t?m04",
+            "id": "M=pd36$50r=C@-L4l_xF",
             "x": 13,
-            "y": 113
-        },
-        {
-            "type": "state_onenterstate",
-            "id": "8+KCkqNRj0]fLmhC+X_-",
-            "x": 13,
-            "y": 13
-        },
-        {
-            "type": "state_onexitstate",
-            "id": "X(x:ZP4`0b{fF,*b*;j@",
-            "x": 13,
-            "y": 238
+            "y": 88,
+            "inputs": {
+                "UPDATESTATE": {
+                    "block": {
+                        "type": "controls_if",
+                        "id": "FIxNpSM%~2_1YSy^6^hU",
+                        "inputs": {
+                            "IF0": {
+                                "block": {
+                                    "type": "inputs_if_keydown",
+                                    "id": "DGs:/ZdTvQeG9{Fo3?s2",
+                                    "inputs": {
+                                        "KEYCODE": {
+                                            "block": {
+                                                "type": "keycode",
+                                                "id": "FGzLolVs}.svBV9TU^jx",
+                                                "fields": {
+                                                    "KEYCODES": "Z"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     ]
 }
