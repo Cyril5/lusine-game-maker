@@ -13,8 +13,6 @@ export class ProgrammableGameObject extends GameObject {
     constructor(name:string,scene : Scene) {
         super(name,scene);
         this.type = "PROG_GO";
-
         this._fsm = new FiniteStateMachine(this);
-        this._fsm.addState("StateA");
     }
 }

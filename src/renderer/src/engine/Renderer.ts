@@ -61,7 +61,7 @@ export class Renderer {
 
 
         this._scene.debugLayer.onSelectionChangedObservable.add((selectedObjects) => {
-            const selectedObject = selectedObjects[0];
+            //const selectedObject = selectedObjects[0];
             // console.log(selectedObjects);
 
         });

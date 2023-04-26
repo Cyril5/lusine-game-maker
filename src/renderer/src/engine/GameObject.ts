@@ -24,9 +24,7 @@ export class GameObject extends TransformNode {
 //        this._transform = new TransformComponent(this, name, scene);
 
         this.metadata = {type: "GameObject"}
-
-        console.log("Créer le game obj : " + this.name);
-
+        
         if (!GameObject._gameObjects.has(this.uniqueId)) {
             GameObject._gameObjects.set(this.uniqueId, this);
         } else {

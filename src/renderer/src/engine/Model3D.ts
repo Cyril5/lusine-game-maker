@@ -5,6 +5,8 @@ export class Model3D extends GameObject {
 
     // event lorsqu'on clic sur le model3D
 
+    static materials: Map<string, BABYLON.Material> = new Map<string, BABYLON.Material>();
+
     constructor(directoryOrUrl: string, filename: string, options = null, scene: Scene) {
         super("Modèle 3D", scene);
 
@@ -29,26 +31,75 @@ export class Model3D extends GameObject {
 
             });
         } else {
-            SceneLoader.ImportMesh(null, directoryOrUrl + '/', filename, scene, (meshes) => {
 
-                console.log(meshes[0].name);
-                meshes[0].parent = this;
 
-                const origMatTexture = meshes[0].material.diffuseTexture;
-                const pbr = new BABYLON.PBRMaterial("pbr", scene);
-                pbr.metallic = 0;
-                pbr.roughness = 1.0;
-                pbr.albedoTexture = origMatTexture;
-                meshes.forEach((mesh)=>{
+            SceneLoader.ImportMesh(null, directoryOrUrl + '/', filename, scene, (meshes, [], [], [], transformNodes) => {
+
+                try {
+                    let nodes: Array<{}> = new Array<{ 'node': null, 'name': '', 'parent': null }>();
+
+
+
+                    // const origMatTexture = meshes[0].material.diffuseTexture;
+                    // const pbr = new BABYLON.PBRMaterial("pbr", scene);
+                    // pbr.metallic = 0;
+                    // pbr.roughness = 1.0;
+                    // pbr.albedoTexture = origMatTexture;
+                    meshes.forEach((mesh: AbstractMesh) => {
+
+                        console.log(mesh.name);
+                        console.log(mesh.material);
+                        if(mesh.material) {
+                            const materialName = mesh.material.name;
+                            let existingMat = Model3D.materials.get(materialName);
     
-                    //pbr.baseColor = new BABYLON.Color3(1.0, 0.766, 0.336);
+                            if (!existingMat) {
+                                // Créer un nouveau matériau si aucun matériau n'a encore été créé pour ce nom
+                                existingMat = mesh.material.clone(materialName);
+                                Model3D.materials.set(materialName, existingMat);
+                            } else {
+                               mesh.material.dispose();
+                            }
     
-                    //mesh.material = pbr; // appliquer le matériau au premier noeud du modèle
-                })
+                            // Lier le mesh au matériau correspondant
+                            mesh.material = existingMat;
+                            //mesh.material = material;
+    
+                            //mesh.material = pbr; // appliquer le matériau au premier noeud du modèle
+                        }
 
-                
-                // Déclenchement de l'événement
-                this.onLoaded.notifyObservers(this);
+                        if(!mesh.parent) {
+                            mesh.setParent(this);
+                        }
+
+
+                    });
+
+                    for (let index = 0; index < transformNodes.length; index++) {
+                        const element = transformNodes[index];
+                        console.log(element.name);
+                        nodes.push({
+                            'node': element,
+                            'parent': element.parent,
+                            'name': element.name
+                        });
+                        if (element.parent) {
+                            element.setParent(nodes[index].parent);
+                        } else {
+                            element.setParent(this);
+                        }
+                    }
+
+                    //Model3D.materials.get("Material::World ap").diffuseColor = new BABYLON.Color3(0, 1, 0);
+
+
+
+                    // Déclenchement de l'événement
+                    this.onLoaded.notifyObservers(this);
+                } catch (error) {
+                    console.error(error);
+                }
+
             });
         }
 

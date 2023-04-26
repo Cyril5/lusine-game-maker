@@ -3,6 +3,7 @@ import { GameObject } from "./GameObject";
 import { Renderer } from "./Renderer";
 import { ProgrammableGameObject } from "./ProgrammableGameObject";
 import InputManager, { KeyCode } from "./InputManager";
+import State from "./FSM/State";
 
 export class Game {
 
@@ -106,14 +107,17 @@ export class Game {
     }
 
     public stop() {
-        const scene = Renderer.getInstance().scene;
 
+        
+        const scene = Renderer.getInstance().scene;
+        
         InputManager.removeKeyboardListeners();
         this._isRunning = false;
-
+        
         Renderer.getInstance().scene.physicsEnabled = false;
         scene.setActiveCameraByName("Camera");
-
+        
+        State.deleteRuntimeGlobalVars();
 
         // removeEventListener("keydown");
         // removeEventListener("keyup");

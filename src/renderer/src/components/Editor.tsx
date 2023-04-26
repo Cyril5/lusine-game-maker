@@ -78,10 +78,11 @@ export default class Editor extends Component {
 
             const ground = MeshBuilder.CreateGround("ground", { width: 100, height: 100 }, scene);
             ground.material = groundMaterial;
-            //ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.MeshImpostor, { mass: 0, friction: 1, restitution: 0.3 }, Renderer.getInstance().scene);
+            ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.MeshImpostor, { mass: 0, friction: 1, restitution: 0.3 }, Renderer.getInstance().scene);
 
-            console.log("Editor knows renderer is ready");
             const city = this.addModel3DObject("Lowpoly_City.fbx", null, (city) => {
+                
+                city.name = "Modèle 3D - Ville";
                 // Juste un test
                 const road = scene.getMeshByName("Model::ROAD");
                 if (road) {
@@ -89,11 +90,12 @@ export default class Editor extends Component {
                     road.setParent(null); //avant d'appliquer un physicsImposter il faut que le parent soit null
                     // Créez une forme de collision de maillage pour la route
                     road.physicsImpostor = new BABYLON.PhysicsImpostor(road, BABYLON.PhysicsImpostor.MeshImpostor, { mass: 0, friction: 0.5, restitution: 0 }, scene);
-                    //road.setParent(parent);
+                    road.setParent(parent);
                 }
 
                 const buildings = scene.getNodeByName("Model::City");
-                buildings.dispose();
+                //buildings.dispose();
+
             });
 
 
@@ -105,11 +107,14 @@ export default class Editor extends Component {
             }else{
                 StateEditorUtils.addStateFile("StateA",car.fsm.states[0].stateFile);
             }
+            car.fsm.states[0].name = "State A";
 
             const car2 = new ProgrammableGameObject("Car2", scene);
             let carCollider = new Collider(scene);
 
             this.addModel3DObject("Car_04_3.fbx", null, (carModel) => {
+
+                carModel.name += " - Car04_3";
 
                 const carMesh = Renderer.getInstance().scene.getMeshByName("Model::Car_04_3");
                 if (carMesh) {
@@ -119,9 +124,10 @@ export default class Editor extends Component {
                     //carCollider.isVisible = true; // Masquer la boîte pour qu'elle ne soit pas visible dans la scène
                     //carCollider.position = carMesh.position; // Positionner la boîte à la position de la voiture
                     //carCollider.visibility = 0.25;
-                    carMesh.setParent(car);
+                    //carMesh.setParent(car);
                 }
                 //carCollider.physicsImpostor = new BABYLON.PhysicsImpostor(carCollider, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0 });
+                carModel.setParent(car);
                 carCollider.attachToNode(car);
                 car.physicsImpostor = new BABYLON.PhysicsImpostor(car, BABYLON.PhysicsImpostor.NoImpostor, { mass: 1, restitution: 0.2, friction: 0.5 }, scene); // Ajouter l'imposteur de boîte à la voiture
                 car.position.y = 41.958;
@@ -133,11 +139,14 @@ export default class Editor extends Component {
             let carCollider2;
             this.addModel3DObject("Car_03.fbx", null, (carModel) => {
 
-                const carMesh = Renderer.getInstance().scene.getMeshByName("Model::CAR_03");
-                if (carMesh) {
-                    carMesh.setParent(car2);
-                    // carMesh.translate(Axis.Z, -50, Space.LOCAL);
+                carModel.name += " - Car03";
 
+                const carMesh = Renderer.getInstance().scene.getMeshByName("Model::CAR_03");
+
+                carModel.setParent(car2);
+                if (carMesh) {
+                    // carMesh.setParent(car2);
+                    // carMesh.translate(Axis.Z, -50, Space.LOCAL);
                     carCollider2 = BABYLON.MeshBuilder.CreateBox("carBox2", { height: 60, width: 75, depth: 140 }, scene);
                     carCollider2.isVisible = true; // Masquer la boîte pour qu'elle ne soit pas visible dans la scène
                     carCollider2.position = carMesh.position; // Positionner la boîte à la position de la voiture
@@ -206,23 +215,26 @@ export default class Editor extends Component {
     }
 
     addModel3DObject(filename: string, options = null, callback: (model: Model3D) => void | null) {
-
+        
         console.log(filename);
-
+        
+        // TODO : Remplacer par Game.getFilePath("Models");
         const os = require('os');
         const path = require('path');
         const documentsPath = os.homedir() + '\\Documents\\Lusine Game Maker\\MonProjet';
         let modelsDirectory = path.resolve(documentsPath, 'Models');
 
+       
+
         //const model = new Model3D("https://models.babylonjs.com/", "aerobatic_plane.glb", Renderer.getInstance().scene);
-        const model = new Model3D(modelsDirectory + "/", filename, options, Renderer.getInstance().scene);
+        const model = new Model3D(modelsDirectory, filename, options, Renderer.getInstance().scene);
         // quand je clic sur un mesh je peux le sélectionner dans l'éditeur
         // Créer un action manager pour le parentNode
         // Abonnement à l'événement onModelLoaded
         model.onLoaded.add((model3d) => {
             console.log("Le Model3D a été chargé : ", model3d);
 
-            const children = model.getChildren()[0].getChildren();
+            const children = model.getChildren();
             children.forEach((child) => {
 
                 child.actionManager = new BABYLON.ActionManager(Renderer.getInstance().scene);

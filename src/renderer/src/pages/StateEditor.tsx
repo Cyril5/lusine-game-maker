@@ -68,7 +68,7 @@ const StateEditor = (props: any) => {
     // Lorsque la propriétée initStateFile du composant a changé
     useEffect(() => {
         if (props.initStateFile) {
-            console.error(props.initStateFile);
+            // console.log(props.initStateFile);
             setCurrentState(props.initStateFile);
             openStateFile(props.initStateFile);
         }
