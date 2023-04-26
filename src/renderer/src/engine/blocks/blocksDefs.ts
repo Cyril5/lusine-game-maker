@@ -34,6 +34,21 @@ Blockly.Blocks['gameobject_this'] = {
   }
 };
 
+Blockly.Blocks['debug_console_log'] = {
+  init: function() {
+    this.appendValueInput("LOG")
+        .setCheck(null)
+        .appendField("Afficher");
+    this.appendDummyInput()
+        .appendField("dans la console");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(65);
+ this.setTooltip("Ecrire un message dans la console");
+ this.setHelpUrl("");
+  }
+};
+
 // BLOCK STUBS
 // TODO : Fonctionne si on les met dans une classe
 

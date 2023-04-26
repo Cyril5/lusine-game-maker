@@ -72,13 +72,12 @@ export default class Editor extends Component {
             const groundMaterial = new GridMaterial("groundMaterial", scene);
             groundMaterial.majorUnitFrequency = 5;
             groundMaterial.minorUnitVisibility = 0.5;
-            groundMaterial.gridRatio = 1;
+            groundMaterial.gridRatio = 100;
             groundMaterial.opacity = 0.99;
             groundMaterial.useMaxLine = true;
 
-            const ground = MeshBuilder.CreateGround("ground", { width: 100, height: 100 }, scene);
+            const ground = MeshBuilder.CreateGround("ground", { width: 1000, height: 1000 }, scene);
             ground.material = groundMaterial;
-            ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.MeshImpostor, { mass: 0, friction: 1, restitution: 0.3 }, Renderer.getInstance().scene);
 
             const city = this.addModel3DObject("Lowpoly_City.fbx", null, (city) => {
                 
@@ -93,8 +92,14 @@ export default class Editor extends Component {
                     road.setParent(parent);
                 }
 
-                const buildings = scene.getNodeByName("Model::City");
-                //buildings.dispose();
+                let buildings = scene.getNodeByName("Model::Block_1");
+                buildings.dispose();
+                buildings = scene.getNodeByName("Model::Block_2");
+                buildings.dispose();
+                buildings = scene.getNodeByName("Model::Block_3");
+                buildings.dispose();
+                buildings = scene.getNodeByName("Model::Block_4");
+                buildings.dispose();
 
             });
 

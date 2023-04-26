@@ -1,7 +1,7 @@
 export enum KeyCode {
-    A='',B='',C='',D='68',E='',F='',G='',H='',I='',J='',K='',
+    A='',B='',C='',D='d',E='',F='',G='',H='',I='',J='',K='',
     L='',M='',N='',O='',P='',Q='q',R='',S='s',T='',U='',V='',W='',X='',Y='',Z='z',
-    Escape='27',Space='32'
+    Escape='escape',Space='space'
 }
 
 export default class InputManager {
@@ -41,12 +41,11 @@ export default class InputManager {
     }
 
     static getKeyDown(key : KeyCode) {
-        console.log(InputManager._keys);
+        // console.log(InputManager._keys);
         return InputManager._keys[key]==true;
     }
 
     static getKeyUp(key: KeyCode) {
-        console.log(InputManager._keys);
         return InputManager._keys[key]==false;
     }
 

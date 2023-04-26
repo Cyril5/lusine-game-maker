@@ -5,6 +5,13 @@ export class JSCodeBlocks {
 
     constructor() {
 
+        javascriptGenerator['debug_console_log'] = function(block) {
+            const value_log = javascriptGenerator.valueToCode(block, 'LOG', javascriptGenerator.ORDER_ATOMIC);
+            // TODO: Assemble JavaScript into code variable.
+            const code = 'console.log('+value_log+');\n';
+            return code;
+          };
+
         //------------------ INPUTS ------------------------------------------------------------------
 
         javascriptGenerator['keycode'] = function(block) {
@@ -52,15 +59,6 @@ export class JSCodeBlocks {
             const code = '...;\n';
             return code;
         };
-
-
-        // javascriptGenerator['keycode_d'] = function (block : any) {
-        //     // TODO: Assemble JavaScript into code constiable.
-        //     return 'KeyCode.D';
-        //     // TODO: Change ORDER_NONE to the correct strength.
-        //     //return [code,javascriptGenerator.ORDER_ATOMIC];
-        // };
-
 
         javascriptGenerator['keycode_s'] = function (block : any) {
             // TODO: Assemble JavaScript into code constiable.

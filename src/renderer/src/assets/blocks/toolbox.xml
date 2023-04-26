@@ -24,6 +24,7 @@
       </value>
     </block>
     <block type="gameobject_rotatey">
+      <field name="SPACE">LOCAL</field>
       <value name="OBJ">
         <block type="gameobject_this"></block>
       </value>
@@ -78,14 +79,14 @@
   </category>
   <category name="Contrôles">
     <block type="keycode">
-      <field name="KEYCODES">SPACE</field>
+      <field name="KEYCODES">D</field>
     </block>
     <block type="controls_if">
       <value name="IF0">
         <block type="inputs_if_keydown">
           <value name="KEYCODE">
             <block type="keycode">
-              <field name="KEYCODES">SPACE</field>
+              <field name="KEYCODES">D</field>
             </block>
           </value>
         </block>
@@ -111,6 +112,15 @@
     <block type="keycode_q"></block>
     <block type="keycode_s"></block>
     <block type="keycode_z"></block>
+  </category>
+  <category name="Debug">
+    <block type="debug_console_log">
+      <value name="LOG">
+        <block type="text">
+          <field name="TEXT">Hello World</field>
+        </block>
+      </value>
+    </block>
   </category>
   <sep></sep>
   <category name="Logic" colour="#5b80a5">
@@ -341,14 +351,14 @@
         </shadow>
       </value>
     </block>
-    <block type="text_print">
+    <block type="text_print" disabled="true">
       <value name="TEXT">
         <shadow type="text">
           <field name="TEXT">abc</field>
         </shadow>
       </value>
     </block>
-    <block type="debug_console_write">
+    <block type="debug_console_write" disabled="true">
       <field name="TEXTCOLOR">#3366ff</field>
       <value name="LOG">
         <block type="text">
@@ -356,7 +366,7 @@
         </block>
       </value>
     </block>
-    <block type="text_prompt_ext">
+    <block type="text_prompt_ext" disabled="true">
       <mutation type="TEXT"></mutation>
       <field name="TYPE">TEXT</field>
       <value name="TEXT">

@@ -1,5 +1,5 @@
 import Blockly from 'blockly';
-import BlocklyJS from 'blockly/javascript';
+import { javascriptGenerator } from 'blockly/javascript';
 import { Mathf } from '../../math/mathf';
 
 export class GameObjectRotateYBlock {
@@ -8,37 +8,39 @@ export class GameObjectRotateYBlock {
     // const code = this.code;
 
     constructor() {
-        const name = 'gameobject_rotatey';
 
-        Blockly.Blocks[name] = {
+        javascriptGenerator['gameobject_rotatey'] = (block : any)=> {
+
+          const value_obj = javascriptGenerator.valueToCode(block, 'OBJ', javascriptGenerator.ORDER_ATOMIC);
+          const value_degy = javascriptGenerator.valueToCode(block, 'DEGY', javascriptGenerator.ORDER_ATOMIC);
+          const dropdown_space = block.getFieldValue('SPACE');
+          // TODO: Assemble JavaScript into code variable.
+          return `${value_obj}.rotate(BABYLON.Axis.Y, ${value_degy}, BABYLON.Space.${dropdown_space});`
+        };
+
+        Blockly.Blocks['gameobject_rotatey'] = {
           init: function() {
             this.appendValueInput("OBJ")
                 .setCheck("GameObject")
                 .appendField("Pivoter l'objet");
             this.appendValueInput("DEGY")
-                .setCheck(null)
+                .setCheck("Number")
                 .appendField("sur l'axe Y de");
             this.appendDummyInput()
-                .appendField("degrés");
-            this.setInputsInline(true);
+                .appendField("degrés")
+                .appendField("dans l'espace :")
+                .appendField(new Blockly.FieldDropdown([["Local","LOCAL"], ["Monde","WORLD"]]), "SPACE");
+            // this.appendDummyInput()
             this.setPreviousStatement(true, null);
             this.setNextStatement(true, null);
             this.setColour(260);
-         this.setTooltip("Pivote l'objet sur l'axe Y dans l'espace local");
+         this.setTooltip("Pivote l'objet sur l'axe Y");
          this.setHelpUrl("");
           }
         };
         
 
-        BlocklyJS[name] = function(block : any) {
 
-          var value_obj = BlocklyJS.valueToCode(block, 'OBJ', BlocklyJS.ORDER_ATOMIC);
-          var value_degy = BlocklyJS.valueToCode(block, 'DEGY', BlocklyJS.ORDER_ATOMIC);
-          // TODO: Assemble JavaScript into code variable.
-          var yrad = Mathf.getVarClassName()+'.degToRad('+value_degy+')';
-          var code = value_obj+".transform.rotateY("+yrad+");\n";
-          return code;
-        };
     }
 }
 
