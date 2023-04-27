@@ -7,6 +7,7 @@ export enum KeyCode {
 export default class InputManager {
 
     private static _keys : Map<string,boolean> = new Map<string,boolean>();
+    //private static _keys : {};
 
     static initKeyboardListeners() {
 
@@ -14,21 +15,23 @@ export default class InputManager {
 
         // Ajoute des contrôles de clavier
         addEventListener("keydown", (event) => {
-            if (event.repeat) {
-            }
+            // if (event.repeat) {
+            // }
             const key = event.key;
-            if(InputManager._keys.has(key)) {
-                InputManager._keys[key] = true;
-            }else{
-                InputManager._keys.set(key,true);
-            }
+            InputManager._keys.set(key,true);
+            // if(InputManager._keys.has(key)) {
+            // }else{
+            //     console.log("addkey");
+            //     InputManager._keys.set(key,true);
+            // }
+           // InputManager._keys.set(key] = true;
         });
 
         addEventListener("keyup", (event) => {
             const keyUp = event.key;
-            if(InputManager._keys.has(keyUp)) {
-                InputManager._keys[keyUp] = false;
-            }
+            InputManager._keys.set(keyUp,false);
+            // if(InputManager._keys.has(keyUp)) {
+            // }
         });
     }
 
@@ -42,11 +45,11 @@ export default class InputManager {
 
     static getKeyDown(key : KeyCode) {
         // console.log(InputManager._keys);
-        return InputManager._keys[key]==true;
+        return InputManager._keys.get(key)==true;
     }
 
     static getKeyUp(key: KeyCode) {
-        return InputManager._keys[key]==false;
+        return InputManager._keys.get(key)==false;
     }
 
 }

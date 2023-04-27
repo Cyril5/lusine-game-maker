@@ -95,7 +95,7 @@ export class Game {
             }
         }
 
-
+        GameObject.saveAllTransforms();
 
         //this.playerCar.fsm.states[0].runCode();
 
@@ -107,7 +107,8 @@ export class Game {
     }
 
     public stop() {
-
+        
+        State.deleteRuntimeGlobalVars();
         
         const scene = Renderer.getInstance().scene;
         
@@ -116,8 +117,8 @@ export class Game {
         
         Renderer.getInstance().scene.physicsEnabled = false;
         scene.setActiveCameraByName("Camera");
+        GameObject.resetAllTransforms();
         
-        State.deleteRuntimeGlobalVars();
 
         // removeEventListener("keydown");
         // removeEventListener("keyup");

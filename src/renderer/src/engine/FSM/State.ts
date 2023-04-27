@@ -1,6 +1,5 @@
-import Blockly from 'blockly';
 import { javascriptGenerator } from 'blockly/javascript';
-
+import * as terser from 'terser';
 
 import { IStateFile } from './IStateFile';
 
@@ -75,7 +74,7 @@ export default class State {
   }
 
 
-  runCode() { // run state code
+  async runCode() { // run state code
 
     // On eval une seul fois les classes qui peuvent être utilisé par d'autres state
     // TODO : Mettre dans le tableau les classes existantes de tous les codes au lieu de tout importer.
@@ -83,6 +82,13 @@ export default class State {
     //   // faire un eval
     // }
 
+    const options = {
+      compress: true,
+      mangle: {
+        toplevel: true,
+      },
+      nameCache: {},
+    };
     const objects = State._runtimeGlobalVars;
     for (let i = 0; i < objects.length; i++) {
       let object = objects[i];
@@ -92,14 +98,28 @@ export default class State {
         object = JSON.stringify(object[1]); // Récupérer l'objet
       }
 
-      eval(`
-          if(!window.${clsName}) {
-            window.${clsName} = ${object};
-            console.log("import "+${clsName});
-          }else{
-            //alert("${clsName} exists");
-          }`
-      );
+      const importCode: string = `
+           if(!window.${clsName}) {
+             window.${clsName} = ${object};
+             //console.log("import "+${clsName});
+           }else{
+             //alert("${clsName} exists");
+           }`;
+
+
+      const minifiedObject = terser.minify(importCode, options).then((value) => {
+        //console.log(value.code);
+        eval(value.code);
+      });
+      // eval(`
+      //     if(!window.${clsName}) {
+      //       window.${clsName} = ${minifiedObject};
+      //       console.log("import "+${clsName});
+      //     }else{
+      //       //alert("${clsName} exists");
+      //     }`
+      // );
+
     }
 
 
@@ -110,17 +130,26 @@ export default class State {
 
     this.onUpdateState.clear();
 
-    console.log(this.stateFile.outputCode);
+    // this.onUpdateState.add(() => {
+    //   //console.log("loop");
+    //   if (InputManager.getKeyDown(KeyCode.Z)) {
+    //     console.log("keydown Z");
+    //   } 
+    // });
 
     // Generate JavaScript code and run it.
     window.LoopTrap = 1000;
     javascriptGenerator.INFINITE_LOOP_TRAP = 'if(--window.LoopTrap == 0) throw "Infinite loop.";\n';
+
+    const result = await terser.minify(this.stateFile.outputCode, options);
+    //console.log(result.code);
+
     try {
-      eval(this.stateFile.outputCode);
+      eval(result.code);
     } catch (e: any) {
       console.error(this.name + "->" + e.message + " - line : (" + e.lineNumbers + ")", '#ff0000');
       console.error(e);
     }
-  }
+  };
 
 }
