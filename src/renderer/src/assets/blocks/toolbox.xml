@@ -76,6 +76,11 @@
         </block>
       </value>
     </block>
+    <block type="gameobject_get_posy" deletable="false" movable="false" editable="false">
+      <value name="OBJ">
+        <block type="gameobject_this"></block>
+      </value>
+    </block>
   </category>
   <category name="Contrôles">
     <block type="keycode">

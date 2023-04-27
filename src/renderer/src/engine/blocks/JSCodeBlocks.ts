@@ -5,25 +5,56 @@ export class JSCodeBlocks {
 
     constructor() {
 
-        javascriptGenerator['debug_console_log'] = function(block) {
+        javascriptGenerator['debug_console_log'] = function (block) {
             const value_log = javascriptGenerator.valueToCode(block, 'LOG', javascriptGenerator.ORDER_ATOMIC);
             // TODO: Assemble JavaScript into code variable.
-            const code = 'console.log('+value_log+');\n';
+            const code = 'console.log(' + value_log + ');\n';
             return code;
-          };
+        };
 
-        //------------------ INPUTS ------------------------------------------------------------------
-
-        javascriptGenerator['keycode'] = function(block) {
-            const dropdown_keycodes = block.getFieldValue('KEYCODES');
+        // ------------------------- GAME OBJECTS ------------------------------
+        
+        javascriptGenerator['gameobject_this'] = function (block) {
             // TODO: Assemble JavaScript into code variable.
-            const code = 'KeyCode.'+dropdown_keycodes;
+            const code = 'this.gameObject';
             // TODO: Change ORDER_NONE to the correct strength.
             return [code, javascriptGenerator.ORDER_ATOMIC];
           };
 
-        
-        javascriptGenerator['inputs_if_keydown'] = (block : any)=> {
+        javascriptGenerator['gameobject_get_posy'] = function (block) {
+            const value_obj = javascriptGenerator.valueToCode(block, 'OBJ', javascriptGenerator.ORDER_NONE);
+            // TODO: Assemble JavaScript into code variable.
+            const code = value_obj + '.position.y';
+            return [code, javascriptGenerator.ORDER_ATOMIC];
+        };
+
+
+        javascriptGenerator['gameobject_setpos_numbers'] = function (block: any) {
+
+            const value_obj = javascriptGenerator.valueToCode(block, 'OBJ', javascriptGenerator.ORDER_ATOMIC);
+            const value_posx = javascriptGenerator.valueToCode(block, 'POSX', javascriptGenerator.ORDER_ATOMIC);
+            const value_posy = javascriptGenerator.valueToCode(block, 'POSY', javascriptGenerator.ORDER_ATOMIC);
+            const value_posz = javascriptGenerator.valueToCode(block, 'POSZ', javascriptGenerator.ORDER_ATOMIC);
+            const dropdown_space = block.getFieldValue('SPACE');
+            // TODO: Assemble JavaScript into code variable.
+
+            const code = value_obj + '.position = new BABYLON.Vector3(' + value_posx + ',' + value_posy + ',' + value_posz + ');\n';
+            return code;
+        };
+
+
+        //------------------ INPUTS ------------------------------------------------------------------
+
+        javascriptGenerator['keycode'] = function (block) {
+            const dropdown_keycodes = block.getFieldValue('KEYCODES');
+            // TODO: Assemble JavaScript into code variable.
+            const code = 'KeyCode.' + dropdown_keycodes;
+            // TODO: Change ORDER_NONE to the correct strength.
+            return [code, javascriptGenerator.ORDER_ATOMIC];
+        };
+
+
+        javascriptGenerator['inputs_if_keydown'] = (block: any) => {
 
             const value_keycode = javascriptGenerator.valueToCode(block, 'KEYCODE', javascriptGenerator.ORDER_ATOMIC);
             // TODO: Assemble JavaScript into code constiable.
@@ -31,27 +62,27 @@ export class JSCodeBlocks {
             return [code, javascriptGenerator.ORDER_NONE];
         };
 
-        javascriptGenerator['keycode_d'] = function (block : any) {
+        javascriptGenerator['keycode_d'] = function (block: any) {
             // TODO: Assemble JavaScript into code constiable.
             return 'KeyCode.D';
             // TODO: Change ORDER_NONE to the correct strength.
             //return [code,javascriptGenerator.ORDER_ATOMIC];
         };
-        javascriptGenerator['keycode_space'] = function (block : any) {
+        javascriptGenerator['keycode_space'] = function (block: any) {
             // TODO: Assemble JavaScript into code constiable.
             const code = 'KeyCode.Space';
             // TODO: Change ORDER_NONE to the correct strength.
             return [code, javascriptGenerator.ORDER_ATOMIC];
         };
-        javascriptGenerator['keycode_z'] = function (block : any) {
+        javascriptGenerator['keycode_z'] = function (block: any) {
             // TODO: Assemble JavaScript into code constiable.
             const code = 'KeyCode.Z';
             // TODO: Change ORDER_NONE to the correct strength.
-        
+
             return [code, javascriptGenerator.ORDER_ATOMIC];
         };
 
-        javascriptGenerator['inputs_onkeydown'] = function (block : any) {
+        javascriptGenerator['inputs_onkeydown'] = function (block: any) {
 
             const value_keycode = javascriptGenerator.valueToCode(block, 'KEYCODE', javascriptGenerator.ORDER_ATOMIC);
             const statements_onkeydown = javascriptGenerator.statementToCode(block, 'ONKEYDOWN');
@@ -60,7 +91,7 @@ export class JSCodeBlocks {
             return code;
         };
 
-        javascriptGenerator['keycode_s'] = function (block : any) {
+        javascriptGenerator['keycode_s'] = function (block: any) {
             // TODO: Assemble JavaScript into code constiable.
             const code = 'KeyCode.S';
             // TODO: Change ORDER_NONE to the correct strength.
@@ -69,7 +100,7 @@ export class JSCodeBlocks {
         };
 
 
-        javascriptGenerator['keycode_q'] = function (block : any) {
+        javascriptGenerator['keycode_q'] = function (block: any) {
             // TODO: Assemble JavaScript into code constiable.
             const code = 'KeyCode.Q';
             // TODO: Change ORDER_NONE to the correct strength.
@@ -78,7 +109,7 @@ export class JSCodeBlocks {
         };
 
 
-        javascriptGenerator['inputs_onkey'] = function (block : any) {
+        javascriptGenerator['inputs_onkey'] = function (block: any) {
             const value_keycode = javascriptGenerator.valueToCode(block, 'KEYCODE', javascriptGenerator.ORDER_ATOMIC);
             const statements_onkey = javascriptGenerator.statementToCode(block, 'ONKEY');
             // TODO: Assemble JavaScript into code constiable.
@@ -204,7 +235,7 @@ export class JSCodeBlocks {
 
             const statements_updatestate = javascriptGenerator.statementToCode(block, 'UPDATESTATE');
             // TODO: Assemble JavaScript into code variable.
-            const code = `this.onUpdateState.add(() => {\n ${statements_updatestate}} \n);\n`;
+            const code = `this.onUpdateState.add(() => {\n${statements_updatestate}});\n`;
             return code;
         };
 

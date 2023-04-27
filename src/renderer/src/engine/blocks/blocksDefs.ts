@@ -4,8 +4,8 @@ import javascriptGenerator from 'blockly/javascript';
 // BLOCK DEFS
 // Les définitions des codes fonctionne seulement si il sont dans la classe "JSCodeBlocks"
 
-import {InputsBlocks} from "./inputs/inputs_blocks";
-import {JSCodeBlocks} from "./JSCodeBlocks";
+import { InputsBlocks } from "./inputs/inputs_blocks";
+import { JSCodeBlocks } from "./JSCodeBlocks";
 import { GameObjectRotateYBlock } from "./gameObject/gameobject_rotate_y_block";
 import { GameObjectSetPosNumbersBlock } from "./gameObject/gameobject_setpos_numbers";
 import { GameObjectSetRotationNumbersBlock } from "./gameObject/gameobject_setrot_numbers";
@@ -34,25 +34,37 @@ Blockly.Blocks['gameobject_this'] = {
   }
 };
 
+Blockly.Blocks['gameobject_get_posy'] = {
+  init: function () {
+    this.appendValueInput("OBJ")
+      .setCheck("GameObject")
+      .appendField("Position Y de");
+    this.setOutput(true, "Number");
+    this.setColour(260);
+    this.setTooltip("Récupère la position Y de l'objet");
+    this.setHelpUrl("");
+  }
+};
+
 Blockly.Blocks['debug_console_log'] = {
-  init: function() {
+  init: function () {
     this.appendValueInput("LOG")
-        .setCheck(null)
-        .appendField("Afficher");
+      .setCheck(null)
+      .appendField("Afficher");
     this.appendDummyInput()
-        .appendField("dans la console");
+      .appendField("dans la console");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
     this.setColour(65);
- this.setTooltip("Ecrire un message dans la console");
- this.setHelpUrl("");
+    this.setTooltip("Affiche un message dans la console");
+    this.setHelpUrl("");
   }
 };
 
 // BLOCK STUBS
 // TODO : Fonctionne si on les met dans une classe
 
-javascriptGenerator['state_leave_state_checks'] = function(/** @type {any} */ block: any) {
+javascriptGenerator['state_leave_state_checks'] = function (/** @type {any} */ block: any) {
 
   var statements__leave_state_checks = javascriptGenerator.statementToCode(block, '_LEAVE_STATE_CHECKS');
   // TODO: Assemble JavaScript into code variable.
@@ -62,17 +74,17 @@ javascriptGenerator['state_leave_state_checks'] = function(/** @type {any} */ bl
 
 
 
-javascriptGenerator['gameobject_find_by_id'] = function(block: any) {
+javascriptGenerator['gameobject_find_by_id'] = function (block: any) {
 
   var value_id = BlocklyJS.valueToCode(block, 'ID', BlocklyJS.ORDER_NONE);
   // TODO: Assemble JavaScript into code variable.
-  var code = 'GameObject.getById('+value_id+')'; 
+  var code = 'GameObject.getById(' + value_id + ')';
   // TODO: Change ORDER_NONE to the correct strength.
 
   return [code, BlocklyJS.ORDER_NONE];
 };
 
-javascriptGenerator['compare_distance_objects'] = function(/** @type {any} */ block: any) {
+javascriptGenerator['compare_distance_objects'] = function (/** @type {any} */ block: any) {
 
   var value_obja = BlocklyJS.valueToCode(block, 'OBJA', BlocklyJS.ORDER_ATOMIC);
 
@@ -84,12 +96,12 @@ javascriptGenerator['compare_distance_objects'] = function(/** @type {any} */ bl
   return [code, BlocklyJS.ORDER_NONE];
 };
 
-javascriptGenerator['debug_console_write'] = function(/** @type {{ getFieldValue: (arg0: string) => any; }} */ block: { getFieldValue: (arg0: string) => any; }) {
+javascriptGenerator['debug_console_write'] = function (/** @type {{ getFieldValue: (arg0: string) => any; }} */ block: { getFieldValue: (arg0: string) => any; }) {
 
   var value_log = BlocklyJS.valueToCode(block, 'LOG', BlocklyJS.ORDER_ATOMIC);
   var colour_textcolor = block.getFieldValue('TEXTCOLOR');
   // TODO: Assemble JavaScript into code variable.
-  var code = Debug.classname+".writeInConsole("+value_log+",'"+colour_textcolor+"');\n";
+  var code = Debug.classname + ".writeInConsole(" + value_log + ",'" + colour_textcolor + "');\n";
   return code;
 };
 

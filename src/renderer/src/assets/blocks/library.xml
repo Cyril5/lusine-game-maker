@@ -1711,10 +1711,10 @@
       </block>
     </value>
   </block><block type="factory_base" id="l(AM!F+9!_5QXmbUvl}I" deletable="false" movable="false" x="10" y="10">
-    <mutation connections="BOTH"></mutation>
+    <mutation connections="LEFT"></mutation>
     <field name="NAME">gameobject_get_posY</field>
     <field name="INLINE">AUTO</field>
-    <field name="CONNECTIONS">BOTH</field>
+    <field name="CONNECTIONS">LEFT</field>
     <statement name="INPUTS">
       <block type="input_value" id="!if+ZN=_Y2dN`saE!?TU">
         <field name="INPUTNAME">OBJ</field>
@@ -1742,99 +1742,9 @@
         <field name="TEXT"></field>
       </block>
     </value>
-    <value name="TOPTYPE">
-      <shadow type="type_null" id="UoIqmK0lb`hni|0%b3md"></shadow>
-    </value>
-    <value name="BOTTOMTYPE">
-      <shadow type="type_null" id="s-V:T8.6-u7Dk?!c7=t$"></shadow>
-    </value>
-    <value name="COLOUR">
-      <block type="colour_hue" id="G9fHF6hsV=xKP[o8PC=M">
-        <mutation colour="#745ba5"></mutation>
-        <field name="HUE">260</field>
-      </block>
-    </value>
-  </block><block type="factory_base" id="l(AM!F+9!_5QXmbUvl}I" deletable="false" movable="false" x="10" y="10">
-    <mutation connections="BOTH"></mutation>
-    <field name="NAME">gameobject_get_posx</field>
-    <field name="INLINE">AUTO</field>
-    <field name="CONNECTIONS">BOTH</field>
-    <statement name="INPUTS">
-      <block type="input_value" id="!if+ZN=_Y2dN`saE!?TU">
-        <field name="INPUTNAME">OBJ</field>
-        <field name="ALIGN">LEFT</field>
-        <statement name="FIELDS">
-          <block type="field_static" id="-*(;4.aTM-dj:gvDRQ`?">
-            <field name="TEXT">Position X de</field>
-          </block>
-        </statement>
-        <value name="TYPE">
-          <shadow type="type_null" id="|~8Jda:R6y}sPxNfZqlE"></shadow>
-          <block type="type_other" id="dMJ^{4]pm#aVfkSLfSo/">
-            <field name="TYPE">GameObject</field>
-          </block>
-        </value>
-      </block>
-    </statement>
-    <value name="TOOLTIP">
-      <block type="text" id="O*ILvM09,bun`$4d{2LC" deletable="false" movable="false">
-        <field name="TEXT"></field>
-      </block>
-    </value>
-    <value name="HELPURL">
-      <block type="text" id=")Dy3=2Evl7JW*tJF?Z=]" deletable="false" movable="false">
-        <field name="TEXT"></field>
-      </block>
-    </value>
-    <value name="TOPTYPE">
-      <shadow type="type_null" id="UoIqmK0lb`hni|0%b3md"></shadow>
-    </value>
-    <value name="BOTTOMTYPE">
-      <shadow type="type_null" id="s-V:T8.6-u7Dk?!c7=t$"></shadow>
-    </value>
-    <value name="COLOUR">
-      <block type="colour_hue" id="G9fHF6hsV=xKP[o8PC=M">
-        <mutation colour="#745ba5"></mutation>
-        <field name="HUE">260</field>
-      </block>
-    </value>
-  </block><block type="factory_base" id="l(AM!F+9!_5QXmbUvl}I" deletable="false" movable="false" x="10" y="10">
-    <mutation connections="BOTH"></mutation>
-    <field name="NAME">gameobject_get_posz</field>
-    <field name="INLINE">AUTO</field>
-    <field name="CONNECTIONS">BOTH</field>
-    <statement name="INPUTS">
-      <block type="input_value" id="!if+ZN=_Y2dN`saE!?TU">
-        <field name="INPUTNAME">OBJ</field>
-        <field name="ALIGN">LEFT</field>
-        <statement name="FIELDS">
-          <block type="field_static" id="-*(;4.aTM-dj:gvDRQ`?">
-            <field name="TEXT">Position Z de</field>
-          </block>
-        </statement>
-        <value name="TYPE">
-          <shadow type="type_null" id="|~8Jda:R6y}sPxNfZqlE"></shadow>
-          <block type="type_other" id="dMJ^{4]pm#aVfkSLfSo/">
-            <field name="TYPE">GameObject</field>
-          </block>
-        </value>
-      </block>
-    </statement>
-    <value name="TOOLTIP">
-      <block type="text" id="O*ILvM09,bun`$4d{2LC" deletable="false" movable="false">
-        <field name="TEXT"></field>
-      </block>
-    </value>
-    <value name="HELPURL">
-      <block type="text" id=")Dy3=2Evl7JW*tJF?Z=]" deletable="false" movable="false">
-        <field name="TEXT"></field>
-      </block>
-    </value>
-    <value name="TOPTYPE">
-      <shadow type="type_null" id="UoIqmK0lb`hni|0%b3md"></shadow>
-    </value>
-    <value name="BOTTOMTYPE">
-      <shadow type="type_null" id="s-V:T8.6-u7Dk?!c7=t$"></shadow>
+    <value name="OUTPUTTYPE">
+      <shadow type="type_null" id="}!h0y%W(5iRCozu|AcHu"></shadow>
+      <block type="type_number" id="UmA;;V7cxl5JH`y^R.8g"></block>
     </value>
     <value name="COLOUR">
       <block type="colour_hue" id="G9fHF6hsV=xKP[o8PC=M">

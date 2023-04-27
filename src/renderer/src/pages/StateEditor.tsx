@@ -111,6 +111,7 @@ const StateEditor = (props: any) => {
             disable: true,
             maxBlocks: Infinity,
             trashcan: true,
+            sounds: false,
             toolboxPosition: 'start',
             css: true,
             // media : 'https://blockly-demo.appspot.com/static/media/',
@@ -123,14 +124,11 @@ const StateEditor = (props: any) => {
 
         const onChangeWorkspace = (event: { type: string; }) => {
 
-            //javascriptGenerator.addReservedWords('code');
-            const code: string = javascriptGenerator.workspaceToCode(workspace);
+            if (event.type == Blockly.Events.BLOCK_MOVE) {
 
-            if (code !== "") {
-                setCode(code);
+                updateCodeFromCodeEditor();
 
             }
-
 
             // AUTO SAVE
             // if (event.type == Blockly.Events.BLOCK_MOVE) {
@@ -149,6 +147,15 @@ const StateEditor = (props: any) => {
     //     height: "50vh",
     // }
     Blockly.setLocale(Fr);
+
+    const updateCodeFromCodeEditor = () => {
+        //javascriptGenerator.addReservedWords('code');
+        const code: string = javascriptGenerator.workspaceToCode(workspace);
+        if (code !== "") {
+            //setCode(currentStateFile.outputCode);
+            setCode(code);
+        }
+    }
 
     const openStateFile = (stateFile: IStateFile): void => {
 
@@ -172,7 +179,8 @@ const StateEditor = (props: any) => {
                 Blockly.Events.enable();
 
                 setCurrentState(stateFile);
-                setCode(currentStateFile.outputCode);
+                updateCodeFromCodeEditor();
+
             });
         } catch (error) {
             console.error(error);
@@ -254,7 +262,7 @@ const StateEditor = (props: any) => {
                 theme={darcula}
                 height="200px"
                 extensions={[javascript({ jsx: false })]}
-                readOnly
+                readOnly={true}
             />
 
 
@@ -267,3 +275,5 @@ const StateEditor = (props: any) => {
     );
 }
 export default StateEditor
+
+

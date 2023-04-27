@@ -188,18 +188,18 @@ export default class Editor extends Component {
                 //     car.rotate(Axis.Y, 0.03, BABYLON.Space.LOCAL);
                 // }
 
-                if (car && car2) {
+                // if (car && car2) {
 
-                    if (car.position.y < -300) {
-                        car.position.y = 500;
-                        car.rotation = new Vector3(0, 0, 0);
-                    }
+                //     if (car.position.y < -300) {
+                //         car.position.y = 500;
+                //         car.rotation = new Vector3(0, 0, 0);
+                //     }
 
-                    if (car2.position.y < -300) {
-                        car2.position = new Vector3(0, 500, 0);
-                        car2.rotation = new Vector3(0, 0, 0);
-                    }
-                }
+                //     if (car2.position.y < -300) {
+                //         car2.position = new Vector3(0, 500, 0);
+                //         car2.rotation = new Vector3(0, 0, 0);
+                //     }
+                // }
             });
 
         });

@@ -1,5 +1,5 @@
 import Blockly from 'blockly';
-import BlocklyJS from 'blockly/javascript';
+import javascriptGenerator from 'blockly/javascript';
 
 export class GameObjectSetPosNumbersBlock {
 
@@ -8,6 +8,7 @@ export class GameObjectSetPosNumbersBlock {
 
   constructor() {
     const name = 'gameobject_setpos_numbers';
+
 
     Blockly.Blocks[name] = {
       init: function () {
@@ -37,21 +38,7 @@ export class GameObjectSetPosNumbersBlock {
     };
 
 
-    BlocklyJS[name] = function (block : any) {
 
-      var value_obj = Blockly.JavaScript.valueToCode(block, 'OBJ', Blockly.JavaScript.ORDER_ATOMIC);
-
-      var value_posx = Blockly.JavaScript.valueToCode(block, 'POSX', Blockly.JavaScript.ORDER_ATOMIC);
-
-      var value_posy = Blockly.JavaScript.valueToCode(block, 'POSY', Blockly.JavaScript.ORDER_ATOMIC);
-
-      var value_posz = Blockly.JavaScript.valueToCode(block, 'POSZ', Blockly.JavaScript.ORDER_ATOMIC);
-      var dropdown_space = block.getFieldValue('SPACE');
-      // TODO: Assemble JavaScript into code variable.
-
-      var code = value_obj + '.transform.position.set(' + value_posx + ',' + value_posy + ',' + value_posz + ');\n';
-      return code;
-    };
 
 
 

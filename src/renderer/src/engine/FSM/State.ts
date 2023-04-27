@@ -95,7 +95,7 @@ export default class State {
       eval(`
           if(!window.${clsName}) {
             window.${clsName} = ${object};
-            alert("import "+${clsName});
+            console.log("import "+${clsName});
           }else{
             //alert("${clsName} exists");
           }`

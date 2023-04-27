@@ -14,7 +14,7 @@ export class GameObjectTranslateForwardBlock {
       const value_obj = javascriptGenerator.valueToCode(block, 'OBJ', javascriptGenerator.ORDER_ATOMIC);
       const value_distz = javascriptGenerator.valueToCode(block, 'DISTZ', javascriptGenerator.ORDER_ATOMIC);
       // Generate JavaScript code to move the object forward by the specified distance in local space
-      return `${value_obj}.translate(BABYLON.Axis.Z, ${value_distz}, BABYLON.Space.LOCAL);`
+      return `${value_obj}.translate(BABYLON.Axis.Z, ${value_distz}, BABYLON.Space.LOCAL);\n`
     };
     
     Blockly.Blocks[name] = {
@@ -36,15 +36,8 @@ export class GameObjectTranslateForwardBlock {
       }
     };
 
-    
+  
 
-
-    javascriptGenerator['gameobject_this'] = function (block) {
-      // TODO: Assemble JavaScript into code variable.
-      const code = 'this.gameObject';
-      // TODO: Change ORDER_NONE to the correct strength.
-      return [code, javascriptGenerator.ORDER_NONE];
-    };
   }
 }
 
