@@ -9,6 +9,8 @@ import { Observable } from 'babylonjs';
 
 // NE PAS RETIRER CES IMPORTS ! (pour l'interprétation du code js avec eval)
 import InputManager, { KeyCode } from '../InputManager';
+import FileManager from '../FileManager';
+import StateEditorUtils from '@renderer/components/StateEditorUtils';
 
 export default class State {
 
@@ -73,7 +75,6 @@ export default class State {
     // Du code est généré automatiquement quand l'utilisateur ajoute une transitions vers un autre état.
   }
 
-
   async runCode() { // run state code
 
     // On eval une seul fois les classes qui peuvent être utilisé par d'autres state
@@ -137,11 +138,35 @@ export default class State {
     //   } 
     // });
 
+
+    console.log(this.stateFile.codeFilename);
+    console.log(this.stateFile.outputCode);
+
+    if (this.stateFile.outputCode === "" && this.stateFile.needToLoad) {
+      // récupérer le code depuis le fichier .state
+      FileManager.readFile(this.stateFile.codeFilename, (data) => {
+        this.stateFile.outputCode = data;
+        console.log(this.stateFile.outputCode);
+        this.stateFile.needToLoad = false;
+        this.evalStateCode(options);
+      });
+    }else{
+
+      // ne pas ré-evaluer le code car il a déjà était fait après l'ouverture du fichier du code
+      this.evalStateCode(options);
+    }
+
+
+
+  };
+
+  private async evalStateCode(minifyOptions: any) {
     // Generate JavaScript code and run it.
     window.LoopTrap = 1000;
     javascriptGenerator.INFINITE_LOOP_TRAP = 'if(--window.LoopTrap == 0) throw "Infinite loop.";\n';
 
-    const result = await terser.minify(this.stateFile.outputCode, options);
+
+    const result = await terser.minify(this.stateFile.outputCode, minifyOptions);
     //console.log(result.code);
 
     try {
@@ -150,6 +175,6 @@ export default class State {
       console.error(this.name + "->" + e.message + " - line : (" + e.lineNumbers + ")", '#ff0000');
       console.error(e);
     }
-  };
+  }
 
 }

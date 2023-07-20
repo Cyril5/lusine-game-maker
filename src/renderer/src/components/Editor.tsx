@@ -107,11 +107,13 @@ export default class Editor extends Component {
             const car = new ProgrammableGameObject("Car_PO", scene);
 
             // Créer un fichier json pour stocker le code puis l'appliquer à l'état
-            if(!FileManager.fileExists(Game.getFilePath("States", "StateA."+StateEditorUtils._stateFilesFormat))) {
+            if(!FileManager.fileExists(Game.getFilePath("States", "StateA."+StateEditorUtils._stateFilesFormat))) { //StateA.xml
                 StateEditorUtils.createStateFile("StateA",car.fsm.states[0].stateFile);
             }else{
                 StateEditorUtils.addStateFile("StateA",car.fsm.states[0].stateFile);
             }
+
+            //car.fsm.states[0].stateFile.codeFilename = Game.getFilePath("States", "StateA."+StateEditorUtils._stateCodeFilesFormat); //StateA.state
             car.fsm.states[0].name = "State A";
 
             const car2 = new ProgrammableGameObject("Car2", scene);

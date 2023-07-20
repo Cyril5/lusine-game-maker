@@ -203,6 +203,10 @@ const StateEditor = (props: any) => {
 
             console.log(content);
             FileManager.writeInFile(currentStateFile.filename, content);
+
+            // Mis à jour du code dans le fichier
+            FileManager.writeInFile(currentStateFile.codeFilename,currentStateFile.outputCode);
+
         } catch (e) {
             Editor.showAlert(`Une erreur c'est produite pendant la sauvegarde de StateA :\n\n ${e}`, EditorAlertType.Error,);
             console.error(e);

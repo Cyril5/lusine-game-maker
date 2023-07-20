@@ -9,13 +9,14 @@ export default class StateEditorUtils {
     static _stateFiles : Array<IStateFile> = new Array<IStateFile>();
 
     static _stateFilesFormat = "xml"; //private set public get => json ou xml (load json ne fonctionne pas pour le moment)
-    
+    static _stateCodeFilesFormat = "state";
+
     static createStateFile = (name: string, stateFile : IStateFile) => {
         // 1.Créer le fichier dans le projet (C:\Users\cyril\Documents\Lusine Game Maker\MonProjet\States)
         // 2.Attribuer un code de base
         const fs = require('fs');
         const fileLocation = Game.getFilePath("States", name+'.'+StateEditorUtils._stateFilesFormat);
-
+        const fileCodeLocation = Game.getFilePath("States", name+'.'+StateEditorUtils._stateCodeFilesFormat);
         // fs.writeFile(fileLocation, BaseStateFile, (err) => {
         //     if (err) throw err;
         // });
@@ -25,11 +26,15 @@ export default class StateEditorUtils {
             stateFile.filename = fileLocation;
         });
 
+        FileManager.writeInFile(fileCodeLocation,"",()=>{
+
+        });
+
         StateEditorUtils._stateFiles.push(stateFile);
 
         if(StateEditorUtils._stateFiles.length == 1) {
             Editor.getInstance().setState({initStateFile:StateEditorUtils._stateFiles[0]},()=>{
-                console.warn(Editor.getInstance().state);
+                //console.warn(Editor.getInstance().state);
                 
             });
         }
@@ -39,7 +44,12 @@ export default class StateEditorUtils {
     //Recherche un fichier d'état et l'applique sur un statefile
     static addStateFile = (name : string,stateFile : IStateFile) => {
         const fileLocation = Game.getFilePath("States", name+'.'+StateEditorUtils._stateFilesFormat);
+        const codeFileLocation = Game.getFilePath("States", name+'.'+StateEditorUtils._stateCodeFilesFormat);
+
         stateFile.filename = fileLocation;
+        stateFile.codeFilename = codeFileLocation;
+        stateFile.needToLoad = true;
+        
         StateEditorUtils._stateFiles.push(stateFile);
 
         if(StateEditorUtils._stateFiles.length == 1) {
@@ -47,4 +57,5 @@ export default class StateEditorUtils {
             });
         }
     }
+
 }
