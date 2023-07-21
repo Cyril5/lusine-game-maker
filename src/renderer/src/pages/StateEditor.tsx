@@ -124,7 +124,7 @@ const StateEditor = (props: any) => {
 
         const onChangeWorkspace = (event: { type: string; }) => {
 
-            if (event.type == Blockly.Events.BLOCK_MOVE) {
+            if (event.type == Blockly.Events.BLOCK_MOVE || event.type == Blockly.Events.BLOCK_CHANGE) {
 
                 updateCodeFromCodeEditor();
 

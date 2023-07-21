@@ -21,15 +21,6 @@ export class GameObject extends TransformNode {
         });
     }
 
-    // enum Type {
-    //     None,
-    //     Programmable,
-    //   }
-
-    public static test = new Array(GameObject);
-
-    public static kebab = 0;
-
     private static _gameObjects = new Map<number | string, GameObject>() //unique id or uuid // map uuid,gameObject
     public static get gameObjects() {
         return GameObject._gameObjects;
@@ -54,11 +45,9 @@ export class GameObject extends TransformNode {
             return;
         }
 
-
-
-        GameObject.kebab++;
-
     }
+
+
 
     saveTransform() {
         this.initPosition = this.position;

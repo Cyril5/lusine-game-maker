@@ -16,7 +16,7 @@ import StatesMachineEditor from "@renderer/pages/StatesMachineEditor";
 import StateEditor from "@renderer/pages/StateEditor";
 import { Axis, FollowCamera, MeshBuilder, PhysicsImpostor, Space, Vector3 } from "babylonjs";
 import * as cannon from "cannon";
-import Collider from "@renderer/engine/Collider";
+import ColliderComponent from "@renderer/engine/ColliderComponent";
 import EditorAlert, { EditorAlertType } from "./EditorAlert";
 import StateEditorUtils from "./StateEditorUtils";
 import FileManager from "@renderer/engine/FileManager";
@@ -117,7 +117,7 @@ export default class Editor extends Component {
             car.fsm.states[0].name = "State A";
 
             const car2 = new ProgrammableGameObject("Car2", scene);
-            let carCollider = new Collider(scene);
+            const carCollider = new ColliderComponent(car,scene);
 
             this.addModel3DObject("Car_04_3.fbx", null, (carModel) => {
 
@@ -133,37 +133,27 @@ export default class Editor extends Component {
                     //carCollider.visibility = 0.25;
                     //carMesh.setParent(car);
                 }
-                //carCollider.physicsImpostor = new BABYLON.PhysicsImpostor(carCollider, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0 });
                 carModel.setParent(car);
-                //carCollider.attachToNode(car);
-                //car.physicsImpostor = new BABYLON.PhysicsImpostor(car, BABYLON.PhysicsImpostor.NoImpostor, { mass: 1, restitution: 0.2, friction: 0.5 }, scene); // Ajouter l'imposteur de boîte à la voiture
+                //carCollider.attachToGameObject(car);
+                car.addRigidbody({ mass: 1, restitution: 0.2, friction: 0.5 });
                 car.position.y = 41.958;
 
 
             });
 
 
-            let carCollider2;
-            // this.addModel3DObject("Car_03.fbx", null, (carModel) => {
+            const carCollider2 : ColliderComponent = new ColliderComponent(car2,scene);
+            this.addModel3DObject("Car_03.fbx", null, (carModel) => {
 
-            //     carModel.name += " - Car03";
+                carModel.name += " - Car03";
 
-            //     const carMesh = Renderer.getInstance().scene.getMeshByName("Model::CAR_03");
+                const carMesh = Renderer.getInstance().scene.getMeshByName("Model::CAR_03");
 
-            //     carModel.setParent(car2);
-            //     if (carMesh) {
-            //         // carMesh.setParent(car2);
-            //         // carMesh.translate(Axis.Z, -50, Space.LOCAL);
-            //         carCollider2 = BABYLON.MeshBuilder.CreateBox("carBox2", { height: 60, width: 75, depth: 140 }, scene);
-            //         carCollider2.isVisible = true; // Masquer la boîte pour qu'elle ne soit pas visible dans la scène
-            //         carCollider2.position = carMesh.position; // Positionner la boîte à la position de la voiture
-            //         carCollider2.visibility = 0.25;
-            //     }
-            //     carCollider2.physicsImpostor = new BABYLON.PhysicsImpostor(carCollider2, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0 });
-            //     carCollider2.setParent(car2);
-            //     car2.physicsImpostor = new BABYLON.PhysicsImpostor(car2, BABYLON.PhysicsImpostor.NoImpostor, { mass: 1, restitution: 0.2, friction: 0.5 }, scene); // Ajouter l'imposteur de boîte à la voiture
-            //     car2.position.y = 100;
-            // });
+                carModel.setParent(car2);
+                //carCollider2.gameObject.parent = car2;
+                car2.addRigidbody({ mass: 1, restitution: 0.2, friction: 0.5 }); // Ajouter l'imposteur de boîte à la voiture
+                car2.position.y = 41.958;
+            });
 
 
             const camera = scene.getCameraByName("FollowCam");
@@ -248,7 +238,6 @@ export default class Editor extends Component {
                 child.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger, (evt) => {
                     // Votre code ici
                     const pog : ProgrammableGameObject= model.getObjectOfTypeInParent<ProgrammableGameObject>(ProgrammableGameObject);
-                    console.log(pog);
                     this.selectGameObject(pog.Id);
                 }));
             });
