@@ -1,7 +1,12 @@
 import { Mesh, MeshBuilder, Scene, Vector3 } from "@babylonjs/core";
 import { TransformNode } from "babylonjs";
+import { ProgrammableGameObject } from "./ProgrammableGameObject";
 
 export class GameObject extends TransformNode {
+
+    get Id(): number {
+        return this.uniqueId;
+    }
 
     static saveAllTransforms() {
 
@@ -25,7 +30,7 @@ export class GameObject extends TransformNode {
 
     public static kebab = 0;
 
-    private static _gameObjects = new Map<Number | string, GameObject>() //unique id or uuid // map uuid,gameObject
+    private static _gameObjects = new Map<number | string, GameObject>() //unique id or uuid // map uuid,gameObject
     public static get gameObjects() {
         return GameObject._gameObjects;
     }
@@ -65,5 +70,41 @@ export class GameObject extends TransformNode {
         this.position = this.initPosition;
         this.rotation = this.initRotation;
         this.scaling = this.initScale;
+    }
+
+    // getObjectOfTypeInParent<T>(targetType: new () => T): T | null {
+    //     let node: TransformNode | null = this;
+    //     // Parcourez les parents jusqu'à ce que vous trouviez un parent du type T ou que vous atteigniez la racine (null).
+    //     while (node) {
+    //         if (node instanceof targetType) {
+    //             // Si le parent correspond au type T, retournez-le.
+    //             return node as T;
+    //         }
+    //         // Sinon, passez au parent suivant.
+    //         node = node.parent;
+    //     }
+
+    //     // Si aucun parent du type T n'est trouvé, retournez null.
+    //     return null;
+    // }
+
+    getObjectOfTypeInParent<T>(targetType: new () => T): T | null {
+        const searchParent = (node: GameObject | null): T | null => {
+            if (!node) {
+                // Si le nœud est null (racine atteinte), retournez null.
+                return null;
+            }
+
+            if (node instanceof targetType) {
+                // Si le parent correspond au type T, retournez-le.
+                return node as T;
+            }
+
+            // Sinon, recherchez le parent du type T dans le parent actuel.
+            return searchParent(node.parent);
+        }
+
+        // Démarrez la recherche à partir de l'instance actuelle (this).
+        return searchParent(this);
     }
 }

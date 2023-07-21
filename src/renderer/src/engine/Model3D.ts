@@ -47,8 +47,8 @@ export class Model3D extends GameObject {
                     // pbr.albedoTexture = origMatTexture;
                     meshes.forEach((mesh: AbstractMesh) => {
 
-                        console.log(mesh.name);
-                        console.log(mesh.material);
+                        //console.log(mesh.name);
+                        //console.log(mesh.material);
                         if(mesh.material) {
                             const materialName = mesh.material.name;
                             let existingMat = Model3D.materials.get(materialName);
@@ -77,7 +77,7 @@ export class Model3D extends GameObject {
 
                     for (let index = 0; index < transformNodes.length; index++) {
                         const element = transformNodes[index];
-                        console.log(element.name);
+                        //console.log(element.name);
                         nodes.push({
                             'node': element,
                             'parent': element.parent,
