@@ -5,6 +5,10 @@ import { Engine, Scene, Vector3 } from "@babylonjs/core";
 export default ({ antialias, engineOptions, adaptToDeviceRatio, sceneOptions, onRender, onSceneReady, ...rest }) => {
   const reactCanvas = useRef(null);
 
+  const initWebGPUEngine = async (canvas)=> {
+    const engine = new BABYLON.WebGPUEngine(canvas);
+     await engine.initAsync();
+  }
 
   // set up basic engine and scene
   useEffect(() => {
@@ -13,6 +17,7 @@ export default ({ antialias, engineOptions, adaptToDeviceRatio, sceneOptions, on
 
     if (!canvas) return;
 
+    //initWebGPUEngine(canvas);
     const engine = new Engine(canvas, antialias, engineOptions, adaptToDeviceRatio);
 
     const scene = new Scene(engine, sceneOptions);

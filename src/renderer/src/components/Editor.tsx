@@ -15,8 +15,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import StatesMachineEditor from "@renderer/pages/StatesMachineEditor";
 import StateEditor from "@renderer/pages/StateEditor";
 import { Axis, FollowCamera, MeshBuilder, PhysicsImpostor, Space, Vector3 } from "babylonjs";
-import * as cannon from "cannon";
-import ColliderComponent from "@renderer/engine/ColliderComponent";
+import ColliderComponent from "@renderer/engine/physics/ColliderComponent";
 import EditorAlert, { EditorAlertType } from "./EditorAlert";
 import StateEditorUtils from "./StateEditorUtils";
 import FileManager from "@renderer/engine/FileManager";
@@ -134,15 +133,17 @@ export default class Editor extends Component {
                     //carMesh.setParent(car);
                 }
                 carModel.setParent(car);
-                //carCollider.attachToGameObject(car);
                 car.addRigidbody({ mass: 1, restitution: 0.2, friction: 0.5 });
-                car.position.y = 41.958;
+                car.position.z = -222.25;
 
 
             });
 
 
             const carCollider2 : ColliderComponent = new ColliderComponent(car2,scene);
+            carCollider2.isTrigger = true;
+            carCollider2.shape.name = "CarCollider2";
+
             this.addModel3DObject("Car_03.fbx", null, (carModel) => {
 
                 carModel.name += " - Car03";
@@ -150,7 +151,6 @@ export default class Editor extends Component {
                 const carMesh = Renderer.getInstance().scene.getMeshByName("Model::CAR_03");
 
                 carModel.setParent(car2);
-                //carCollider2.gameObject.parent = car2;
                 car2.addRigidbody({ mass: 1, restitution: 0.2, friction: 0.5 }); // Ajouter l'imposteur de boîte à la voiture
                 car2.position.y = 41.958;
             });

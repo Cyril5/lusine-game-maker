@@ -31,6 +31,9 @@ export class ProgrammableGameObject extends GameObject implements IPhysicsEnable
     }
 
     addCollider() {
-        
+
     }
+
+
+
 }

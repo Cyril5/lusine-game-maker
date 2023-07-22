@@ -1,11 +1,16 @@
-import { Axis, Engine } from "@babylonjs/core";
+import { Engine } from "@babylonjs/core";
 import { GameObject } from "./GameObject";
 import { Renderer } from "./Renderer";
 import { ProgrammableGameObject } from "./ProgrammableGameObject";
 import InputManager, { KeyCode } from "./InputManager";
 import State from "./FSM/State";
+import { Observable } from "babylonjs";
 
 export class Game {
+
+    onGameStarted : Observable<void>;
+    onGameUpdate : Observable<void>;
+    onGameStoped : Observable<void>;
 
     private static os = require('os');
     private static path = require('path');
@@ -14,10 +19,6 @@ export class Game {
     private _deltaTime: Number = 0;
     private _engine: Engine | undefined;
     private _isRunning: boolean = false;
-
-    playerCar: ProgrammableGameObject;
-    speed = 5;
-
 
 
     // Créer un nom de chemin complet
@@ -47,6 +48,7 @@ export class Game {
         this._deltaTime = deltaTime;
         // console.log(this._isRunning);
         //console.log(this._deltaTime);
+        this.onGameUpdate.notifyObservers();
 
         const gameObjects = GameObject.gameObjects.values();
         for (const go of gameObjects) {
@@ -98,7 +100,7 @@ export class Game {
         GameObject.saveAllTransforms();
 
         //this.playerCar.fsm.states[0].runCode();
-
+        this.onGameStarted.notifyObservers();
 
         scene.physicsEnabled = true;
         scene.setActiveCameraByName("FollowCam");
@@ -119,12 +121,16 @@ export class Game {
         scene.setActiveCameraByName("Camera");
         GameObject.resetAllTransforms();
         
-
+        this.onGameStoped.notifyObservers();
         // removeEventListener("keydown");
         // removeEventListener("keyup");
     }
 
     private constructor() {
+        this.onGameStarted = new Observable();
+        this.onGameUpdate = new Observable();
+        this.onGameStoped = new Observable();
+
         const engine = Renderer.getInstance().scene.getEngine();
         engine.runRenderLoop(() => {
             // appeler tous les start des machine states

@@ -3,6 +3,8 @@ import { TransformNode } from "babylonjs";
 import { ProgrammableGameObject } from "./ProgrammableGameObject";
 
 export class GameObject extends TransformNode {
+    
+    private static _gameObjects = new Map<number | string, GameObject>() //unique id or uuid // map uuid,gameObject
 
     get Id(): number {
         return this.uniqueId;
@@ -21,7 +23,6 @@ export class GameObject extends TransformNode {
         });
     }
 
-    private static _gameObjects = new Map<number | string, GameObject>() //unique id or uuid // map uuid,gameObject
     public static get gameObjects() {
         return GameObject._gameObjects;
     }

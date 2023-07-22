@@ -11,10 +11,12 @@ import { Observable } from 'babylonjs';
 import InputManager, { KeyCode } from '../InputManager';
 import FileManager from '../FileManager';
 import StateEditorUtils from '@renderer/components/StateEditorUtils';
+import ColliderComponent from '../physics/ColliderComponent';
 
 export default class State {
 
   private static _runtimeGlobalVars: any[] = [InputManager, ["KeyCode", KeyCode]]; // ne pas oublier de supprimer la variable lorsqu'on clic sur Stop
+
 
   static deleteRuntimeGlobalVars() {
     const arr = State._runtimeGlobalVars;
@@ -37,14 +39,14 @@ export default class State {
 
   stateFile: IStateFile = { filename: "", outputCode: "" };
 
-  private test: string = "BOUYA !!!";
-
   // local variables
   userVariables = {
 
   }
 
   onUpdateState: Observable<void>;
+  onEnterState: () => void;
+  onExitState: () => void;
 
   constructor(fsm: FiniteStateMachine | undefined, stateFile: IStateFile | undefined) {
     if (fsm) {
@@ -58,17 +60,11 @@ export default class State {
 
     }
 
+    this.onEnterState = () => { };
     this.onUpdateState = new Observable();
-  }
-
-  onEnterState() {
 
   }
 
-
-  onExitState() {
-
-  }
 
   _leaveStateChecks() {
     // Callback : qui peut contenir que des if else if vers des actions de sorties vers des transitions

@@ -7,7 +7,7 @@ export default class FSMComponent extends Component
         return(
             <>
              <ListGroup>
-                <ListGroup.Item variant="primary">AF Principal <Button>Editer</Button></ListGroup.Item>
+                <ListGroup.Item variant="primary">Automate Fini Principal <Button>Editer</Button></ListGroup.Item>
                 </ListGroup>
                 <Button variant="primary">Ajouter</Button>
             </>
