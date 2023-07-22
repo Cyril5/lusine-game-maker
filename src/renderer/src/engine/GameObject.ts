@@ -6,6 +6,8 @@ export class GameObject extends TransformNode {
     
     private static _gameObjects = new Map<number | string, GameObject>() //unique id or uuid // map uuid,gameObject
 
+    qualifier : number = 0; 
+
     get Id(): number {
         return this.uniqueId;
     }

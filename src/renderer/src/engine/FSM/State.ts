@@ -3,9 +3,8 @@ import * as terser from 'terser';
 
 import { IStateFile } from './IStateFile';
 
-import { FiniteStateMachine } from './FiniteStateMachine';
+import { FSMObservable, FiniteStateMachine } from './FiniteStateMachine';
 import { ProgrammableGameObject } from '../ProgrammableGameObject';
-import { Observable } from 'babylonjs';
 
 // NE PAS RETIRER CES IMPORTS ! (pour l'interprétation du code js avec eval)
 import InputManager, { KeyCode } from '../InputManager';
@@ -44,7 +43,7 @@ export default class State {
 
   }
 
-  onUpdateState: Observable<void>;
+  onUpdateState: FSMObservable<void>;
   onEnterState: () => void;
   onExitState: () => void;
 
@@ -57,11 +56,11 @@ export default class State {
     if (stateFile) {
       // L'état peut être non relié à un fichier
       this.stateFile = stateFile;
-
     }
 
+    this.onExitState = ()=> {};
     this.onEnterState = () => { };
-    this.onUpdateState = new Observable();
+    this.onUpdateState = new FSMObservable();
 
   }
 
@@ -125,7 +124,7 @@ export default class State {
     //this.onUpdateState.clear();
     this.onExitState = () => { };
 
-    this.onUpdateState.clear();
+    this.onUpdateState.clear(); 
 
     // this.onUpdateState.add(() => {
     //   //console.log("loop");

@@ -122,6 +122,7 @@ export class Game {
         GameObject.resetAllTransforms();
         
         this.onGameStoped.notifyObservers();
+        
         // removeEventListener("keydown");
         // removeEventListener("keyup");
     }

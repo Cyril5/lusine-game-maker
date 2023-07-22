@@ -1,9 +1,145 @@
+import Qualifiers from '@renderer/editor/Qualifiers';
 import Blockly from 'blockly';
 import { javascriptGenerator } from 'blockly/javascript';
 
 export class JSCodeBlocks {
 
     constructor() {
+
+        Blockly.Blocks['qualifier_player'] = {
+            init: function() {
+              this.appendDummyInput()
+                  .appendField(new Blockly.FieldImage("https://www.gstatic.com/codesite/ph/images/star_on.gif", 16, 16, { alt: "", flipRtl: "FALSE" }))
+                  .appendField("Qualifieur : \"Joueur\"");
+              this.setOutput(true, "Number");
+              this.setColour(20);
+           this.setTooltip("Qualifieur \"Joueur\"");
+           this.setHelpUrl("");
+            }
+          };
+          
+          Blockly.Blocks['qualifier_good'] = {
+            init: function() {
+              this.appendDummyInput()
+                  .appendField(new Blockly.FieldImage("https://www.gstatic.com/codesite/ph/images/star_on.gif", 16, 16, { alt: "", flipRtl: "FALSE" }))
+                  .appendField("Qualifieur : \"Bon\"");
+              this.setOutput(true, "Number");
+              this.setColour(20);
+           this.setTooltip("");
+           this.setHelpUrl("");
+            }
+          };
+          
+          Blockly.Blocks['qualifier_neutral'] = {
+            init: function() {
+              this.appendDummyInput()
+                  .appendField(new Blockly.FieldImage("https://www.gstatic.com/codesite/ph/images/star_on.gif", 16, 16, { alt: "", flipRtl: "FALSE" }))
+                  .appendField("Qualifieur : \"Neutre\"");
+              this.setOutput(true, "Number");
+              this.setColour(20);
+           this.setTooltip("");
+           this.setHelpUrl("");
+            }
+          };
+          
+          Blockly.Blocks['qualifier_bad'] = {
+            init: function() {
+              this.appendDummyInput()
+                  .appendField(new Blockly.FieldImage("https://www.gstatic.com/codesite/ph/images/star_on.gif", 16, 16, { alt: "", flipRtl: "FALSE" }))
+                  .appendField("Qualifieur : \"Mauvais\"");
+              this.setOutput(true, "Number");
+              this.setColour(20);
+           this.setTooltip("");
+           this.setHelpUrl("");
+            }
+          };
+
+        Blockly.Blocks['collision_other_gameobject'] = {
+            init: function() {
+              this.appendDummyInput()
+                  .appendField("L'objet touché");
+              this.setOutput(true, "GameObject");
+              this.setColour(260);
+           this.setTooltip("L'objet renvoyé lors d'une collision");
+           this.setHelpUrl("");
+            }
+          };
+
+          javascriptGenerator['qualifier_player'] = function(block) {
+            // TODO: Assemble javascript into code variable.
+            const code = Qualifiers.PLAYER_TAG;
+            // TODO: Change ORDER_NONE to the correct strength.
+            return [code, javascriptGenerator.ORDER_NONE];
+          };
+          
+          javascriptGenerator['qualifier_good'] = function(block) {
+            const code = Qualifiers.GOOD_TAG;
+            // TODO: Change ORDER_NONE to the correct strength.
+            return [code, javascriptGenerator.ORDER_NONE];
+          };
+          
+          javascriptGenerator['qualifier_neutral'] = function(block) {
+
+            const code = Qualifiers.NEUTRAL_TAG;
+            // TODO: Change ORDER_NONE to the correct strength.
+            return [code, javascriptGenerator.ORDER_NONE];
+          };
+          
+          javascriptGenerator['qualifier_bad'] = function(block) {
+            const code = Qualifiers.BAD_TAG;
+            // TODO: Change ORDER_NONE to the correct strength.
+            return [code, javascriptGenerator.ORDER_NONE];
+          };
+
+          javascriptGenerator['collision_other_gameobject'] = function(block) {
+            // TODO: Assemble javascript into code variable.
+            const code = 'other.gameObject';
+            // TODO: Change ORDER_NONE to the correct strength.
+            return [code, javascriptGenerator.ORDER_NONE];
+          };
+          Blockly.Blocks['gameobject_qualifier'] = {
+            init: function() {
+              this.appendValueInput("GAMEOBJECT")
+                  .setCheck("GameObject");
+              this.appendDummyInput()
+                  .appendField("est qualifié en tant que");
+              this.appendValueInput("QUALIFIER")
+                  .setCheck("Number");
+              this.setOutput(true, "Boolean");
+              this.setColour(260);
+           this.setTooltip("Retourne true si l'objet est qualifié de la même valeur indiquée");
+           this.setHelpUrl("");
+            }
+          };
+          
+          Blockly.Blocks['qualifier_enemy'] = {
+            init: function() {
+              this.appendDummyInput()
+                  .appendField(new Blockly.FieldImage("https://www.gstatic.com/codesite/ph/images/star_on.gif", 16, 16, { alt: "", flipRtl: "FALSE" }))
+                  .appendField("Qualifieur : \"Ennemi\"");
+              this.setOutput(true, "Number");
+              this.setColour(20);
+           this.setTooltip("");
+           this.setHelpUrl("");
+            }
+          };
+
+          javascriptGenerator['gameobject_qualifier'] = function(block) {
+            const value_gameobject = javascriptGenerator.valueToCode(block, 'GAMEOBJECT', javascriptGenerator.ORDER_ATOMIC);
+            const value_qualifier = javascriptGenerator.valueToCode(block, 'QUALIFIER', javascriptGenerator.ORDER_ATOMIC);
+            // TODO: Assemble javascript into code variable.
+            const code = `${value_gameobject}.qualifier == ${value_qualifier}`;
+            // TODO: Change ORDER_NONE to the correct strength.
+            return [code, javascriptGenerator.ORDER_NONE];
+          };
+          
+          javascriptGenerator['qualifier_enemy'] = function(block) {
+            // TODO: Assemble javascript into code variable.
+            const code = '...';
+            // TODO: Change ORDER_NONE to the correct strength.
+            return [code, javascriptGenerator.ORDER_NONE];
+          };
+
 
         javascriptGenerator['debug_console_log'] = function (block) {
             const value_log = javascriptGenerator.valueToCode(block, 'LOG', javascriptGenerator.ORDER_ATOMIC);
@@ -12,14 +148,33 @@ export class JSCodeBlocks {
             return code;
         };
 
+        Blockly.Blocks['fsm_oncollisionenter'] = {
+            init: function () {
+                this.appendStatementInput("ONCOLLISIONENTER")
+                .setCheck(null)
+                .appendField("Lorsqu'on entre en collision");
+                this.setStyle('fsm_event_blocks');
+                this.setColour(120);
+                this.setTooltip("");
+                this.setHelpUrl("");
+            }
+
+        };
+        javascriptGenerator['fsm_oncollisionenter'] = (block)=> {
+            const statements_oncollisionenter = javascriptGenerator.statementToCode(block, 'ONCOLLISIONENTER');
+            // TODO: Assemble javascript into code variable.
+            const code = `this.fsm.onCollisionEnter.add((other) => {\n${statements_oncollisionenter}});\n`;
+            return code;
+          };
+
         // ------------------------- GAME OBJECTS ------------------------------
-        
+
         javascriptGenerator['gameobject_this'] = function (block) {
             // TODO: Assemble JavaScript into code variable.
             const code = 'this.gameObject';
             // TODO: Change ORDER_NONE to the correct strength.
             return [code, javascriptGenerator.ORDER_ATOMIC];
-          };
+        };
 
         javascriptGenerator['gameobject_get_posy'] = function (block) {
             const value_obj = javascriptGenerator.valueToCode(block, 'OBJ', javascriptGenerator.ORDER_NONE);
@@ -162,6 +317,8 @@ export class JSCodeBlocks {
         };
 
 
+
+
         Blockly.Blocks['state_onenterstate'] = {
             init: function () {
                 this.appendStatementInput("ENTERSTATE")
@@ -222,6 +379,8 @@ export class JSCodeBlocks {
             const code = '...;\n';
             return code;
         };
+
+
 
         javascriptGenerator['state_onenterstate'] = function (block) {
 

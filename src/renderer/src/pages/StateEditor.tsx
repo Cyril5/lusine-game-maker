@@ -10,7 +10,7 @@ import toolboxXml from '../assets/blocks/toolbox.xml?raw'; // ?raw to import as 
 import LusineBlocksDarkTheme from '../engine/blocks/themes/lusine-gm-dark'
 import '../engine/blocks/blocksDefs';
 import { javascriptGenerator } from 'blockly/javascript';
-import '@blockly/block-plus-minus';
+//import '@blockly/block-plus-minus';
 import * as Fr from 'blockly/msg/fr';
 import { Button, Col, Container, Row } from 'react-bootstrap';
 import StateFilesTreeView from '@renderer/components/StateFilesTreeView';

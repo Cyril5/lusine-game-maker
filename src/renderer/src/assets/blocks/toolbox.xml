@@ -5,6 +5,11 @@
     <block type="state_onexitstate" disabled="true"></block>
   </category>
   <category name="GameObject">
+    <block type="gameobject_get_posy" deletable="false" movable="false" editable="false">
+      <value name="OBJ">
+        <block type="gameobject_this"></block>
+      </value>
+    </block>
     <block type="gameobject_this"></block>
     <block type="gameobject_find_by_id">
       <value name="ID">
@@ -76,11 +81,30 @@
         </block>
       </value>
     </block>
-    <block type="gameobject_get_posy" deletable="false" movable="false" editable="false">
-      <value name="OBJ">
+    <block type="gameobject_qualifier">
+      <value name="GAMEOBJECT">
         <block type="gameobject_this"></block>
       </value>
     </block>
+  </category>
+  <category name="Collisions">
+    <block type="fsm_oncollisionenter" deletable="false" movable="true" editable="false">
+      <statement name="ONCOLLISIONENTER">
+        <block type="controls_if">
+          <value name="IF0">
+            <block type="gameobject_qualifier">
+              <value name="GAMEOBJECT">
+                <block type="collision_other_gameobject" deletable="false" movable="false" editable="false"></block>
+              </value>
+              <value name="QUALIFIER">
+                <block type="qualifier_enemy"></block>
+              </value>
+            </block>
+          </value>
+        </block>
+      </statement>
+    </block>
+    <block type="collision_other_gameobject" editable="false"></block>
   </category>
   <category name="Contrôles">
     <block type="keycode">
@@ -492,4 +516,11 @@
   <category name="Variables" colour="#a55b80" custom="VARIABLE"></category>
   <category name="Functions" colour="#995ba5" custom="PROCEDURE"></category>
   <sep></sep>
+  <category name="Qualifieurs">
+    <block type="qualifier_player" deletable="false" movable="false" editable="false"></block>
+    <block type="qualifier_good" deletable="false" movable="false" editable="false"></block>
+    <block type="qualifier_neutral" deletable="false" movable="false" editable="false"></block>
+    <block type="qualifier_bad" deletable="false" movable="false" editable="false"></block>
+    <block type="qualifier_enemy" deletable="false" movable="false" editable="false"></block>
+  </category>
 </xml>

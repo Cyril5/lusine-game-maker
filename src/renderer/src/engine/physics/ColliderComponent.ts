@@ -9,7 +9,7 @@ export default class ColliderComponent {
     private _boxMesh : Mesh;
     private _gameObject : ProgrammableGameObject;
 
-    collisionsLayers : any;
+    detectableQualifiers : Array<string>;
     
     get shape(): Mesh {
         return this._boxMesh;
@@ -35,6 +35,8 @@ export default class ColliderComponent {
     
     constructor(gameObject : ProgrammableGameObject,scene : Scene) {
         
+        this.detectableQualifiers = new Array<string>();
+
         this._gameObject = gameObject;
         this._boxMesh = BABYLON.MeshBuilder.CreateBox("BoxCollider", { height: 60, width: 75, depth: 140 }, scene);
         ColliderComponent.colliders.set(this._boxMesh.uniqueId,this);
@@ -63,7 +65,6 @@ export default class ColliderComponent {
 
         for (let [key, otherCollider] of ColliderComponent.colliders) {            
             const otherColliderMesh = otherCollider.shape;
-
             if(trigger) {
                 switch (event) {
                     case 'enter':
@@ -77,10 +78,10 @@ export default class ColliderComponent {
                                         }
                                     },
                                     ()=>{
-                                        //if(this._isTrigger) {
+                                        if(otherCollider) {
                                             //console.log(`collision : ${this._boxMesh.name} & ${otherColliderMesh.name}`);
-                                            this._gameObject.fsm.onTriggerEnter.notifyObservers(otherCollider);
-                                        //}
+                                            this._gameObject.fsm.onCollisionEnter.notifyObservers(otherCollider);
+                                        }
                                     }
                                 
                             )

@@ -19,6 +19,8 @@ import ColliderComponent from "@renderer/engine/physics/ColliderComponent";
 import EditorAlert, { EditorAlertType } from "./EditorAlert";
 import StateEditorUtils from "./StateEditorUtils";
 import FileManager from "@renderer/engine/FileManager";
+import Qualifiers from "@renderer/editor/Qualifiers";
+import State from "@renderer/engine/FSM/State";
 
 export default class Editor extends Component {
 
@@ -91,19 +93,20 @@ export default class Editor extends Component {
                     road.setParent(parent);
                 }
 
-                let buildings = scene.getNodeByName("Model::Block_1");
-                buildings.dispose();
-                buildings = scene.getNodeByName("Model::Block_2");
-                buildings.dispose();
-                buildings = scene.getNodeByName("Model::Block_3");
-                buildings.dispose();
-                buildings = scene.getNodeByName("Model::Block_4");
-                buildings.dispose();
+                // let buildings = scene.getNodeByName("Model::Block_1");
+                // buildings.dispose();
+                // buildings = scene.getNodeByName("Model::Block_2");
+                // buildings.dispose();
+                // buildings = scene.getNodeByName("Model::Block_3");
+                // buildings.dispose();
+                // buildings = scene.getNodeByName("Model::Block_4");
+                // buildings.dispose();
 
             });
 
 
             const car = new ProgrammableGameObject("Car_PO", scene);
+            car.qualifier = Qualifiers.PLAYER_TAG;
 
             // Créer un fichier json pour stocker le code puis l'appliquer à l'état
             if(!FileManager.fileExists(Game.getFilePath("States", "StateA."+StateEditorUtils._stateFilesFormat))) { //StateA.xml
@@ -115,7 +118,13 @@ export default class Editor extends Component {
             //car.fsm.states[0].stateFile.codeFilename = Game.getFilePath("States", "StateA."+StateEditorUtils._stateCodeFilesFormat); //StateA.state
             car.fsm.states[0].name = "State A";
 
+            
             const car2 = new ProgrammableGameObject("Car2", scene);
+            car2.qualifier = Qualifiers.NEUTRAL_TAG;
+            //car2.fsm.setState(car.fsm.states[0]); // TODO : à améliorer
+
+            console.warn(car2.fsm.states[0]);
+
             const carCollider = new ColliderComponent(car,scene);
 
             this.addModel3DObject("Car_04_3.fbx", null, (carModel) => {

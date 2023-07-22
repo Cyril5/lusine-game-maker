@@ -17,8 +17,8 @@ export default Blockly.Theme.defineTheme('lusine-gm-dark', {
     'cursorColour': '#d0d0d0',
     'blackBackground': '#333',
   },
-  'blockStyles': {
-    'fsm_event_blocks': {
+  'blockStyles': {  
+    'fsm_event_blocks': { // this.setStyle('fsm_event_blocks') à mettre dans la définition du block; 
       'colourPrimary' : "120",
       'hat': 'cap'
     }

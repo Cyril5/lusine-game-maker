@@ -3,6 +3,7 @@ import { ProgrammableGameObject } from "../ProgrammableGameObject";
 import { IStateFile } from "./IStateFile";
 import { Observable } from "babylonjs";
 import ColliderComponent from "../physics/ColliderComponent";
+import { Game } from "../Game";
 
 // Machine d'états fini attachable sur des ProgrammableGameObject seulement
 export class FiniteStateMachine {
@@ -22,27 +23,36 @@ export class FiniteStateMachine {
     //#endregion "Propriétées"
     
     //#region "Evenements"
-    onUpdate : Observable<void>;
-    onTriggerEnter : Observable<ColliderComponent | null>;
-    onTriggerStay : Observable<ColliderComponent | null>;
-    onTriggerExit : Observable<ColliderComponent | null>;
+    onStart : FSMObservable<void>;
+    onUpdate : FSMObservable<void>;
+    onCollisionEnter : FSMObservable<ColliderComponent | null>;
+    onCollisionStay : FSMObservable<ColliderComponent | null>;
+    onCollisionExit : FSMObservable<ColliderComponent | null>;
     //#endregion "Evenements"
 
     constructor(gameObject : ProgrammableGameObject) {
+        
+        this.onStart = new FSMObservable();
+        this.onUpdate = new FSMObservable();
+        this.onCollisionEnter = new FSMObservable();
+        this.onCollisionStay = new FSMObservable();
+        this.onCollisionExit = new FSMObservable();
+
         this._gameObject = gameObject;
         this.addState("Nouvel Etat");
 
-        this.onUpdate = new Observable();
-        this.onTriggerEnter = new Observable();
 
         // TEST
-        this.onTriggerEnter.add((collider)=>{
-            console.log("ping");
-            console.log(this._gameObject.name+ " touche : "+collider.shape.name);
-        })
+        // this.onCollisionEnter.add((collider)=>{
+        //     console.log("ping");
+        //     console.log(this._gameObject.name+ " touche : "+collider.shape.name);
+        // })
 
-        this.onTriggerStay = new Observable();
-        this.onTriggerExit = new Observable();
+
+        // Game.getInstance().onGameStoped.add(()=>{
+        //     this.clearObservables();
+        // });
+
     }
 
     addState(name:string='Nouvel Etat',statefile?: IStateFile | undefined):State {
@@ -64,6 +74,28 @@ export class FiniteStateMachine {
             this._currState.onExitState();
         this._currState = state;
         this._currState.onEnterState();
+    }
+
+    // Nettoyer la liste des méthodes dans les observables pour éviter de les rappeler à chaque démarrage du jeu
+    // L'objet FSMObservable le fait déjà
+    private clearObservables() {
+        this.onStart.clear(); 
+        this.onUpdate.clear();
+        this.onCollisionEnter.clear();
+        this.onCollisionStay.clear();
+        this.onCollisionExit.clear();
+    }
+
+}
+
+export class FSMObservable<T> extends Observable<T> {
+
+    constructor() {
+        super();
+        // nettoyer la liste des méthodes lorsque jeu s'arrête
+        Game.getInstance().onGameStoped.add(()=>{
+            this.clear();
+        });
     }
 
 }

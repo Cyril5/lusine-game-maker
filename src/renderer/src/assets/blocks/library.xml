@@ -1803,4 +1803,353 @@
         <field name="HUE">65</field>
       </block>
     </value>
+  </block><block type="factory_base" id="!^2OwocTa6hh9W#g0)Dd" deletable="false" movable="false" x="10" y="10">
+    <mutation connections="NONE"></mutation>
+    <field name="NAME">state_oncollisionenter</field>
+    <field name="INLINE">AUTO</field>
+    <field name="CONNECTIONS">NONE</field>
+    <statement name="INPUTS">
+      <block type="input_statement" id="g=M#N2d91leV[Bpx2TaL">
+        <field name="INPUTNAME">ONCOLLISIONENTER</field>
+        <field name="ALIGN">LEFT</field>
+        <statement name="FIELDS">
+          <block type="field_static" id="of3q7VpCr(60`Qw(ebZ;">
+            <field name="TEXT">Lorsqu'on entre en collision avec un autre objet</field>
+          </block>
+        </statement>
+        <value name="TYPE">
+          <shadow type="type_null" id="v+jQ_IO|#9h`da$%By)l"></shadow>
+        </value>
+      </block>
+    </statement>
+    <value name="TOOLTIP">
+      <block type="text" id="CFz_[$+w6.)IV#StR9Sw" deletable="false" movable="false">
+        <field name="TEXT">OnEnterState event</field>
+      </block>
+    </value>
+    <value name="HELPURL">
+      <block type="text" id="O6T~374,c+OGY/my)_D9" deletable="false" movable="false">
+        <field name="TEXT"></field>
+      </block>
+    </value>
+    <value name="COLOUR">
+      <block type="colour_hue" id="8:?W*GlCF,Ub.[J,$V`D">
+        <mutation colour="#5ba55b"></mutation>
+        <field name="HUE">120</field>
+      </block>
+    </value>
+  </block><block type="factory_base" id="!^2OwocTa6hh9W#g0)Dd" deletable="false" movable="false" x="10" y="10">
+    <mutation connections="LEFT"></mutation>
+    <field name="NAME">collision_other_gameobject</field>
+    <field name="INLINE">AUTO</field>
+    <field name="CONNECTIONS">LEFT</field>
+    <statement name="INPUTS">
+      <block type="input_dummy" id="Qs][|_E.F.T4}tmeiTF5">
+        <field name="ALIGN">LEFT</field>
+        <statement name="FIELDS">
+          <block type="field_static" id="H7$oh1as70(y(gN8X[7C">
+            <field name="TEXT">L'objet touché</field>
+          </block>
+        </statement>
+      </block>
+    </statement>
+    <value name="TOOLTIP">
+      <block type="text" id="CFz_[$+w6.)IV#StR9Sw" deletable="false" movable="false">
+        <field name="TEXT">L'objet renvoyé lors d'une collision</field>
+      </block>
+    </value>
+    <value name="HELPURL">
+      <block type="text" id="O6T~374,c+OGY/my)_D9" deletable="false" movable="false">
+        <field name="TEXT"></field>
+      </block>
+    </value>
+    <value name="OUTPUTTYPE">
+      <shadow type="type_null" id="g^@|GkW]mn.*@F,TQ3kP"></shadow>
+      <block type="type_other" id="fn~xs2k(oA]SZ)AR=u~v">
+        <field name="TYPE">GameObject</field>
+      </block>
+    </value>
+    <value name="COLOUR">
+      <block type="colour_hue" id="v]owJ0H2}LsfjHej,k3k">
+        <mutation colour="#745ba5"></mutation>
+        <field name="HUE">260</field>
+      </block>
+    </value>
+  </block><block type="factory_base" id="!^2OwocTa6hh9W#g0)Dd" deletable="false" movable="false" x="10" y="10">
+    <mutation connections="LEFT"></mutation>
+    <field name="NAME">gameobject_qualifier</field>
+    <field name="INLINE">AUTO</field>
+    <field name="CONNECTIONS">LEFT</field>
+    <statement name="INPUTS">
+      <block type="input_value" id="^bEC;4ZCJPx3+yN%BORM">
+        <field name="INPUTNAME">GAMEOBJECT</field>
+        <field name="ALIGN">LEFT</field>
+        <value name="TYPE">
+          <shadow type="type_null" id="]Ixo0{V?8w@muFMZn7Kc"></shadow>
+          <block type="type_other" id="Qud=;yQyW8XP}=?]=NJO">
+            <field name="TYPE">GameObject</field>
+          </block>
+        </value>
+        <next>
+          <block type="input_dummy" id="Qs][|_E.F.T4}tmeiTF5">
+            <field name="ALIGN">LEFT</field>
+            <statement name="FIELDS">
+              <block type="field_static" id="H7$oh1as70(y(gN8X[7C">
+                <field name="TEXT">est qualifié en tant que</field>
+              </block>
+            </statement>
+            <next>
+              <block type="input_value" id="Z8|}PWQ-#=;7dL-#M+$4">
+                <field name="INPUTNAME">QUALIFIER</field>
+                <field name="ALIGN">LEFT</field>
+                <value name="TYPE">
+                  <shadow type="type_null" id="]Ixo0{V?8w@muFMZn7Kc"></shadow>
+                  <block type="type_number" id="_2t|S1|RI[ugvXw3Q1--"></block>
+                </value>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+    <value name="TOOLTIP">
+      <block type="text" id="CFz_[$+w6.)IV#StR9Sw" deletable="false" movable="false">
+        <field name="TEXT">Retourne true si l'objet est qualifié de la même valeur indiquée</field>
+      </block>
+    </value>
+    <value name="HELPURL">
+      <block type="text" id="O6T~374,c+OGY/my)_D9" deletable="false" movable="false">
+        <field name="TEXT"></field>
+      </block>
+    </value>
+    <value name="OUTPUTTYPE">
+      <shadow type="type_null" id="X$vc[rtG2ds*Cm](EK/u"></shadow>
+      <block type="type_boolean" id="2fS,81B7nL4U9^+Iwt=|"></block>
+    </value>
+    <value name="COLOUR">
+      <block type="colour_hue" id="v]owJ0H2}LsfjHej,k3k">
+        <mutation colour="#745ba5"></mutation>
+        <field name="HUE">260</field>
+      </block>
+    </value>
+  </block><block type="factory_base" id="!^2OwocTa6hh9W#g0)Dd" deletable="false" movable="false" x="10" y="10">
+    <mutation connections="LEFT"></mutation>
+    <field name="NAME">qualifier_player</field>
+    <field name="INLINE">AUTO</field>
+    <field name="CONNECTIONS">LEFT</field>
+    <statement name="INPUTS">
+      <block type="input_dummy" id="Qs][|_E.F.T4}tmeiTF5">
+        <field name="ALIGN">LEFT</field>
+        <statement name="FIELDS">
+          <block type="field_image" id="jw;$5C4At|(.$l_-jI5o">
+            <field name="SRC">https://www.gstatic.com/codesite/ph/images/star_on.gif</field>
+            <field name="WIDTH">16</field>
+            <field name="HEIGHT">16</field>
+            <field name="ALT"></field>
+            <field name="FLIP_RTL">FALSE</field>
+            <next>
+              <block type="field_static" id="H7$oh1as70(y(gN8X[7C">
+                <field name="TEXT">Qualifieur : "Joueur"</field>
+              </block>
+            </next>
+          </block>
+        </statement>
+      </block>
+    </statement>
+    <value name="TOOLTIP">
+      <block type="text" id="CFz_[$+w6.)IV#StR9Sw" deletable="false" movable="false">
+        <field name="TEXT">Qualifieur "Joueur"</field>
+      </block>
+    </value>
+    <value name="HELPURL">
+      <block type="text" id="O6T~374,c+OGY/my)_D9" deletable="false" movable="false">
+        <field name="TEXT"></field>
+      </block>
+    </value>
+    <value name="OUTPUTTYPE">
+      <shadow type="type_null" id="X$vc[rtG2ds*Cm](EK/u"></shadow>
+      <block type="type_number" id="s{DUzR_rr.t@`yH:)[60"></block>
+    </value>
+    <value name="COLOUR">
+      <block type="colour_hue" id="zlC_{1?Rih6NHu?rf=c^">
+        <mutation colour="#a5745b"></mutation>
+        <field name="HUE">20</field>
+      </block>
+    </value>
+  </block><block type="factory_base" id="!^2OwocTa6hh9W#g0)Dd" deletable="false" movable="false" x="10" y="10">
+    <mutation connections="LEFT"></mutation>
+    <field name="NAME">qualifier_good</field>
+    <field name="INLINE">AUTO</field>
+    <field name="CONNECTIONS">LEFT</field>
+    <statement name="INPUTS">
+      <block type="input_dummy" id="Qs][|_E.F.T4}tmeiTF5">
+        <field name="ALIGN">LEFT</field>
+        <statement name="FIELDS">
+          <block type="field_image" id="jw;$5C4At|(.$l_-jI5o">
+            <field name="SRC">https://www.gstatic.com/codesite/ph/images/star_on.gif</field>
+            <field name="WIDTH">16</field>
+            <field name="HEIGHT">16</field>
+            <field name="ALT"></field>
+            <field name="FLIP_RTL">FALSE</field>
+            <next>
+              <block type="field_static" id="H7$oh1as70(y(gN8X[7C">
+                <field name="TEXT">Qualifieur : "Bon"</field>
+              </block>
+            </next>
+          </block>
+        </statement>
+      </block>
+    </statement>
+    <value name="TOOLTIP">
+      <block type="text" id="CFz_[$+w6.)IV#StR9Sw" deletable="false" movable="false">
+        <field name="TEXT"></field>
+      </block>
+    </value>
+    <value name="HELPURL">
+      <block type="text" id="O6T~374,c+OGY/my)_D9" deletable="false" movable="false">
+        <field name="TEXT"></field>
+      </block>
+    </value>
+    <value name="OUTPUTTYPE">
+      <shadow type="type_null" id="X$vc[rtG2ds*Cm](EK/u"></shadow>
+      <block type="type_number" id="s{DUzR_rr.t@`yH:)[60"></block>
+    </value>
+    <value name="COLOUR">
+      <block type="colour_hue" id="zlC_{1?Rih6NHu?rf=c^">
+        <mutation colour="#a5745b"></mutation>
+        <field name="HUE">20</field>
+      </block>
+    </value>
+  </block><block type="factory_base" id="!^2OwocTa6hh9W#g0)Dd" deletable="false" movable="false" x="10" y="10">
+    <mutation connections="LEFT"></mutation>
+    <field name="NAME">qualifier_neutral</field>
+    <field name="INLINE">AUTO</field>
+    <field name="CONNECTIONS">LEFT</field>
+    <statement name="INPUTS">
+      <block type="input_dummy" id="Qs][|_E.F.T4}tmeiTF5">
+        <field name="ALIGN">LEFT</field>
+        <statement name="FIELDS">
+          <block type="field_image" id="jw;$5C4At|(.$l_-jI5o">
+            <field name="SRC">https://www.gstatic.com/codesite/ph/images/star_on.gif</field>
+            <field name="WIDTH">16</field>
+            <field name="HEIGHT">16</field>
+            <field name="ALT"></field>
+            <field name="FLIP_RTL">FALSE</field>
+            <next>
+              <block type="field_static" id="H7$oh1as70(y(gN8X[7C">
+                <field name="TEXT">Qualifieur : "Neutre"</field>
+              </block>
+            </next>
+          </block>
+        </statement>
+      </block>
+    </statement>
+    <value name="TOOLTIP">
+      <block type="text" id="CFz_[$+w6.)IV#StR9Sw" deletable="false" movable="false">
+        <field name="TEXT"></field>
+      </block>
+    </value>
+    <value name="HELPURL">
+      <block type="text" id="O6T~374,c+OGY/my)_D9" deletable="false" movable="false">
+        <field name="TEXT"></field>
+      </block>
+    </value>
+    <value name="OUTPUTTYPE">
+      <shadow type="type_null" id="X$vc[rtG2ds*Cm](EK/u"></shadow>
+      <block type="type_number" id="s{DUzR_rr.t@`yH:)[60"></block>
+    </value>
+    <value name="COLOUR">
+      <block type="colour_hue" id="zlC_{1?Rih6NHu?rf=c^">
+        <mutation colour="#a5745b"></mutation>
+        <field name="HUE">20</field>
+      </block>
+    </value>
+  </block><block type="factory_base" id="!^2OwocTa6hh9W#g0)Dd" deletable="false" movable="false" x="10" y="10">
+    <mutation connections="LEFT"></mutation>
+    <field name="NAME">qualifier_bad</field>
+    <field name="INLINE">AUTO</field>
+    <field name="CONNECTIONS">LEFT</field>
+    <statement name="INPUTS">
+      <block type="input_dummy" id="Qs][|_E.F.T4}tmeiTF5">
+        <field name="ALIGN">LEFT</field>
+        <statement name="FIELDS">
+          <block type="field_image" id="jw;$5C4At|(.$l_-jI5o">
+            <field name="SRC">https://www.gstatic.com/codesite/ph/images/star_on.gif</field>
+            <field name="WIDTH">16</field>
+            <field name="HEIGHT">16</field>
+            <field name="ALT"></field>
+            <field name="FLIP_RTL">FALSE</field>
+            <next>
+              <block type="field_static" id="H7$oh1as70(y(gN8X[7C">
+                <field name="TEXT">Qualifieur : "Mauvais"</field>
+              </block>
+            </next>
+          </block>
+        </statement>
+      </block>
+    </statement>
+    <value name="TOOLTIP">
+      <block type="text" id="CFz_[$+w6.)IV#StR9Sw" deletable="false" movable="false">
+        <field name="TEXT"></field>
+      </block>
+    </value>
+    <value name="HELPURL">
+      <block type="text" id="O6T~374,c+OGY/my)_D9" deletable="false" movable="false">
+        <field name="TEXT"></field>
+      </block>
+    </value>
+    <value name="OUTPUTTYPE">
+      <shadow type="type_null" id="X$vc[rtG2ds*Cm](EK/u"></shadow>
+      <block type="type_number" id="s{DUzR_rr.t@`yH:)[60"></block>
+    </value>
+    <value name="COLOUR">
+      <block type="colour_hue" id="zlC_{1?Rih6NHu?rf=c^">
+        <mutation colour="#a5745b"></mutation>
+        <field name="HUE">20</field>
+      </block>
+    </value>
+  </block><block type="factory_base" id="!^2OwocTa6hh9W#g0)Dd" deletable="false" movable="false" x="10" y="10">
+    <mutation connections="LEFT"></mutation>
+    <field name="NAME">qualifier_enemy</field>
+    <field name="INLINE">AUTO</field>
+    <field name="CONNECTIONS">LEFT</field>
+    <statement name="INPUTS">
+      <block type="input_dummy" id="Qs][|_E.F.T4}tmeiTF5">
+        <field name="ALIGN">LEFT</field>
+        <statement name="FIELDS">
+          <block type="field_image" id="jw;$5C4At|(.$l_-jI5o">
+            <field name="SRC">https://www.gstatic.com/codesite/ph/images/star_on.gif</field>
+            <field name="WIDTH">16</field>
+            <field name="HEIGHT">16</field>
+            <field name="ALT"></field>
+            <field name="FLIP_RTL">FALSE</field>
+            <next>
+              <block type="field_static" id="H7$oh1as70(y(gN8X[7C">
+                <field name="TEXT">Qualifieur : "Ennemi"</field>
+              </block>
+            </next>
+          </block>
+        </statement>
+      </block>
+    </statement>
+    <value name="TOOLTIP">
+      <block type="text" id="CFz_[$+w6.)IV#StR9Sw" deletable="false" movable="false">
+        <field name="TEXT"></field>
+      </block>
+    </value>
+    <value name="HELPURL">
+      <block type="text" id="O6T~374,c+OGY/my)_D9" deletable="false" movable="false">
+        <field name="TEXT"></field>
+      </block>
+    </value>
+    <value name="OUTPUTTYPE">
+      <shadow type="type_null" id="X$vc[rtG2ds*Cm](EK/u"></shadow>
+      <block type="type_number" id="s{DUzR_rr.t@`yH:)[60"></block>
+    </value>
+    <value name="COLOUR">
+      <block type="colour_hue" id="zlC_{1?Rih6NHu?rf=c^">
+        <mutation colour="#a5745b"></mutation>
+        <field name="HUE">20</field>
+      </block>
+    </value>
   </block></xml>
