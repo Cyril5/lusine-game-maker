@@ -1,3 +1,14 @@
+#LUsine Game Maker Alpha 0.1
+
+![image](https://github.com/Cyril5/lusine-game-maker/assets/73618602/41444741-b2b3-449b-afd1-e5f777d0b24f)
+
+Ce projet est le successeur de : (https://github.com/Cyril5/clight-game-maker)
+
+* BabylonJS
+* ElectronJS + Vite +TypeScript + ReactJS
+* Google Blockly
+* CodeMirror
+
 # electron-app
 
 An Electron application with React and TypeScript
