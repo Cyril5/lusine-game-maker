@@ -1,15 +1,8 @@
-import { Engine, GizmoManager, HemisphericLight, Scene, SceneLoader, Space, StandardMaterial, Texture, Vector3 } from "@babylonjs/core";
+import { Engine, GizmoManager, HemisphericLight, SceneLoader, Space, StandardMaterial, Texture, Vector3 } from "@babylonjs/core";
 
-import { GridMaterial } from "@babylonjs/materials/grid"
 import { Game } from "./Game";
-import { GameObject } from "./GameObject";
-import { Sphere } from "./game-objects/Sphere";
-import { Cube } from "./game-objects/Cube";
-import { ProgrammableGameObject } from "./ProgrammableGameObject";
 import { FBXLoader } from "babylon-fbx-loader";
-import { Model3D } from "./Model3D";
-import Editor from "@renderer/components/Editor";
-import { ArcRotateCamera, Axis, Observable } from "babylonjs";
+import { Observable } from "babylonjs";
 import Ammo from 'ammojs-typed';
 import { AmmoJSPlugin } from "babylonjs";
 
@@ -18,7 +11,7 @@ export class Renderer {
 
     private readonly CAMERA_PANNING_SENSTIVITY = 35;  
 
-    private _scene: Scene;
+    private _scene: BABYLON.Scene;
     private _engine: Engine;
     private _camera: BABYLON.ArcRotateCamera;
 
@@ -27,7 +20,7 @@ export class Renderer {
 
     static isReadyObservable: Observable<any> = new Observable();
 
-    get scene(): Scene {
+    get scene(): BABYLON.Scene {
         return this._scene;
     }
 
@@ -43,7 +36,7 @@ export class Renderer {
 
         try {
             this.ammo = await Ammo.bind(window)();
-            this._scene.enablePhysics(new Vector3(0, -10, 0), new AmmoJSPlugin(true, this.ammo));
+            this._scene.enablePhysics(new BABYLON.Vector3(0, -10, 0), new AmmoJSPlugin(true, this.ammo));
             //onLoaded();
 
         } catch (error) {
@@ -174,15 +167,15 @@ export class Renderer {
 
     }
 
-    private constructor(engine: Engine, scene: Scene) {
+    private constructor(engine: Engine, scene: BABYLON.Scene) {
         console.log("renderer constructor");
         this._engine = engine;
         this._scene = scene;
-        this._camera = new BABYLON.ArcRotateCamera("Camera", 0, 0, 10, Vector3.Zero(), this._scene);
+        this._camera = new BABYLON.ArcRotateCamera("Camera", 0, 0, 10, BABYLON.Vector3.Zero(), this._scene);
         this.init();
     }
 
-    public static async initAndGetInstance(engine: Engine, scene: Scene): Renderer {
+    public static async initAndGetInstance(engine: Engine, scene: BABYLON.Scene): Renderer {
         if (Renderer.instance === undefined) {
             Renderer.instance = new Renderer(engine, scene);
         }

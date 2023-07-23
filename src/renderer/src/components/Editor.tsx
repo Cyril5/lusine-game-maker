@@ -9,25 +9,32 @@ import { Model3D } from "@renderer/engine/Model3D";
 import NavBarEditor from "./NavBarEditor";
 import AddObjectModal from "./AddObjectModal";
 import CommandModal from "./CommandModal";
-import { Card, Tab, Tabs } from "react-bootstrap";
+import { Tab, Tabs } from "react-bootstrap";
 import LevelEditor from "@renderer/pages/LevelEditor";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import StatesMachineEditor from "@renderer/pages/StatesMachineEditor";
 import StateEditor from "@renderer/pages/StateEditor";
-import { Axis, FollowCamera, MeshBuilder, PhysicsImpostor, Space, Vector3 } from "babylonjs";
+import { MeshBuilder } from "babylonjs";
 import ColliderComponent from "@renderer/engine/physics/ColliderComponent";
 import EditorAlert, { EditorAlertType } from "./EditorAlert";
-import StateEditorUtils from "./StateEditorUtils";
+import StateEditorUtils from "../editor/StateEditorUtils";
 import FileManager from "@renderer/engine/FileManager";
 import Qualifiers from "@renderer/editor/Qualifiers";
-import State from "@renderer/engine/FSM/State";
+
+enum Mode {
+    LevelEditor = 1,
+    StateMachineEditor = 2,
+    StatesEditor = 3,
+}
 
 export default class Editor extends Component {
+   
+    eMode : Mode = Mode.LevelEditor; 
 
     // TODO : A déplacer dans un export de EditorAlert 
-    static showAlert(message: string,type?: EditorAlertType) {
+    static showAlert(message: string,type?: EditorAlertType, onClose? : ()=>void) {
         Editor.getInstance().setState({
-            alert:{show: true,message: message}
+            alert:{show: true,message: message,onCloseCallback : onClose}
         })
     }
 
@@ -35,6 +42,7 @@ export default class Editor extends Component {
 
     // use state REACT
     state = {
+        eMode: 1,
         activeTab: 1,
         game: null,
         // showAddObjectModal: false,
@@ -44,10 +52,11 @@ export default class Editor extends Component {
             show : false,
             type: null,
             message: '',
+            onCloseCallback : null,
         }
     };
 
-    constructor(props: {} | Readonly<{}>) {
+    constructor(props: {objetJeu}) {
         super(props);
         Editor._instance = this;
 
@@ -108,22 +117,23 @@ export default class Editor extends Component {
             const car = new ProgrammableGameObject("Car_PO", scene);
             car.qualifier = Qualifiers.PLAYER_TAG;
 
-            // Créer un fichier json pour stocker le code puis l'appliquer à l'état
+            // Créer les fichiers pour stocker le code
             if(!FileManager.fileExists(Game.getFilePath("States", "StateA."+StateEditorUtils._stateFilesFormat))) { //StateA.xml
-                StateEditorUtils.createStateFile("StateA",car.fsm.states[0].stateFile);
+                StateEditorUtils.createStateFile("StateA");
             }else{
-                StateEditorUtils.addStateFile("StateA",car.fsm.states[0].stateFile);
+                // Ajouter à la liste des fichiers d'état
+                StateEditorUtils.addStateFile("StateA");
             }
 
             //car.fsm.states[0].stateFile.codeFilename = Game.getFilePath("States", "StateA."+StateEditorUtils._stateCodeFilesFormat); //StateA.state
             car.fsm.states[0].name = "State A";
 
             
-            const car2 = new ProgrammableGameObject("Car2", scene);
+            const car2 : ProgrammableGameObject = new ProgrammableGameObject("Car2", scene);
             car2.qualifier = Qualifiers.NEUTRAL_TAG;
-            //car2.fsm.setState(car.fsm.states[0]); // TODO : à améliorer
 
-            console.warn(car2.fsm.states[0]);
+            car2.fsm.states[0].stateFile = StateEditorUtils._stateFiles["AICarMainState"];
+            console.warn(car2.fsm.states);
 
             const carCollider = new ColliderComponent(car,scene);
 
@@ -211,7 +221,10 @@ export default class Editor extends Component {
     // });
 
     handleTabChange = (tabKey) => {
-        this.setState({ activeTab: tabKey });
+        this.setState({ 
+                activeTab: tabKey,
+                eMode: tabKey,  
+            });
     };
 
 
@@ -292,8 +305,8 @@ export default class Editor extends Component {
     }
     // let gameRef = useRef<Game>(null);
 
-    private _selectedGameObject: GameObject;
-    get selectedGameObject(): GameObject {
+    private _selectedGameObject: GameObject | null = null;
+    get selectedGameObject(): GameObject | null {
         return this._selectedGameObject;
     }
 
@@ -343,11 +356,15 @@ export default class Editor extends Component {
     render() {
         return (
             <>
+                <EditorAlert show={this.state.alert.show} message={this.state.alert.message} onCloseCallback={this.state.alert.onCloseCallback}/>
+
                 <NavBarEditor />
-                {/* <Navigation/> */}
-                <AddObjectModal show={false} />
-                <EditorAlert show={this.state.alert.show} message={this.state.alert.message}/>
-                <CommandModal />
+                {this.state.activeTab != Mode.StatesEditor && (
+                    <>
+                    {/* <CommandModal /> */}
+                    <AddObjectModal show={false} />
+                    </>
+                )}
 
                 <Tabs activeKey={this.state.activeTab} onSelect={this.handleTabChange} >
                     <Tab eventKey={1} title={<span><FontAwesomeIcon icon="ghost" /> Editeur de niveau</span>}>

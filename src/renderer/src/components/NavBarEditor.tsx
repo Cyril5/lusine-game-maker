@@ -11,7 +11,7 @@ import Editor from './Editor';
 function NavBarEditor(props : any) {
 
   return (
-    <Navbar bg="dark" expand="lg" variant="dark">
+    <Navbar bg="dark" expand="sm" variant="dark">
       <Container>
       <Navbar.Brand href="#home">
             <img
@@ -27,7 +27,7 @@ function NavBarEditor(props : any) {
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">
 
-          <Button variant='secondary' size="lg" onClick={props.onClickAddObject}><FontAwesomeIcon icon="folder-open"></FontAwesomeIcon></Button>
+          <Button variant='secondary' size="sm" onClick={props.onClickAddObject}><FontAwesomeIcon icon="folder-open"></FontAwesomeIcon></Button>
 
             <Nav.Link onClick={props.onClickAddObject}>Ajouter</Nav.Link>
 

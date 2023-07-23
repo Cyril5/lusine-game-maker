@@ -1,4 +1,4 @@
-import { Mesh, Scene, TransformNode } from "babylonjs";
+import { Mesh} from "babylonjs";
 import { ProgrammableGameObject } from "../ProgrammableGameObject";
 import { Game } from "../Game";
 
@@ -33,7 +33,7 @@ export default class ColliderComponent {
     }
 
     
-    constructor(gameObject : ProgrammableGameObject,scene : Scene) {
+    constructor(gameObject : ProgrammableGameObject,scene : BABYLON.Scene) {
         
         this.detectableQualifiers = new Array<string>();
 

@@ -14,6 +14,9 @@ const EditorAlert = (props:any)=> {
   useEffect(()=>{
     setShow(props.show);
     setMessage(props.message);
+    if(props.onCloseCallback) {
+        props.onCloseCallback();
+    }
   },[props.show])
 
   return (

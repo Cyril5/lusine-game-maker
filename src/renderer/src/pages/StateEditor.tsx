@@ -1,5 +1,5 @@
-import React, { useRef, useEffect, useState } from 'react';
-import CodeMirror, { useCodeMirror } from '@uiw/react-codemirror';
+import { useRef, useEffect, useState } from 'react';
+import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { darcula } from '@uiw/codemirror-theme-darcula';
 
@@ -16,11 +16,12 @@ import { Button, Col, Container, Row } from 'react-bootstrap';
 import StateFilesTreeView from '@renderer/components/StateFilesTreeView';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Editor from '@renderer/components/Editor';
-import { EditorAlert, EditorAlertType } from '@renderer/components/EditorAlert';
+import { EditorAlertType } from '@renderer/components/EditorAlert';
 import FileManager from '@renderer/engine/FileManager';
 import { IStateFile } from '@renderer/engine/FSM/IStateFile';
+import StateEditorUtils from '@renderer/editor/StateEditorUtils';
 
-const serializer: Blockly.serialization.blocks.BlockSerializer = new Blockly.serialization.blocks.BlockSerializer();
+//const serializer: Blockly.serialization.blocks.BlockSerializer = new Blockly.serialization.blocks.BlockSerializer();
 let workspace: Blockly.WorkspaceSvg;
 
 const StateEditor = (props: any) => {
@@ -31,7 +32,7 @@ const StateEditor = (props: any) => {
     // const documentsPath = os.homedir() + '\\Documents\\Lusine Game Maker\\MonProjet';
     // let stateFilesDirectory = path.resolve(documentsPath, 'States');
 
-    const [currentStateFile, setCurrentState] = useState(props.initStateFile); // IStateFile
+    const [currentStateFile, setCurrentStateFile] = useState(props.initStateFile); // IStateFile
 
     const blocklyDivRef = useRef(null);
     const blocklyAreaRef = useRef(null);
@@ -40,7 +41,7 @@ const StateEditor = (props: any) => {
 
 
 
-    const onresize = (e) => {
+    const onresize = () => {
         // Compute the absolute coordinates and dimensions of blocklyArea.
         let element = blocklyAreaRef.current;
         let x = 0;
@@ -67,9 +68,9 @@ const StateEditor = (props: any) => {
 
     // Lorsque la propriétée initStateFile du composant a changé
     useEffect(() => {
+        console.log(props.initStateFile);
         if (props.initStateFile) {
-            // console.log(props.initStateFile);
-            setCurrentState(props.initStateFile);
+            setCurrentStateFile(props.initStateFile);
             openStateFile(props.initStateFile);
         }
     }, [props.initStateFile]);
@@ -100,7 +101,7 @@ const StateEditor = (props: any) => {
             },
             zoom: {
                 controls: true,
-                wheel: true,
+                wheel: false,
                 startScale: 1,
                 maxScale: 3,
                 minScale: 0.3,
@@ -174,11 +175,11 @@ const StateEditor = (props: any) => {
 
                 //workspace.clear();
                 Blockly.Events.disable(); // Désactiver les événements pour éviter les collisions d'ID
-                const jsonDom: Element = Blockly.Xml.textToDom(xmlFile);
+                const jsonDom: Element = Blockly.utils.xml.textToDom(xmlFile);
                 Blockly.Xml.clearWorkspaceAndLoadFromXml(jsonDom, workspace);
                 Blockly.Events.enable();
 
-                setCurrentState(stateFile);
+                setCurrentStateFile(stateFile);
                 updateCodeFromCodeEditor();
 
             });
@@ -187,6 +188,67 @@ const StateEditor = (props: any) => {
             Editor.showAlert(`Une erreur c'est produite pendant l'ouverture de ${currentStateFile.filename} \n\n ${error}`);
         }
     }
+
+    const openPromptNewStateFile = (): void => {
+        // ouvrir une fenêtre pour créer le fichier
+        const prompt = require('electron-prompt');
+        prompt({
+            title: "Créer un nouveau fichier d'état",
+            message: 'Hello !',
+            label: 'Nom:',
+            value: 'NouvelEtat',
+            inputAttrs: { type: 'text', required: true },
+            type: 'input',
+            buttonsLabel: { ok: 'Ajouter', cancel: 'Annuler' }
+        })
+            .then((result: any) => {
+                if (result) {
+                    const regexStateFileName: RegExp = /^[A-Za-z0-9]*$/;
+                    if (regexStateFileName.test(result)) {
+
+                        // Génération du nouveau fichier d'état.
+                        StateEditorUtils.createStateFile(result);
+
+                    } else {
+                        Editor.showAlert("Le nom du fichier n'est pas valide. \n\nCe dernier ne pas doit contenir de caractère spéciaux ni d'espace "
+                            , EditorAlertType.Error, () => {
+                                openPromptNewStateFile();
+                            }
+                        );
+                    }
+                    console.log('result', result);
+                }
+            })
+            .catch(console.error);
+    }
+
+    const newWorkspace = (): void => {
+
+        const { dialog } = require('@electron/remote');
+
+        const options = {
+            type: 'warning',
+            title: `Confirmation avant création fichier d'état`,
+            message: `Voulez vous enregistrer le fichier d'état : ${currentStateFile} avant d'en créer un nouveau ?`,
+            buttons: ['Oui', 'Non', 'Annuler'],
+            defaultId: 2,
+            cancelId: 2,
+        };
+
+        const saveBeforeNewResponse = dialog.showMessageBoxSync(options);
+        switch (saveBeforeNewResponse) {
+            case 0: //yes
+                saveWorkspace();
+                break;
+            case 2: //annuler
+                return;
+                break;
+        }
+
+        openPromptNewStateFile();
+
+    }
+
 
     const saveWorkspace = (): void => {
 
@@ -205,11 +267,10 @@ const StateEditor = (props: any) => {
             FileManager.writeInFile(currentStateFile.filename, content);
 
             // Mis à jour du code dans le fichier
-            FileManager.writeInFile(currentStateFile.codeFilename,currentStateFile.outputCode);
+            FileManager.writeInFile(currentStateFile.codeFilename, currentStateFile.outputCode);
 
         } catch (e) {
             Editor.showAlert(`Une erreur c'est produite pendant la sauvegarde de StateA :\n\n ${e}`, EditorAlertType.Error,);
-            console.error(e);
         }
         // fs.writeFile(
         //     Project.getStatesDir() + '/' + currentStateFile.filename, JSON.stringify(json), err => {
@@ -224,28 +285,39 @@ const StateEditor = (props: any) => {
     }
 
 
-    const [data, setData] = useState([{
-        id: 1,
-        title: "StateA",
-        children: [
-
-        ]
-    }]);
+    const [data, setData] = useState([
+        {
+            id: 1,
+            title: "StateA",
+            children: []
+        },
+        {
+            id: 2,
+            title: "AICarMainState",
+            children: []
+        }
+    ]);
 
 
     return (
         <>
             <Container fluid>
-                <Button variant='primary' size="lg" onClick={saveWorkspace}><FontAwesomeIcon icon="save"></FontAwesomeIcon></Button>
                 {currentStateFile !== null && <p>{currentStateFile.filename}</p>}
 
                 <Row>
+                <Col md={2}>
+                        <StateFilesTreeView data={data} />
+                    </Col>
+
                     <Col>{/* <table>
                 <tr>
-                    <td id="blocklyArea" ref={blocklyAreaRef}>
-                    </td>
-                    </tr>
-                </table> */}
+                <td id="blocklyArea" ref={blocklyAreaRef}>
+                </td>
+                </tr>
+            </table> */}
+            <Button variant='primary' size='lg' onClick={newWorkspace} ><FontAwesomeIcon icon="file"></FontAwesomeIcon></Button>
+
+            <Button variant='warning' size="lg" onClick={saveWorkspace}><FontAwesomeIcon icon="save"></FontAwesomeIcon></Button>
 
                         <div id="blocklyArea" ref={blocklyAreaRef}>
                             Si ce message s'affiche : Redimensionner la fenêtre pour afficher l'espace de travail.
@@ -253,9 +325,7 @@ const StateEditor = (props: any) => {
 
                         <div id="blocklyDiv" ref={blocklyDivRef} />
                     </Col>
-                    <Col md={2}>
-                        <StateFilesTreeView data={data} />
-                    </Col>
+
                 </Row>
             </Container>
 

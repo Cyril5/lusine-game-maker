@@ -1,23 +1,22 @@
-export interface IStateFile {
+export class IStateFile {
 
-    filename : string | undefined;
+    name : string | null;
+    filename : string | null = null;
     /**
     * Fichier du code JavaScript de l'état.
     */
-    codeFilename : string | undefined;
+    codeFilename : string | null = null;
 
     /**
     * Le code sera chargé depuis le fichier JavaScript (.state) ?.
     */
-    needToLoad : boolean;
+    needToLoad : boolean = false;
 
-    outputCode : string;// = 'console.log(this.gameObject); console.log(this.test);';
-    // constructor(filename?:string) {
-    //     if(filename) {
-    //         this.filename = filename;
-    //         //Editor.addStateFileToList(this);
-    //     }
-    // }
+    outputCode : string = "";// = 'console.log(this.gameObject); console.log(this.test);';
+    
+    constructor(name :string) {
+        this.name = name;
+    }
 
     // getFileName() {
     //     return filename;
