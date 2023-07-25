@@ -1,0 +1,38 @@
+{
+    "languageVersion": 0,
+    "blocks": [
+        {
+            "type": "state_onupdatestate",
+            "id": "M=pd36$50r=C@-L4l_xF",
+            "x": 13,
+            "y": 88,
+            "inputs": {
+                "UPDATESTATE": {
+                    "block": {
+                        "type": "controls_if",
+                        "id": "FIxNpSM%~2_1YSy^6^hU",
+                        "inputs": {
+                            "IF0": {
+                                "block": {
+                                    "type": "inputs_if_keydown",
+                                    "id": "DGs:/ZdTvQeG9{Fo3?s2",
+                                    "inputs": {
+                                        "KEYCODE": {
+                                            "block": {
+                                                "type": "keycode",
+                                                "id": "FGzLolVs}.svBV9TU^jx",
+                                                "fields": {
+                                                    "KEYCODES": "Z"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

@@ -20,6 +20,9 @@ import EditorAlert, { EditorAlertType } from "./EditorAlert";
 import StateEditorUtils from "../editor/StateEditorUtils";
 import FileManager from "@renderer/engine/FileManager";
 import Qualifiers from "@renderer/editor/Qualifiers";
+import EditorUtils from "@renderer/editor/EditorUtils";
+import StartupModal from "./StartupModal";
+import ProjectManager from "@renderer/editor/ProjectManager";
 
 enum Mode {
     LevelEditor = 1,
@@ -28,17 +31,19 @@ enum Mode {
 }
 
 export default class Editor extends Component {
-   
-    eMode : Mode = Mode.LevelEditor; 
+
+    eMode: Mode = Mode.LevelEditor;
 
     // TODO : A déplacer dans un export de EditorAlert 
-    static showAlert(message: string,type?: EditorAlertType, onClose? : ()=>void) {
+    static showAlert(message: string, type?: EditorAlertType, onClose?: () => void) {
         Editor.getInstance().setState({
-            alert:{show: true,message: message,onCloseCallback : onClose}
+            alert: { show: true, message: message, onCloseCallback: onClose }
         })
     }
 
-
+    hideStartupModal() {
+        this.setState({ showStartupModal: false });
+    }
 
     // use state REACT
     state = {
@@ -48,15 +53,16 @@ export default class Editor extends Component {
         // showAddObjectModal: false,
         objetJeu: null,
         initStateFile: null,
-        alert:{
-            show : false,
+        alert: {
+            show: false,
             type: null,
             message: '',
-            onCloseCallback : null,
-        }
+            onCloseCallback: null,
+        },
+        showStartupModal: true,
     };
 
-    constructor(props: {objetJeu}) {
+    constructor(props: { objetJeu }) {
         super(props);
         Editor._instance = this;
 
@@ -65,11 +71,10 @@ export default class Editor extends Component {
 
     }
 
-    componentDidMount() {
-        console.log("Editor did mount");
-        // window.CANNON = cannon;
+    loadDefaultGame() {
+        //Renderer.isReadyObservable.add(async () => {
 
-        Renderer.isReadyObservable.add(async () => {
+            this.hideStartupModal();
 
             const scene = Renderer.getInstance().scene;
 
@@ -90,7 +95,7 @@ export default class Editor extends Component {
             ground.material = groundMaterial;
 
             const city = this.addModel3DObject("Lowpoly_City.fbx", null, (city) => {
-                
+
                 city.name = "Modèle 3D - Ville";
                 // Juste un test
                 const road = scene.getMeshByName("Model::ROAD");
@@ -118,9 +123,9 @@ export default class Editor extends Component {
             car.qualifier = Qualifiers.PLAYER_TAG;
 
             // Créer les fichiers pour stocker le code
-            if(!FileManager.fileExists(Game.getFilePath("States", "StateA."+StateEditorUtils._stateFilesFormat))) { //StateA.xml
+            if (!FileManager.fileExists(ProjectManager.getFilePath("States", "StateA." + StateEditorUtils._stateFilesFormat))) { //StateA.xml
                 StateEditorUtils.createStateFile("StateA");
-            }else{
+            } else {
                 // Ajouter à la liste des fichiers d'état
                 StateEditorUtils.addStateFile("StateA");
             }
@@ -128,14 +133,14 @@ export default class Editor extends Component {
             //car.fsm.states[0].stateFile.codeFilename = Game.getFilePath("States", "StateA."+StateEditorUtils._stateCodeFilesFormat); //StateA.state
             car.fsm.states[0].name = "State A";
 
-            
-            const car2 : ProgrammableGameObject = new ProgrammableGameObject("Car2", scene);
+
+            const car2: ProgrammableGameObject = new ProgrammableGameObject("Car2", scene);
             car2.qualifier = Qualifiers.NEUTRAL_TAG;
 
             car2.fsm.states[0].stateFile = StateEditorUtils._stateFiles["AICarMainState"];
             console.warn(car2.fsm.states);
 
-            const carCollider = new ColliderComponent(car,scene);
+            const carCollider = new ColliderComponent(car, scene);
 
             this.addModel3DObject("Car_04_3.fbx", null, (carModel) => {
 
@@ -159,7 +164,7 @@ export default class Editor extends Component {
             });
 
 
-            const carCollider2 : ColliderComponent = new ColliderComponent(car2,scene);
+            const carCollider2: ColliderComponent = new ColliderComponent(car2, scene);
             carCollider2.isTrigger = true;
             carCollider2.shape.name = "CarCollider2";
 
@@ -212,8 +217,12 @@ export default class Editor extends Component {
                 //     }
                 // }
             });
+        //});
+    }
 
-        });
+    componentDidMount() {
+        console.log("Editor did mount");
+        // window.CANNON = cannon;
     }
 
     // useEffect(()=>{
@@ -221,10 +230,10 @@ export default class Editor extends Component {
     // });
 
     handleTabChange = (tabKey) => {
-        this.setState({ 
-                activeTab: tabKey,
-                eMode: tabKey,  
-            });
+        this.setState({
+            activeTab: tabKey,
+            eMode: tabKey,
+        });
     };
 
 
@@ -234,16 +243,16 @@ export default class Editor extends Component {
     }
 
     addModel3DObject(filename: string, options = null, callback: (model: Model3D) => void | null) {
-        
-        console.log(filename);
-        
-        // TODO : Remplacer par Game.getFilePath("Models");
-        const os = require('os');
-        const path = require('path');
-        const documentsPath = os.homedir() + '\\Documents\\Lusine Game Maker\\MonProjet';
-        let modelsDirectory = path.resolve(documentsPath, 'Models');
 
-       
+        console.log(filename);
+
+        // TODO : Remplacer par Game.getFilePath("Models");
+        // const os = require('os');
+        // const path = require('path');
+        // const documentsPath = os.homedir() + '\\Documents\\Lusine Game Maker\\MonProjet';
+        // let modelsDirectory = path.resolve(documentsPath, 'Models');
+
+        const modelsDirectory = ProjectManager.getModelsDirectory();
 
         //const model = new Model3D("https://models.babylonjs.com/", "aerobatic_plane.glb", Renderer.getInstance().scene);
         const model = new Model3D(modelsDirectory, filename, options, Renderer.getInstance().scene);
@@ -259,7 +268,7 @@ export default class Editor extends Component {
                 // Ajouter une action de clic pour le mesh et ses enfants
                 child.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger, (evt) => {
                     // Votre code ici
-                    const pog : ProgrammableGameObject= model.getObjectOfTypeInParent<ProgrammableGameObject>(ProgrammableGameObject);
+                    const pog: ProgrammableGameObject = model.getObjectOfTypeInParent<ProgrammableGameObject>(ProgrammableGameObject);
                     this.selectGameObject(pog.Id);
                 }));
             });
@@ -313,7 +322,7 @@ export default class Editor extends Component {
     selectGameObject = (id: number) => {
         const go = GameObject.gameObjects.get(id);
         //console.log(GameObject.gameObjects);
-        if(!go) {
+        if (!go) {
             console.error(`GameObject Id : ${id} non trouvé`);
             return;
         }
@@ -356,15 +365,17 @@ export default class Editor extends Component {
     render() {
         return (
             <>
-                <EditorAlert show={this.state.alert.show} message={this.state.alert.message} onCloseCallback={this.state.alert.onCloseCallback}/>
+                <EditorAlert show={this.state.alert.show} message={this.state.alert.message} onCloseCallback={this.state.alert.onCloseCallback} />
 
                 <NavBarEditor />
                 {this.state.activeTab != Mode.StatesEditor && (
                     <>
-                    {/* <CommandModal /> */}
-                    <AddObjectModal show={false} />
+                        {/* <CommandModal /> */}
+                        <AddObjectModal show={false} />
                     </>
                 )}
+
+                <StartupModal show={this.state.showStartupModal} />
 
                 <Tabs activeKey={this.state.activeTab} onSelect={this.handleTabChange} >
                     <Tab eventKey={1} title={<span><FontAwesomeIcon icon="ghost" /> Editeur de niveau</span>}>

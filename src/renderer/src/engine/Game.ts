@@ -21,14 +21,7 @@ export class Game {
     private _isRunning: boolean = false;
 
 
-    // Créer un nom de chemin complet
-    public static getFilePath(directory: string, file?: string): string {
-        // const os = require('os');
-        // const path = require('path');
-        const documentsPath = Game.os.homedir() + '\\Documents\\Lusine Game Maker\\MonProjet';
-        const dir = Game.path.resolve(documentsPath, directory);
-        return Game.path.resolve(dir, file);
-    }
+
 
     public static getInstance() {
 

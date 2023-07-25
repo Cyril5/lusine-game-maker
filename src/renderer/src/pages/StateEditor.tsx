@@ -20,6 +20,7 @@ import { EditorAlertType } from '@renderer/components/EditorAlert';
 import FileManager from '@renderer/engine/FileManager';
 import { IStateFile } from '@renderer/engine/FSM/IStateFile';
 import StateEditorUtils from '@renderer/editor/StateEditorUtils';
+import EditorUtils from '@renderer/editor/EditorUtils';
 
 //const serializer: Blockly.serialization.blocks.BlockSerializer = new Blockly.serialization.blocks.BlockSerializer();
 let workspace: Blockly.WorkspaceSvg;
@@ -191,8 +192,7 @@ const StateEditor = (props: any) => {
 
     const openPromptNewStateFile = (): void => {
         // ouvrir une fenêtre pour créer le fichier
-        const prompt = require('electron-prompt');
-        prompt({
+        EditorUtils.openInputDialog({
             title: "Créer un nouveau fichier d'état",
             message: 'Hello !',
             label: 'Nom:',
@@ -200,26 +200,26 @@ const StateEditor = (props: any) => {
             inputAttrs: { type: 'text', required: true },
             type: 'input',
             buttonsLabel: { ok: 'Ajouter', cancel: 'Annuler' }
-        })
-            .then((result: any) => {
-                if (result) {
-                    const regexStateFileName: RegExp = /^[A-Za-z0-9]*$/;
-                    if (regexStateFileName.test(result)) {
+        }, (response) => {
+            if (response) {
+                const regexStateFileName: RegExp = /^[A-Za-z0-9]*$/;
+                if (regexStateFileName.test(response)) {
 
-                        // Génération du nouveau fichier d'état.
-                        StateEditorUtils.createStateFile(result);
+                    // Génération du nouveau fichier d'état.
+                    StateEditorUtils.createStateFile(response);
 
-                    } else {
-                        Editor.showAlert("Le nom du fichier n'est pas valide. \n\nCe dernier ne pas doit contenir de caractère spéciaux ni d'espace "
-                            , EditorAlertType.Error, () => {
-                                openPromptNewStateFile();
-                            }
-                        );
-                    }
-                    console.log('result', result);
+                } else {
+                    Editor.showAlert("Le nom du fichier n'est pas valide. \n\nCe dernier ne pas doit contenir de caractère spéciaux ni d'espace "
+                        , EditorAlertType.Error, () => {
+                            openPromptNewStateFile();
+                        }
+                    );
                 }
-            })
-            .catch(console.error);
+                console.log('result', response);
+            }
+        },(error)=>{
+            console.error(error);
+        });
     }
 
     const newWorkspace = (): void => {
@@ -235,7 +235,7 @@ const StateEditor = (props: any) => {
             cancelId: 2,
         };
 
-        const saveBeforeNewResponse = dialog.showMessageBoxSync(options);
+        const saveBeforeNewResponse = EditorUtils.showMsgDialog(options);
         switch (saveBeforeNewResponse) {
             case 0: //yes
                 saveWorkspace();
@@ -305,7 +305,7 @@ const StateEditor = (props: any) => {
                 {currentStateFile !== null && <p>{currentStateFile.filename}</p>}
 
                 <Row>
-                <Col md={2}>
+                    <Col md={2}>
                         <StateFilesTreeView data={data} />
                     </Col>
 
@@ -315,9 +315,9 @@ const StateEditor = (props: any) => {
                 </td>
                 </tr>
             </table> */}
-            <Button variant='primary' size='lg' onClick={newWorkspace} ><FontAwesomeIcon icon="file"></FontAwesomeIcon></Button>
+                        <Button variant='primary' size='lg' onClick={newWorkspace} ><FontAwesomeIcon icon="file"></FontAwesomeIcon></Button>
 
-            <Button variant='warning' size="lg" onClick={saveWorkspace}><FontAwesomeIcon icon="save"></FontAwesomeIcon></Button>
+                        <Button variant='warning' size="lg" onClick={saveWorkspace}><FontAwesomeIcon icon="save"></FontAwesomeIcon></Button>
 
                         <div id="blocklyArea" ref={blocklyAreaRef}>
                             Si ce message s'affiche : Redimensionner la fenêtre pour afficher l'espace de travail.

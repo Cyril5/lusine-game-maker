@@ -4,6 +4,7 @@ import Editor from "../components/Editor";
 import BaseStateFile from '@renderer/assets/BaseStateFile.json?raw';
 import FileManager from "@renderer/engine/FileManager";
 import EditorUtils from "./EditorUtils";
+import ProjectManager from "./ProjectManager";
 
 export default class StateEditorUtils {
     
@@ -16,9 +17,8 @@ export default class StateEditorUtils {
     static createStateFile = (className: string) => {
         // 1.Créer le fichier dans le projet (C:\Users\cyril\Documents\Lusine Game Maker\MonProjet\States)
         // 2.Attribuer un code de base
-        const fs = require('fs');
-        const fileLocation = Game.getFilePath("States", className+'.'+StateEditorUtils._stateFilesFormat);
-        const fileCodeLocation = Game.getFilePath("States", className+'.'+StateEditorUtils._stateCodeFilesFormat);
+        const fileLocation = ProjectManager.getFilePath("States", className+'.'+StateEditorUtils._stateFilesFormat);
+        const fileCodeLocation = ProjectManager.getFilePath("States", className+'.'+StateEditorUtils._stateCodeFilesFormat);
         // fs.writeFile(fileLocation, BaseStateFile, (err) => {
         //     if (err) throw err;
         // });

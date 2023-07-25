@@ -33,6 +33,17 @@ export default class FileManager {
         });
     }
 
+    static createDir(directoryName)  {
+        FileManager.fs.mkdir(directoryName, (err) => {
+            if (err) {
+              console.error('Erreur lors de la création du répertoire :', err);
+              throw err;
+            } else {
+              console.log('Répertoire créé avec succès !');
+            }
+          });
+    }
+
     // public static getInstance() {
 
     //     if (!FileManager._instance) {

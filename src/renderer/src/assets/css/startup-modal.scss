@@ -1,0 +1,24 @@
+.logo-modal {
+    width: 50%;
+    display: flex;
+    justify-content: center;
+}
+
+.btns-group {
+    //margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    Button {
+        width: 100%;
+        margin-top: 15px;
+    }
+
+}
+.info {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    text-align: end;
+}
