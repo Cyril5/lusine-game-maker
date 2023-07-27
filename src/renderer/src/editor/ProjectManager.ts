@@ -16,12 +16,19 @@ export default class ProjectManager {
         // const path = require('path');
         //const documentsPath = Game.os.homedir() + '\\Documents\\Lusine Game Maker\\MonProjet';
         //const dir = Game.path.resolve(documentsPath, directory);
-        const dir = ProjectManager._currentProjectDir;
-        return EditorUtils.path.resolve(dir, file);
+        const projDir = ProjectManager._currentProjectDir;
+        const path = EditorUtils.path.resolve(projDir, directory);
+        return EditorUtils.path.resolve(path,file);
     }
 
+    // TODO : remplacer par un getter
     static getModelsDirectory() : string {
         return ProjectManager.getFilePath(ProjectManager._currentProjectDir,'Models');
+    }
+    
+    // TODO : remplacer par un getter
+    static getStateFilesDirectory() : string {
+        return ProjectManager.getFilePath(ProjectManager._currentProjectDir,'States');
     }
 
 

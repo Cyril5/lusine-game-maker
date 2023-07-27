@@ -72,6 +72,9 @@ export default class State {
 
   async runCode() { // run state code
 
+    if(!this.stateFile)
+      return;
+
     // On eval une seul fois les classes qui peuvent être utilisé par d'autres state
     // TODO : Mettre dans le tableau les classes existantes de tous les codes au lieu de tout importer.
     // if(this.stateFile.outputCode.includes(InputManager)) {

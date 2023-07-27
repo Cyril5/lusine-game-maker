@@ -121,24 +121,26 @@ export default class Editor extends Component {
 
             const car = new ProgrammableGameObject("Car_PO", scene);
             car.qualifier = Qualifiers.PLAYER_TAG;
+            
+            alert(ProjectManager.getFilePath("States", "StateA." + StateEditorUtils._stateFilesFormat));
 
             // Créer les fichiers pour stocker le code
             if (!FileManager.fileExists(ProjectManager.getFilePath("States", "StateA." + StateEditorUtils._stateFilesFormat))) { //StateA.xml
-                StateEditorUtils.createStateFile("StateA");
+                //StateEditorUtils.createStateFile("StateA");
             } else {
-                // Ajouter à la liste des fichiers d'état
-                StateEditorUtils.addStateFile("StateA");
+                //Ajouter à la liste des fichiers d'état
+                //StateEditorUtils.addStateFile("StateA");
             }
+            StateEditorUtils.addStateFile("StateA");
 
-            //car.fsm.states[0].stateFile.codeFilename = Game.getFilePath("States", "StateA."+StateEditorUtils._stateCodeFilesFormat); //StateA.state
-            car.fsm.states[0].name = "State A";
-
+            car.fsm.states[0].stateFile = StateEditorUtils.getStateFile("StateA"); //StateA.state
+            console.warn(car.fsm.states);
 
             const car2: ProgrammableGameObject = new ProgrammableGameObject("Car2", scene);
             car2.qualifier = Qualifiers.NEUTRAL_TAG;
 
-            car2.fsm.states[0].stateFile = StateEditorUtils._stateFiles["AICarMainState"];
-            console.warn(car2.fsm.states);
+            StateEditorUtils.addStateFile("AICarMainState");
+            car2.fsm.states[0].stateFile = StateEditorUtils.getStateFile("AICarMainState");
 
             const carCollider = new ColliderComponent(car, scene);
 
