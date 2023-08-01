@@ -31,6 +31,12 @@ export default class ProjectManager {
         return ProjectManager.getFilePath(ProjectManager._currentProjectDir,'States');
     }
 
+    static openDemoProject() {
+        ProjectManager._projectName = "Demo";
+        ProjectManager._currentProjectDir = EditorUtils.path.resolve(EditorUtils.path.resolve(EditorUtils.appPath,'projects'),'Demo'); 
+        Editor.getInstance().loadDefaultGame();
+    }
+
 
     static openProject() {
         EditorUtils.openDirectoryDialog().then((result) => {

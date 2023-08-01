@@ -8,7 +8,6 @@ import { ProgrammableGameObject } from "@renderer/engine/ProgrammableGameObject"
 import { Model3D } from "@renderer/engine/Model3D";
 import NavBarEditor from "./NavBarEditor";
 import AddObjectModal from "./AddObjectModal";
-import CommandModal from "./CommandModal";
 import { Tab, Tabs } from "react-bootstrap";
 import LevelEditor from "@renderer/pages/LevelEditor";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -20,7 +19,6 @@ import EditorAlert, { EditorAlertType } from "./EditorAlert";
 import StateEditorUtils from "../editor/StateEditorUtils";
 import FileManager from "@renderer/engine/FileManager";
 import Qualifiers from "@renderer/editor/Qualifiers";
-import EditorUtils from "@renderer/editor/EditorUtils";
 import StartupModal from "./StartupModal";
 import ProjectManager from "@renderer/editor/ProjectManager";
 
@@ -94,7 +92,7 @@ export default class Editor extends Component {
             const ground = MeshBuilder.CreateGround("ground", { width: 1000, height: 1000 }, scene);
             ground.material = groundMaterial;
 
-            const city = this.addModel3DObject("Lowpoly_City.fbx", null, (city) => {
+            const city = this.addModel3DObject("city2.fbx", null, (city) => {
 
                 city.name = "Modèle 3D - Ville";
                 // Juste un test
@@ -122,8 +120,6 @@ export default class Editor extends Component {
             const car = new ProgrammableGameObject("Car_PO", scene);
             car.qualifier = Qualifiers.PLAYER_TAG;
             
-            alert(ProjectManager.getFilePath("States", "StateA." + StateEditorUtils._stateFilesFormat));
-
             // Créer les fichiers pour stocker le code
             if (!FileManager.fileExists(ProjectManager.getFilePath("States", "StateA." + StateEditorUtils._stateFilesFormat))) { //StateA.xml
                 //StateEditorUtils.createStateFile("StateA");

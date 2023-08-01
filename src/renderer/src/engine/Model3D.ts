@@ -47,25 +47,23 @@ export class Model3D extends GameObject {
                     // pbr.albedoTexture = origMatTexture;
                     meshes.forEach((mesh: AbstractMesh) => {
 
-                        //console.log(mesh.name);
-                        //console.log(mesh.material);
                         if(mesh.material) {
-                            const materialName = mesh.material.name;
-                            let existingMat = Model3D.materials.get(materialName);
+                            // const materialName = mesh.material.name;
+                            // let existingMat = Model3D.materials.get(materialName);
     
-                            if (!existingMat) {
-                                // Créer un nouveau matériau si aucun matériau n'a encore été créé pour ce nom
-                                existingMat = mesh.material.clone(materialName);
-                                Model3D.materials.set(materialName, existingMat);
-                            } else {
-                               mesh.material.dispose();
-                            }
+                            // if (!existingMat) {
+                            //     // Créer un nouveau matériau si aucun matériau n'a encore été créé pour ce nom
+                            //     existingMat = mesh.material.clone(materialName);
+                            //     Model3D.materials.set(materialName, existingMat);
+                            // } else {
+                            //    mesh.material.dispose();
+                            // }
     
-                            // Lier le mesh au matériau correspondant
-                            mesh.material = existingMat;
-                            //mesh.material = material;
+                            // // Lier le mesh au matériau correspondant
+                            // mesh.material = existingMat;
+                            // //mesh.material = material;
     
-                            //mesh.material = pbr; // appliquer le matériau au premier noeud du modèle
+                            // //mesh.material = pbr; // appliquer le matériau au premier noeud du modèle
                         }
 
                         if(!mesh.parent) {
@@ -89,10 +87,6 @@ export class Model3D extends GameObject {
                             element.setParent(this);
                         }
                     }
-
-                    //Model3D.materials.get("Material::World ap").diffuseColor = new BABYLON.Color3(0, 1, 0);
-
-
 
                     // Déclenchement de l'événement
                     this.onLoaded.notifyObservers(this);

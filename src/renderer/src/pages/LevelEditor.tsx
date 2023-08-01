@@ -52,8 +52,6 @@ const LevelEditor = (props) => {
 
     return (
         <>
-
-
             <Container fluid>
                 <Row>
                     <Col>
@@ -88,9 +86,9 @@ const LevelEditor = (props) => {
                         <RendererComponent />
 
                         <PropertiesBar
+                            id={objJeu?.id}
                             gameObjectType={objJeu?.type}
                             gameObjectName={objJeu?.name}
-                            id={objJeu?.id}
                             parentId={objJeu?.parent?.id}
                         />
                     </Col>

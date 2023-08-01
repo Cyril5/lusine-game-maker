@@ -20,6 +20,10 @@ const StartupModal = (props:any)=> {
     ProjectManager.openProject();
   }
 
+  const handleOpenDemoProject = ()=>{
+    ProjectManager.openDemoProject();
+  }
+
   useEffect(()=>{
     setShow(props.show);
 
@@ -42,6 +46,7 @@ const StartupModal = (props:any)=> {
         <Modal.Body>
           <div className="btns-group">
           <img src={logo} className='logo-modal'/>
+            <Button variant="secondary" onClick={handleOpenDemoProject}>Ouvrir le projet de démo</Button>
             <Button variant="secondary" onClick={handleCreateProject}>Créer un nouveau projet</Button>
             <Button variant="secondary" onClick={handleOpenProject}>Ouvrir un projet</Button>
             <Button variant="secondary" onClick={handleClose}>Aide et documentation</Button>

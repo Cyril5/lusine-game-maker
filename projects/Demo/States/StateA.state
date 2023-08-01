@@ -1,0 +1,28 @@
+this.onUpdateState.add(() => {
+  if (this.gameObject.qualifier == (-1)) {
+    if (InputManager.getKeyDown(KeyCode.Z)) {
+      this.gameObject.translate(BABYLON.Axis.Z, 10, BABYLON.Space.LOCAL);
+    } else if (InputManager.getKeyDown(KeyCode.S)) {
+      this.gameObject.translate(BABYLON.Axis.Z, (-5), BABYLON.Space.LOCAL);
+    }
+    if (InputManager.getKeyDown(KeyCode.Q)) {
+      this.gameObject.rotate(BABYLON.Axis.Y, (-0.03), BABYLON.Space.LOCAL);
+    } else if (InputManager.getKeyDown(KeyCode.D)) {
+      console.log('A droite !');
+      this.gameObject.rotate(BABYLON.Axis.Y, 0.03, BABYLON.Space.LOCAL);
+    }
+  } else {
+    // AI Car
+    this.gameObject.translate(BABYLON.Axis.Z, 3, BABYLON.Space.LOCAL);
+  }
+  // Si l'objet est tombé ?
+  if (this.gameObject.position.y <= -200) {
+    this.gameObject.position = new BABYLON.Vector3(0,100,0);
+  }
+});
+
+this.fsm.onCollisionEnter.add((other) => {
+  if ((other.gameObject).qualifier == (-3)) {
+    console.log('Perdu ! vous avez percuté une voiture !');
+  }
+});

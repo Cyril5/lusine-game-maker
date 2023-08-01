@@ -2,10 +2,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState } from "react";
 import { Accordion, Button, Form, Offcanvas } from "react-bootstrap";
 import FSMComponent from "./FSMComponent";
+import Editor from "./Editor";
 
-const PropertiesBar = (props) => {
+const PropertiesBar = (props : any) => {
 
-    const { gameObjectName } = props; // props.name 
 
     // useEffect(() => {
     //     // Update the 3D object represented by Babylon.TransformNode based on the props
@@ -14,10 +14,16 @@ const PropertiesBar = (props) => {
     //     const { x: sx, y: sy, z: sz } = scaling;
     //   }, [position, rotation, scaling]);
 
+    const {id,gameObjectName, gameObjectType,parentId} = props;
+
     const [show, setShow] = useState(false);
 
     const handleClose = () => setShow(false);
     const toggleShow = () => setShow((s) => !s);
+
+    const handleSetGameObjectName = (e: any)=>{
+        Editor.getInstance().selectedGameObject.name = e.target.value;
+    }
 
     return (
         <div>
@@ -35,7 +41,7 @@ const PropertiesBar = (props) => {
                             <Accordion.Body>
                                 <Form.Group className="mb-3">
                                     <Form.Label>Name</Form.Label>
-                                    <Form.Control value={gameObjectName ? gameObjectName : 'null'} placeholder="Disabled input" />
+                                    <Form.Control onChange={handleSetGameObjectName}/>
                                 </Form.Group>
                                 <p>ID : {props.id}</p>
                                 <p>Parent : <Button variant="primary" size="sm">{props.parentId}</Button></p>

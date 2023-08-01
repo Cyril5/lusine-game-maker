@@ -1,10 +1,16 @@
 const { dialog } = require('@electron/remote');
+const {app} = require('@electron/remote');
 const prompt = require('electron-prompt');
 export default class EditorUtils {
 
     static path = require('path'); //TODO : getter
+    //static app = require('app');
     
-    static showMsgDialog(options: { type: string; title: string; message: string; buttons: string[]; defaultId: number; cancelId: number; }) : number {
+    static get appPath() : string {
+      return app.getAppPath();
+    }
+    
+    static showMsgDialog(options: { type: string; title: string; message: string; buttons: string[]; defaultId: number; cancelId?: number; }) : number {
         return dialog.showMessageBoxSync(options);
     }
 

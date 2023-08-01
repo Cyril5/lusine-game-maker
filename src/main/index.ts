@@ -5,6 +5,8 @@ import icon from '../../resources/icon.png?asset'
 
 require('@electron/remote/main').initialize();
 
+app.commandLine.appendSwitch('enable-unsafe-webgpu');
+
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
