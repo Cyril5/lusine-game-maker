@@ -52,6 +52,7 @@ function AddObjectModal(props: any) {
             <ProgressBar animated now={progress} />
 
             <Button variant="primary" onClick={handleShow}>
+                <span>Ajouter un objet  </span>
                 <FontAwesomeIcon icon="cube" />
                 <FontAwesomeIcon icon="plus" />
             </Button>

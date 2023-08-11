@@ -1,59 +1,68 @@
-import React, { useState } from "react";
-import { Button } from "react-bootstrap";
-import Editor from "./Editor";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { DndProvider, MultiBackend, Tree, getBackendOptions } from '@minoru/react-dnd-treeview';
+import React, { useState } from 'react';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { Button } from 'react-bootstrap';
 
-const Node = ({ children, title, level, gameObjectId, onToggle, isExpanded }) => {
+const initialData =[
+  {
+    "id": 1,
+    "parent": 0,
+    "droppable": true,
+    "text": "Folder 1"
+  },
+  {
+    "id": 2,
+    "parent": 1,
+    "text": "File 1-1"
+  },
+  {
+    "id": 3,
+    "parent": 1,
+    "text": "File 1-2"
+  },
+  {
+    "id": 4,
+    "parent": 0,
+    "droppable": true,
+    "text": "Folder 2"
+  },
+  {
+    "id": 5,
+    "parent": 4,
+    "droppable": true,
+    "text": "Folder 2-1"
+  },
+  {
+    "id": 6,
+    "parent": 5,
+    "text": "File 2-1-1"
+  }
+];
+
+
+const GameObjectsTreeView = () => {
+  const [treeData, setTreeData] = useState(initialData);
+  const handleDrop = (newTreeData) => setTreeData(newTreeData);
+
   return (
-    <div style={{ marginLeft: level * 5 }}>
-      {((level !== 0 || !children)) && (
-        <Button size="sm" variant="outline-primary" onClick={onToggle}>
-          {isExpanded ? "-" : "+"}
-        </Button>
-      )}
-      <button onClick={() => handleTest(gameObjectId)}>{title}</button>
-      {isExpanded && <div>{children}</div>}
-    </div>
+    <DndProvider backend={MultiBackend} options={getBackendOptions()}>
+      <Tree
+        tree={treeData}
+        rootId={0}
+        onDrop={handleDrop}
+        render={(node, { depth, isOpen, onToggle }) => (
+          <div style={{ marginLeft: depth * 10 }}>
+            {node.droppable && (
+              <span onClick={onToggle}><FontAwesomeIcon icon={isOpen ? 'minus' : 'plus'}></FontAwesomeIcon> </span>
+            )}
+            <Button variant='secondary'>
+              {node.text}
+            </Button>
+          </div>
+        )}
+      />
+    </DndProvider>
   );
-};
-
-const handleTest=(gameObjectId)=> {
-
-  alert(Editor.getInstance());
-  Editor.getInstance().selectGameObject(gameObjectId);
-
-}
-
-const TreeView = ({ data, level = 0 }) => {
-  const [expandedNodes, setExpandedNodes] = useState([]);
-
-  const handleToggle = (nodeId) => {
-    if (expandedNodes.includes(nodeId)) {
-      setExpandedNodes(expandedNodes.filter((id) => id !== nodeId));
-    } else {
-      setExpandedNodes([...expandedNodes, nodeId]);
-    }
-  };
-
-  return (
-    <div>
-      {data.map((node) => (
-        <Node
-          key={node.id}
-          title={node.title}
-          level={level + 1}
-          gameObjectId={node.gameObjectId}
-          onToggle={() => handleToggle(node.id)}
-          isExpanded={expandedNodes.includes(node.id)}
-        >
-          {node.children ? (
-            <TreeView data={node.children} level={level + 1} />
-          ) : (
-            <div>No children</div>
-          )}
-        </Node>
-      ))}
-    </div>
-  );
-};
-
-export default TreeView;
+            };
+export default GameObjectsTreeView;

@@ -74,13 +74,14 @@ export default class Editor extends Component {
 
             this.hideStartupModal();
 
+            
             const scene = Renderer.getInstance().scene;
-
+            
             const ammo = Renderer.getInstance().ammo;
-
+            
             // Mettre en pause le moteur physique
             scene.physicsEnabled = false;
-
+            
             //GRID
             const groundMaterial = new GridMaterial("groundMaterial", scene);
             groundMaterial.majorUnitFrequency = 5;
@@ -88,34 +89,19 @@ export default class Editor extends Component {
             groundMaterial.gridRatio = 100;
             groundMaterial.opacity = 0.99;
             groundMaterial.useMaxLine = true;
-
+            
             const ground = MeshBuilder.CreateGround("ground", { width: 1000, height: 1000 }, scene);
             ground.material = groundMaterial;
+            
+            const city = this.addModel3DObject("PizzaHome.glb", null, (city) => {
+                
+                city.name = "PizzaHome";
+                
 
-            const city = this.addModel3DObject("city2.fbx", null, (city) => {
-
-                city.name = "Modèle 3D - Ville";
-                // Juste un test
-                const road = scene.getMeshByName("Model::ROAD");
-                if (road) {
-                    const parent = road.parent;
-                    road.setParent(null); //avant d'appliquer un physicsImposter il faut que le parent soit null
-                    // Créez une forme de collision de maillage pour la route
-                    road.physicsImpostor = new BABYLON.PhysicsImpostor(road, BABYLON.PhysicsImpostor.MeshImpostor, { mass: 0, friction: 0.5, restitution: 0 }, scene);
-                    road.setParent(parent);
-                }
-
-                // let buildings = scene.getNodeByName("Model::Block_1");
-                // buildings.dispose();
-                // buildings = scene.getNodeByName("Model::Block_2");
-                // buildings.dispose();
-                // buildings = scene.getNodeByName("Model::Block_3");
-                // buildings.dispose();
-                // buildings = scene.getNodeByName("Model::Block_4");
-                // buildings.dispose();
-
+                
             });
-
+            return;
+            
 
             const car = new ProgrammableGameObject("Car_PO", scene);
             car.qualifier = Qualifiers.PLAYER_TAG;
@@ -369,7 +355,7 @@ export default class Editor extends Component {
                 {this.state.activeTab != Mode.StatesEditor && (
                     <>
                         {/* <CommandModal /> */}
-                        <AddObjectModal show={false} />
+
                     </>
                 )}
 

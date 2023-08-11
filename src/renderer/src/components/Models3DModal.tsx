@@ -5,6 +5,7 @@ import { Card, Col, Container, Form, ProgressBar, Row, Stack } from 'react-boots
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Editor from './Editor';
+import ProjectManager from '@renderer/editor/ProjectManager';
 
 // import modelsDirectory from '../public/projects/MonProjet/models?url';
 
@@ -22,10 +23,7 @@ const Models3DModal = (props: any) => {
 
     const [modelfiles, setFiles] = useState([]);
 
-    const os = require('os');
-    const path = require('path');
-    const documentsPath = os.homedir() + '\\Documents\\Lusine Game Maker\\MonProjet';
-    let modelsDirectory = path.resolve(documentsPath, 'Models');
+    let modelsDirectory = ProjectManager.getModelsDirectory();
 
     const readModelsFiles = () => {
         fs.readdir(modelsDirectory, (err, files) => {
@@ -42,7 +40,7 @@ const Models3DModal = (props: any) => {
     useEffect(() => {
 
 
-        modelsDirectory = path.resolve(documentsPath, 'Models');
+        modelsDirectory = ProjectManager.getModelsDirectory();
 
         console.log(modelsDirectory);
 

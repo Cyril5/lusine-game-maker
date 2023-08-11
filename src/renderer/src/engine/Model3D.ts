@@ -7,6 +7,8 @@ export class Model3D extends GameObject {
 
     static materials: Map<string, BABYLON.Material> = new Map<string, BABYLON.Material>();
 
+    onLoaded = new Observable<Model3D>(); // Observable pour l'événement
+
     constructor(directoryOrUrl: string, filename: string, options = null, scene: Scene) {
         super("Modèle 3D", scene);
 
@@ -16,18 +18,22 @@ export class Model3D extends GameObject {
         const extension = filename.split(".")[filename.split(".").length - 1];
         if (extension !== "fbx") {
             //SceneLoader.ImportMesh("", "https://models.babylonjs.com/", "aerobatic_plane.glb", scene, (meshes) => {
-            const mesh = SceneLoader.ImportMesh("", directoryOrUrl, filename, scene, (meshes) => {
+            const mesh = SceneLoader.ImportMesh("", directoryOrUrl+'/', filename, scene, (meshes) => {
 
-                console.log(meshes);
-                // const plane = scene.getNodeByName("aerobatic_plane.2");
-                // plane.parent = null;
-                // const propellor = scene.getNodeByName("Propellor_Joint.9");
-                // propellor.parent = plane;
+                console.log(meshes.length);
 
 
-                this.onLoaded.notifyObservers(this);
+                     // Fusionner tous les maillages individuels en un seul maillage
+                    const mergedMesh = BABYLON.Mesh.MergeMeshes(meshes[0].getChildMeshes(), true, true, undefined, false, true);
+                    //enlever le mesh root "__root__"
+                    if(extension === "glb") {
+                        meshes[0].dispose();
+                    }
+                    mergedMesh.setParent(this);
+                //test.freezeWorldMatrix();
+                //scene.freezeActiveMeshes();
 
-                // this._scene.getNodeById("__root__")?.dispose();
+               // this.onLoaded.notifyObservers(this);
 
             });
         } else {
@@ -99,6 +105,6 @@ export class Model3D extends GameObject {
 
     }
 
-    public onLoaded = new Observable<Model3D>(); // Observable pour l'événement
+
 }
 

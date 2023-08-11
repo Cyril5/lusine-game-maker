@@ -10,6 +10,7 @@ import PropertiesBar from '../components/PropertiesBar';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import GameObjectsTreeView from '../components/GameObjectsTreeView';
+import GameObjectsTreeBar from '@renderer/components/GameObjectsTreeBar';
 
 
 const LevelEditor = (props) => {
@@ -37,10 +38,10 @@ const LevelEditor = (props) => {
     //           ],
     //         }))
     //       ), [GameObject.gameObjects]);
-      
+
     //       setData(mappedData);
     //     }, 1000);
-      
+
     //     return () => clearInterval(intervalId);
     //   }, []);
 
@@ -75,15 +76,11 @@ const LevelEditor = (props) => {
                 </Row>
 
                 <Row>
-                    {/* <Col md={2}> */}
-                        {/* <h2>Objets <FontAwesomeIcon icon="cubes" /></h2> */}
-                        {/* <Button onClick={() => Editor.getInstance().handleAddObject()}>Ajouter</Button> */}
-                        {/* <TreeView data={data} expandedNodes={expandedNodes} setExpandedNodes={setExpandedNodes} />
-                         */}
-                         {/* <GameObjectsTreeView data={data}/> */}
-                    {/* </Col> */}
-                    <Col>
+                    <div className='test'>
+                        <GameObjectsTreeBar />
+
                         <RendererComponent />
+
 
                         <PropertiesBar
                             id={objJeu?.id}
@@ -91,7 +88,17 @@ const LevelEditor = (props) => {
                             gameObjectName={objJeu?.name}
                             parentId={objJeu?.parent?.id}
                         />
-                    </Col>
+                    </div>
+                    {/* <Col md={2}> */}
+                    {/* <h2>Objets <FontAwesomeIcon icon="cubes" /></h2> */}
+                    {/* <Button onClick={() => Editor.getInstance().handleAddObject()}>Ajouter</Button> */}
+                    {/* <TreeView data={data} expandedNodes={expandedNodes} setExpandedNodes={setExpandedNodes} />
+                         */}
+                    {/* <GameObjectsTreeView data={data}/> */}
+                    {/* </Col> */}
+
+
+
                 </Row>
             </Container>
 
