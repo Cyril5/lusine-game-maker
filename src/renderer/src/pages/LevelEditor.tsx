@@ -17,34 +17,7 @@ const LevelEditor = (props) => {
 
     // Cela permet de simplifier la syntaxe lorsque vous voulez accéder à une propriété d'un objet. Au lieu d'écrire props.objJeu à plusieurs endroits, vous pouvez simplement écrire objJeu.
     const { objJeu } = props;
-
-    const [data, setData] = useState([]);
-
-    let lastNodeId = 1;
-    const [expandedNodes, setExpandedNodes] = useState([]);
-
-    // useEffect(() => {
-    //     const intervalId = setInterval(() => {
-    //       const mappedData = useMemo(() => (
-    //         Array.from(GameObject.gameObjects.values()).map(gameObject => ({
-    //           id: lastNodeId++,
-    //           gameObjectId: gameObject.id,
-    //           title: gameObject.name,
-    //           children: [
-    //             {
-    //               id: lastNodeId++,
-    //               title: gameObject.transform.getChildren()[0].name,
-    //             },
-    //           ],
-    //         }))
-    //       ), [GameObject.gameObjects]);
-
-    //       setData(mappedData);
-    //     }, 1000);
-
-    //     return () => clearInterval(intervalId);
-    //   }, []);
-
+    const {gameObjects} = props;
 
 
     const setTransformMode = (transformMode: string) => {
@@ -76,11 +49,15 @@ const LevelEditor = (props) => {
                 </Row>
 
                 <Row>
-                    <div className='test'>
-                        <GameObjectsTreeBar />
-
+                    <Col md={2}>
+                        {/* {gameObjects} */}
+                        <GameObjectsTreeBar gameObjects={gameObjects}/>
+                    </Col>
+                    <Col>
                         <RendererComponent />
-
+                    </Col>
+                    {/* <div className='test'>
+                    </div> */}
 
                         <PropertiesBar
                             id={objJeu?.id}
@@ -88,7 +65,6 @@ const LevelEditor = (props) => {
                             gameObjectName={objJeu?.name}
                             parentId={objJeu?.parent?.id}
                         />
-                    </div>
                     {/* <Col md={2}> */}
                     {/* <h2>Objets <FontAwesomeIcon icon="cubes" /></h2> */}
                     {/* <Button onClick={() => Editor.getInstance().handleAddObject()}>Ajouter</Button> */}

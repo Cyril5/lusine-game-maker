@@ -62,22 +62,36 @@ function AddObjectModal(props: any) {
                     <Modal.Title>Ajouter un objet</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
+                    <p>Double cliquez pour ajouter l'objet</p>
 
-                    <Container fluid>
                         <Row>
-                            <Col>
+                            <Col md={6}>
                                 <Card style={{ width: '18rem' }}>
+                                    <Card.Img variant="top" src="holder.js/100px180" />
+                                    <Card.Body>
+                                        <Card.Title>First Person Controller</Card.Title>
+                                        <Card.Text>
+                                            Description
+                                        </Card.Text>
+                                        <Button variant="primary">Ajouter</Button>
+                                    </Card.Body>
+                                </Card>
+                            </Col>
+                            <Col md={6}>
+                                <Card style={{ width: '18rem' }} onDoubleClick={() => {
+                                    Editor.getInstance().addProgrammableObject();
+                                    handleClose();
+                                    }}>
                                     <Card.Img variant="top" src="holder.js/100px180" />
                                     <Card.Body>
                                         <Card.Title>Objet Programmable</Card.Title>
                                         <Card.Text>
                                             Objet non visuel avec une machine d'états pour programmer
                                         </Card.Text>
-                                        <Button variant="primary" onClick={() => Editor.getInstance().addProgrammableObject()}>Ajouter</Button>
                                     </Card.Body>
                                 </Card>
                             </Col>
-                            <Col>
+                            <Col md={4}>
                                 <Card style={{ width: '18rem' }}>
                                     <Card.Img variant="top" src="holder.js/100px180" />
                                     <Card.Body>
@@ -117,9 +131,6 @@ function AddObjectModal(props: any) {
                                 </Card>
                             </Col>
                         </Row>
-                    </Container>
-
-
 
 
 

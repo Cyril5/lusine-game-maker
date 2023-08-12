@@ -1,13 +1,24 @@
-import { Mesh, MeshBuilder, Scene, Vector3 } from "@babylonjs/core";
-import { TransformNode } from "babylonjs";
-import { ProgrammableGameObject } from "./ProgrammableGameObject";
+import { Scene, Vector3 } from "@babylonjs/core";
+import { Observable, TransformNode } from "babylonjs";
 
 export class GameObject extends TransformNode {
-    
+
     private static _gameObjects = new Map<number | string, GameObject>() //unique id or uuid // map uuid,gameObject
 
-    qualifier : number = 0; 
+    qualifier: number = 0;
 
+    /**
+    * Observable lorsque l'objet est détruit.
+    */
+    onDelete: Observable<void>;
+    /**
+    * Observable lorsque l'objet est détruit.
+    */
+    onCreated: Observable<void>;
+
+    /**
+    * Get l'identifiant unique du GameObject.
+    */
     get Id(): number {
         return this.uniqueId;
     }
@@ -38,18 +49,26 @@ export class GameObject extends TransformNode {
         super(name, scene);
         // L'accès direct au renderer provoque une erreur
         //        this._transform = new TransformComponent(this, name, scene);
+        this.onDelete = new Observable();
+        this.onCreated = new Observable();
 
         this.metadata = { type: "GameObject" }
 
         if (!GameObject._gameObjects.has(this.uniqueId)) {
             GameObject._gameObjects.set(this.uniqueId, this);
+            // this.onCreated.notifyObservers();
         } else {
             console.error("L'objet ayant l'id :" + this.uniqueId + "existe déjà");
             return;
         }
 
+
     }
 
+    dispose() {
+        this.onDelete.notifyObservers();
+        this.dispose();
+    }
 
 
     saveTransform() {

@@ -1,18 +1,20 @@
 import { useEffect, useRef } from "react";
-import { Engine, Scene, Vector3 } from "@babylonjs/core";
+import { Engine,Scene } from "@babylonjs/core";
 import EditorUtils from "@renderer/editor/EditorUtils";
 
 
 export default ({ antialias, engineOptions, adaptToDeviceRatio, sceneOptions, onRender, onSceneReady, ...rest }) => {
   const reactCanvas = useRef(null);
 
+  let scene : Scene;
+
   let rendererEngineType : number = 0;
 
-  const initWebGPUEngine = async (canvas)=> {
-    let engine: BABYLON.WebGPUEngine | Engine;
+  const initEngine = async (canvas)=> {
+    let engine: WebGPUEngine | Engine;
     switch (rendererEngineType) {
       case 1:
-        engine = new BABYLON.WebGPUEngine(canvas);
+        engine = new WebGPUEngine(canvas);
         await engine.initAsync();
         break;
     
@@ -21,7 +23,7 @@ export default ({ antialias, engineOptions, adaptToDeviceRatio, sceneOptions, on
         break;
     }
 
-    const scene = new Scene(engine, sceneOptions);
+    scene = new Scene(engine, sceneOptions);
     if (scene.isReady()) {
       onSceneReady(scene);
     } else {
@@ -40,7 +42,7 @@ export default ({ antialias, engineOptions, adaptToDeviceRatio, sceneOptions, on
     rendererEngineType = EditorUtils.showMsgDialog({
       message: 'Choisissez le moteur de rendu',
       type: 'info',
-      buttons: ['WEBGL 2.0', 'WEB GPU'],
+      buttons: ['WEBGL 2.0 (Stable)', 'WEB GPU'],
       defaultId: 0,
       title: "",
     });
@@ -54,7 +56,7 @@ export default ({ antialias, engineOptions, adaptToDeviceRatio, sceneOptions, on
 
     if (!canvas) return;
 
-    initWebGPUEngine(canvas);
+    initEngine(canvas);
     //const engine = new Engine(canvas, antialias, engineOptions, adaptToDeviceRatio);
 
     // const scene = new Scene(engine, sceneOptions);

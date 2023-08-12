@@ -33,7 +33,7 @@ export class Model3D extends GameObject {
                 //test.freezeWorldMatrix();
                 //scene.freezeActiveMeshes();
 
-               // this.onLoaded.notifyObservers(this);
+               this.onLoaded.notifyObservers(this);
 
             });
         } else {

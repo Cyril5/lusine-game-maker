@@ -10,7 +10,7 @@ import { AmmoJSPlugin } from "babylonjs";
 
 export class Renderer {
     
-    private readonly CAMERA_PANNING_SENSTIVITY = 5;
+    private readonly CAMERA_PANNING_SENSTIVITY = 25;
     private readonly CAMERA_ZOOM_SENSTIVITY = 2;  
     
     private _scene: BABYLON.Scene;

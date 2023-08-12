@@ -88,6 +88,11 @@ export class FiniteStateMachine {
 
 }
 
+    /**
+   * Observable pour les FSM
+   * @remarks
+   * La liste des méthodes observées est supprimée lorsque le jeu s'arrête
+   */
 export class FSMObservable<T> extends Observable<T> {
 
     constructor() {

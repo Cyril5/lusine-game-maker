@@ -97,7 +97,7 @@ const StateEditor = (props: any) => {
             grid: {
                 spacing: 25,
                 length: 3,
-                colour: '#ccc',
+                colour: '',
                 snap: true,
             },
             zoom: {
@@ -107,6 +107,14 @@ const StateEditor = (props: any) => {
                 maxScale: 3,
                 minScale: 0.3,
                 scaleSpeed: 1.2
+            },
+            move: {
+                    scrollbars: {
+                      horizontal: true,
+                      vertical: true
+                    },
+                    drag: false,
+                    wheel:true,
             },
             collapse: true,
             comments: true,
@@ -305,9 +313,6 @@ const StateEditor = (props: any) => {
                 {currentStateFile !== null && <p>{currentStateFile.filename}</p>}
 
                 <Row>
-                    <Col md={2}>
-                        <StateFilesTreeView data={data} />
-                    </Col>
 
                     <Col>{/* <table>
                 <tr>
@@ -325,6 +330,10 @@ const StateEditor = (props: any) => {
 
                         <div id="blocklyDiv" ref={blocklyDivRef} />
                     </Col>
+                    <Col md={2}>
+                        <StateFilesTreeView data={data} />
+                    </Col>
+
 
                 </Row>
             </Container>

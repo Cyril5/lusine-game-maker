@@ -7,7 +7,8 @@ import AddObjectModal from "./AddObjectModal";
 
 const GameObjectsTreeBar = (props : any) => {
 
-    const [divWidth, setDivWidth] = useState(200);
+    const [divWidth, setDivWidth] = useState(250);
+    const {gameObjects} = props;
 
     const handleMouseDown = (e) => {
       document.addEventListener('mousemove', handleMouseMove);
@@ -30,18 +31,22 @@ const GameObjectsTreeBar = (props : any) => {
             style={{ width: divWidth + 'px' }}
             onMouseDown={handleMouseDown}
           >
-            REZIZE ME !
             {/* <Button variant="secondary" onClick={toggleShow} className="objects-tree-btn">
                 <FontAwesomeIcon icon="cube" />
             </Button> */}
             {/* <Offcanvas className="properties-bar" placement="start" scroll backdrop={false} show={show} onHide={handleClose} {...props}>
                 <Offcanvas.Header closeButton>
-                    <Offcanvas.Title>Objets <FontAwesomeIcon icon="cube" /></Offcanvas.Title>
+                <Offcanvas.Title>Objets <FontAwesomeIcon icon="cube" /></Offcanvas.Title>
                 </Offcanvas.Header>
                 <Offcanvas.Body>
                 </Offcanvas.Body>
-            </Offcanvas> */}
-            <GameObjectsTreeView/>
+              </Offcanvas> */}
+
+
+              
+              <h5><FontAwesomeIcon icon={'cubes'}/> Objets</h5>
+
+            <GameObjectsTreeView gameObjects={gameObjects}/>
             <AddObjectModal show={false} />
 
         </div>
