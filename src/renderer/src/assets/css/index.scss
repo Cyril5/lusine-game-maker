@@ -15,14 +15,14 @@
   text-orientation: upright;
 }
 
-.resizable-div {
-  width: 1500px;
-  height: 100%;
-  background-color: #1d142e;
-  resize: horizontal;
-  overflow: hidden;
-  cursor: col-resize; /* Changement de curseur au survol */
-}
+// .resizable-div {
+//   width: 1500px;
+//   height: 100%;
+//   background-color: #1d142e;
+//   resize: horizontal;
+//   overflow: hidden;
+//   cursor: col-resize; /* Changement de curseur au survol */
+// }
 
 .test {
   display: flex;
@@ -36,7 +36,11 @@
 body {
 // background-color: #242424;
 //   color: rgba(255, 255, 255, 0.87);
-
+  ul {
+    list-style: none;
+    padding-left: 16px;
+    padding-top: 3px;
+  }
 }
 
 // :root {

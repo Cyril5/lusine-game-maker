@@ -227,6 +227,7 @@ export default class Editor extends Component {
         for (const [id, gameObject] of GameObject.gameObjects) {
             arr.push({
                 "id": id,
+                "droppable": true,
                 "parent": 0,
                 "text": gameObject.name+" (ID : "+id+")",
                 "data": {

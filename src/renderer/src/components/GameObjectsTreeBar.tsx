@@ -27,8 +27,7 @@ const GameObjectsTreeBar = (props : any) => {
 
     return (
         <div
-            className="resizable-div"
-            style={{ width: divWidth + 'px' }}
+            className="tree-bar"
             onMouseDown={handleMouseDown}
           >
             {/* <Button variant="secondary" onClick={toggleShow} className="objects-tree-btn">

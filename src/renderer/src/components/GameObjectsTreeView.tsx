@@ -73,14 +73,38 @@ const GameObjectsTreeView = (props: any) => {
 
   }, [props.gameObjects])
 
-  const handleDrop = (newTreeData) => setTreeData(newTreeData);
+  const handleDrop = (newTreeData,{ dragSourceId, dropTargetId, dragSource, dropTarget }) => {
+    // alert(`${dragSourceId}`);
+    // alert(`${dropTargetId}`);
+
+    GameObject.gameObjects.get(dragSourceId).setParent(dropTargetId > 0 ? GameObject.gameObjects.get(dropTargetId) : null);
+    setTreeData(newTreeData);
+  }
 
   return (
+  //   <DndProvider backend={MultiBackend} options={getBackendOptions()}>
+  //   <Tree
+  //     tree={treeData}
+  //     rootId={0}
+  //     render={(node, { depth, isOpen, onToggle }) => (
+  //       <div style={{ marginInlineStart: depth * 10 }}>
+  //         {node.droppable && (
+  //           <span onClick={onToggle}>{isOpen ? "[-]" : "[+]"}</span>
+  //         )}
+  //         {node.text}
+  //       </div>
+  //     )}
+  //     dragPreviewRender={(monitorProps) => (
+  //       <div>{monitorProps.item.text}</div>
+  //     )}
+  //     onDrop={handleDrop}
+  //   />
+  // </DndProvider>
+
     <DndProvider backend={MultiBackend} options={getBackendOptions()}>
       <Tree
         tree={treeData}
         rootId={0}
-        onDrop={handleDrop}
         render={(node, { depth, isOpen, onToggle }) => (
           <div style={{ marginLeft: depth * 10 }}>
             {node.droppable && (
@@ -92,6 +116,12 @@ const GameObjectsTreeView = (props: any) => {
             </Button>
           </div>
         )}
+        dragPreviewRender={(monitorProps) => (
+          <div>{monitorProps.item.text}</div>
+        )}
+        onDrop={handleDrop}
+
+
       />
     </DndProvider>
   );
