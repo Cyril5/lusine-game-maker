@@ -6,6 +6,7 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Editor from './Editor';
 import ProjectManager from '@renderer/editor/ProjectManager';
+import EditorUtils from '@renderer/editor/EditorUtils';
 
 // import modelsDirectory from '../public/projects/MonProjet/models?url';
 
@@ -32,7 +33,13 @@ const Models3DModal = (props: any) => {
                 return;
             }
 
-            setFiles(files);
+            // Filtrer les fichiers avec les extensions .obj, .fbx et .glb
+            const filteredFiles = files.filter(file => {
+                const ext = EditorUtils.path.extname(file).toLowerCase();
+                return ext === '.obj' || ext === '.fbx' || ext === '.glb';
+            });
+
+            setFiles(filteredFiles);
         });
     }
 
@@ -90,19 +97,20 @@ const Models3DModal = (props: any) => {
         setShow(true);
     }
 
-    const handleSelectModel = (file)=>{
+    const handleSelectModel = (file) => {
         setSelectedFile(file);
         console.log(file);
     }
 
-    const handleAddModelToScene = (file)=>{
+    const handleAddModelToScene = (file) => {
         const options = {
             convertMeterToCm: false
         };
-        Editor.getInstance().addModel3DObject(file,options);
+        handleClose();
+        Editor.getInstance().addModel3DObject(file, options);
     }
 
-    const getModelText = (filename)=> {
+    const getModelText = (filename) => {
         const newFilename = filename.split(".")[0];
         return newFilename.charAt(0).toUpperCase() + newFilename.slice(1);
     }
@@ -132,24 +140,25 @@ const Models3DModal = (props: any) => {
 
                     <Container fluid>
                         <Row>
-                            <Stack direction="horizontal">
+                            <Stack direction="vertical">
                                 {modelfiles.map((file) => (
-                                    <Card key={file} className={modelfiles === file ? 'selected' : ''}  onClick={()=>handleSelectModel(file)}>
-                                        <Card.Img variant="top" src="https://via.placeholder.com/150" />
-                                        <Card.Body>
-                                            <Card.Title>{getModelText(file)}</Card.Title>
-                                            <Card.Text>
-                                                {file}
-                                            </Card.Text>
-                                        </Card.Body>
-                                    </Card>
+                                    // <Card key={file} className={modelfiles === file ? 'selected' : ''} onClick={() => handleSelectModel(file)}>
+                                    //     <Card.Img variant="top" src="https://via.placeholder.com/150" />
+                                    //     <Card.Body>
+                                    //         <Card.Title>{getModelText(file)}</Card.Title>
+                                    //         <Card.Text>
+                                    //             {file}
+                                    //         </Card.Text>
+                                    //     </Card.Body>
+                                    // </Card>
+                                        <Button variant='secondary' onClick={() => handleSelectModel(file)}>{file}</Button>
                                 ))}
                             </Stack>
                         </Row>
                         <p>Séléctionnez un modèle dans la liste ci-dessus ou importez un nouveau.</p>
                         <p>Modèle selectionné : {selectedFile}</p>
                         <Form.Check type="checkbox" disabled label=" Convertir en mètres (l'échelle sera à 0.001m) " />
-                        <Button variant='success' onClick={()=>handleAddModelToScene(selectedFile)}>Ajouter dans la scène</Button>
+                        <Button variant='success' onClick={() => handleAddModelToScene(selectedFile)}>Ajouter dans la scène</Button>
                     </Container>
 
 

@@ -232,25 +232,27 @@ const StateEditor = (props: any) => {
 
     const newWorkspace = (): void => {
 
-        const { dialog } = require('@electron/remote');
-
-        const options = {
-            type: 'warning',
-            title: `Confirmation avant création fichier d'état`,
-            message: `Voulez vous enregistrer le fichier d'état : ${currentStateFile} avant d'en créer un nouveau ?`,
-            buttons: ['Oui', 'Non', 'Annuler'],
-            defaultId: 2,
-            cancelId: 2,
-        };
-
-        const saveBeforeNewResponse = EditorUtils.showMsgDialog(options);
-        switch (saveBeforeNewResponse) {
-            case 0: //yes
-                saveWorkspace();
-                break;
-            case 2: //annuler
-                return;
-                break;
+        if(currentStateFile) {
+            const { dialog } = require('@electron/remote');
+    
+            const options = {
+                type: 'warning',
+                title: `Confirmation avant création fichier d'état`,
+                message: `Voulez vous enregistrer le fichier d'état : ${currentStateFile} avant d'en créer un nouveau ?`,
+                buttons: ['Oui', 'Non', 'Annuler'],
+                defaultId: 2,
+                cancelId: 2,
+            };
+    
+            const saveBeforeNewResponse = EditorUtils.showMsgDialog(options);
+            switch (saveBeforeNewResponse) {
+                case 0: //yes
+                    saveWorkspace();
+                    break;
+                case 2: //annuler
+                    return;
+                    break;
+            }
         }
 
         openPromptNewStateFile();
@@ -322,7 +324,7 @@ const StateEditor = (props: any) => {
             </table> */}
                         <Button variant='primary' size='lg' onClick={newWorkspace} ><FontAwesomeIcon icon="file"></FontAwesomeIcon></Button>
 
-                        <Button variant='warning' size="lg" onClick={saveWorkspace}><FontAwesomeIcon icon="save"></FontAwesomeIcon></Button>
+                        <Button variant='warning' size="lg" onClick={saveWorkspace} disabled={!currentStateFile}><FontAwesomeIcon icon="save"></FontAwesomeIcon></Button>
 
                         <div id="blocklyArea" ref={blocklyAreaRef}>
                             Si ce message s'affiche : Redimensionner la fenêtre pour afficher l'espace de travail.

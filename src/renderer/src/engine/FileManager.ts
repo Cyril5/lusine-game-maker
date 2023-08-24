@@ -8,18 +8,19 @@ export default class FileManager {
     }
     
     
-    static fileExists(filename: string) {
+    static fileExists(filename: string) : boolean {
        return FileManager.fs.existsSync(filename);
     }
     
-    static writeInFile(filename: string, content: string = '',onSuccess?:()=>void) {
-        FileManager.fs.writeFile(filename, content, err => {
+    static writeInFile(filename: string, content: string, onSuccess?: () => void) {
+        FileManager.fs.writeFile(filename, content, { flag: 'w+' }, err => {
             if (err) {
                 console.error(err);
                 throw new Error(err.message);
             }
-            if(onSuccess)
+            if (onSuccess) {
                 onSuccess();
+            }
         });
     }
 

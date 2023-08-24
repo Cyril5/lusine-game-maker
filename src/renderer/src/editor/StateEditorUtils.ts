@@ -1,7 +1,7 @@
 import { IStateFile } from "@renderer/engine/FSM/IStateFile";
 import { Game } from "@renderer/engine/Game";
 import Editor from "../components/Editor";
-import BaseStateFile from '@renderer/assets/BaseStateFile.json?raw';
+import BaseStateFile from '@renderer/assets/BaseStateFile.xml?raw';
 import FileManager from "@renderer/engine/FileManager";
 import EditorUtils from "./EditorUtils";
 import ProjectManager from "./ProjectManager";
@@ -30,6 +30,11 @@ export default class StateEditorUtils {
         // fs.writeFile(fileLocation, BaseStateFile, (err) => {
         //     if (err) throw err;
         // });
+
+        if(FileManager.fileExists(fileLocation) || FileManager.fileExists(fileCodeLocation)) {
+            EditorUtils.showErrorMsg(`Un fichier d'état dans le projet porte déjà le nom : ${className}`);
+            return;
+        }
         
         FileManager.writeInFile(fileLocation,BaseStateFile,()=>{
             console.log('Le fichier a été créé ! => '+fileLocation);
