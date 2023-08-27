@@ -4,6 +4,7 @@ import { GameObject } from "./GameObject";
 
 export class ProgrammableGameObject extends GameObject implements IPhysicsEnabledObject {
 
+    // Pour le moment il y a qu'un fsm sur un objet programmable
     private _fsm : FiniteStateMachine;
     private _scene : BABYLON.Scene;
     private _physicsImpostor : PhysicsImpostor;

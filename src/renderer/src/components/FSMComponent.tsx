@@ -9,7 +9,7 @@ export default class FSMComponent extends Component
              <ListGroup>
                 <ListGroup.Item variant="primary">Automate Fini Principal <Button>Editer</Button></ListGroup.Item>
                 </ListGroup>
-                <Button variant="primary">Ajouter</Button>
+                {/* <Button variant="primary">Ajouter</Button> */}
             </>
         )
     }

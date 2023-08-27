@@ -10,6 +10,8 @@ export class FiniteStateMachine {
 
     states:Array<State> = [];
 
+    name:string = 'Automate Fini Principal';
+
     //#region "Propriétées"
     private _gameObject: ProgrammableGameObject;
     public get gameObject(): ProgrammableGameObject {

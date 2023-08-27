@@ -15,6 +15,13 @@
     position: absolute;
 }
 
+.no-fsm-msg {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 80vh;
+}
 
 .statesGraphContainer {
     position: relative;
@@ -25,5 +32,6 @@
   
   .mainState {
     left: 500px;
+    border: #00ffa8 5px solid;
   }
   

@@ -1,3 +1,5 @@
+import EditorUtils from "@renderer/editor/EditorUtils";
+
 // import fs from 'fs';
 export default class FileManager {
 
@@ -31,6 +33,23 @@ export default class FileManager {
                 throw err;
             }
             onSuccess(data);
+        });
+    }
+
+    static getDirectoryFiles = (directory,extensions : string[],success) : Array<string> => {
+        return FileManager.fs.readdir(directory, (err, files) => {
+            if (err) {
+                console.error("Erreur lors de la lecture du répertoire :", err);
+                throw err;
+            }
+
+            // Filtrer les fichiers avec les extensions
+            const filteredFiles = files.filter(file => {
+                const ext = EditorUtils.path.extname(file).toLowerCase();
+                return extensions.includes(ext);
+            });
+
+            success(filteredFiles);
         });
     }
 

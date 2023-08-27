@@ -59,6 +59,8 @@ export default class Editor extends Component {
         },
         showStartupModal: true,
         gameObjects: null,
+        fsm : null,
+        stateFiles : null,
     };
 
     constructor(props: { objetJeu }) {
@@ -269,7 +271,6 @@ export default class Editor extends Component {
         // Abonnement à l'événement onModelLoaded
         model.onLoaded.add((model3d) => {
 
-            alert("yeah !");
             const children = model.getChildren();
             children.forEach((child) => {
 
@@ -333,7 +334,6 @@ export default class Editor extends Component {
 
     selectGameObject = (id: number) => {
         const go = GameObject.gameObjects.get(id);
-        console.log(GameObject.gameObjects);
         if (!go) {
             console.error(`GameObject Id : ${id} non trouvé`);
             return;
@@ -355,7 +355,10 @@ export default class Editor extends Component {
 
 
     updateObjetJeu = (objetJeu: GameObject) => {
-        this.setState({ objetJeu });
+        this.setState({
+            objetJeu : objetJeu,
+            fsm : objetJeu.fsm
+        });
         Renderer.getInstance().gizmoManager.positionGizmoEnabled = true;
         Renderer.getInstance().gizmoManager.attachToNode(objetJeu);
     };
@@ -395,7 +398,8 @@ export default class Editor extends Component {
                     </Tab>
                     <Tab eventKey={2} title={<span><FontAwesomeIcon icon="diagram-project" />
                         Automates Fini</span>}>
-                        {this.state.activeTab == 2 ? <StatesMachineEditor /> : null}
+                        {/* {this.state.activeTab == 2 ? <StatesMachineEditor statefiles={this.state.stateFiles} fsm={this.state.fsm}/> : null} */}
+                        <StatesMachineEditor statefiles={this.state.stateFiles} fsm={this.state.fsm}/>
                     </Tab>
                     <Tab eventKey={3} title="Editeur d'état">
                         {/* le useEffect sera rappelé */}

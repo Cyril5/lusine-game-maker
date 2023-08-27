@@ -1,10 +1,10 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Accordion, Button, Form, Offcanvas } from "react-bootstrap";
 import FSMComponent from "./FSMComponent";
 import Editor from "./Editor";
 
-const PropertiesBar = (props : any) => {
+const PropertiesBar = ({ id, gameobject_name = '', gameobject_type='', parentId, ...props }) => {
 
 
     // useEffect(() => {
@@ -14,16 +14,23 @@ const PropertiesBar = (props : any) => {
     //     const { x: sx, y: sy, z: sz } = scaling;
     //   }, [position, rotation, scaling]);
 
-    const {id,gameObjectName, gameObjectType,parentId} = props;
-
     const [show, setShow] = useState(false);
+    const [name,setName] = useState(gameobject_name);
 
     const handleClose = () => setShow(false);
     const toggleShow = () => setShow((s) => !s);
 
-    const handleSetGameObjectName = (e: any)=>{
-        Editor.getInstance().selectedGameObject.name = e.target.value;
-    }
+    // Si c'est un autre gameObject on met à jour la vue
+    useEffect(() => {
+        setName(gameobject_name); 
+      }, [id]);
+
+    
+    const handleSetGameObjectName = ((e: any)=>{
+        const newGameObjectName = e.target.value;
+        Editor.getInstance().selectedGameObject.name = newGameObjectName;
+        setName(newGameObjectName);
+    });
 
     return (
         <div>
@@ -41,10 +48,10 @@ const PropertiesBar = (props : any) => {
                             <Accordion.Body>
                                 <Form.Group className="mb-3">
                                     <Form.Label>Name</Form.Label>
-                                    <Form.Control onChange={handleSetGameObjectName}/>
+                                    <Form.Control onChange={handleSetGameObjectName} value={name}/>
                                 </Form.Group>
-                                <p>ID : {props.id}</p>
-                                <p>Parent : <Button variant="primary" size="sm">{props.parentId}</Button></p>
+                                <p>ID : {id}</p>
+                                <p>Parent : <Button variant="primary" size="sm">{parentId}</Button></p>
                             </Accordion.Body>
                         </Accordion.Item>
                         <Accordion.Item eventKey="1">
@@ -54,7 +61,7 @@ const PropertiesBar = (props : any) => {
                             </Accordion.Body>
                         </Accordion.Item>
 
-                        {props.gameObjectType === "PROG_GO" && (
+                        {gameobject_type === "PROG_GO" && (
                             <Accordion.Item eventKey="2">
                                 <Accordion.Header>Automates Fini</Accordion.Header>
                                 <Accordion.Body>
@@ -62,12 +69,6 @@ const PropertiesBar = (props : any) => {
                                 </Accordion.Body>
                             </Accordion.Item>
                         )}
-                        <Accordion.Item eventKey="3">
-                            <Accordion.Header>Collision</Accordion.Header>
-                            <Accordion.Body>
-                                <p>Collision Component CannonJS</p>
-                            </Accordion.Body>
-                        </Accordion.Item>
                     </Accordion>
                 </Offcanvas.Body>
             </Offcanvas>

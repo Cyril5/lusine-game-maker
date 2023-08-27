@@ -1,6 +1,7 @@
 import FileManager from "@renderer/engine/FileManager";
 import EditorUtils from "./EditorUtils"
 import Editor from "@renderer/components/Editor";
+import StateEditorUtils from "./StateEditorUtils";
 
 export default class ProjectManager {
 
@@ -34,6 +35,7 @@ export default class ProjectManager {
     static openDemoProject() {
         ProjectManager._projectName = "Demo";
         ProjectManager._currentProjectDir = EditorUtils.path.resolve(EditorUtils.path.resolve(EditorUtils.appPath,'projects'),'Demo'); 
+        StateEditorUtils.loadStateFilesList();
         Editor.getInstance().loadDefaultGame();
     }
 
@@ -45,6 +47,7 @@ export default class ProjectManager {
                 ProjectManager._currentProjectDir = selectedDir;
                 ProjectManager._projectName = "Mon Projet";
                 Editor.showAlert(ProjectManager._currentProjectDir);
+                StateEditorUtils.loadStateFilesList();
                 Editor.getInstance().loadDefaultGame();
 
             }
@@ -52,6 +55,8 @@ export default class ProjectManager {
 
 
     }
+
+
 
     static selectProjectDir() {
 

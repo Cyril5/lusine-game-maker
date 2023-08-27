@@ -60,10 +60,10 @@ const LevelEditor = (props) => {
                     </div> */}
 
                         <PropertiesBar
-                            id={objJeu?.id}
-                            gameObjectType={objJeu?.type}
-                            gameObjectName={objJeu?.name}
-                            parentId={objJeu?.parent?.id}
+                            id={objJeu?.Id}
+                            gameobject_type={objJeu?.type}
+                            gameobject_name={objJeu?.name}
+                            parentid={objJeu?.parent?.id}
                         />
                     {/* <Col md={2}> */}
                     {/* <h2>Objets <FontAwesomeIcon icon="cubes" /></h2> */}
