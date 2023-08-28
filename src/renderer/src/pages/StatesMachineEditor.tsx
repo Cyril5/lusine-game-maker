@@ -16,8 +16,6 @@ const StatesMachineEditor = ({fsm=null,stateFiles=StateEditorUtils.statesFiles()
     // Si c'est un autre gameObject on met à jour la vue
     useEffect(() => {
 
-        console.log(stateFiles);
-
         if(fsm) {
             setObjectName(Editor.getInstance().selectedGameObject?.name);
             setFSMName(fsm.name); 

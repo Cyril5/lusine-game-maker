@@ -12,7 +12,7 @@ import '../engine/blocks/blocksDefs';
 import { javascriptGenerator } from 'blockly/javascript';
 //import '@blockly/block-plus-minus';
 import * as Fr from 'blockly/msg/fr';
-import { Button, Col, Container, Row } from 'react-bootstrap';
+import { Button, Col, Container, Dropdown, Row } from 'react-bootstrap';
 import StateFilesTreeView from '@renderer/components/StateFilesTreeView';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Editor from '@renderer/components/Editor';
@@ -25,21 +25,16 @@ import EditorUtils from '@renderer/editor/EditorUtils';
 //const serializer: Blockly.serialization.blocks.BlockSerializer = new Blockly.serialization.blocks.BlockSerializer();
 let workspace: Blockly.WorkspaceSvg;
 
-const StateEditor = (props: any) => {
+const StateEditor = (statefiles=StateEditorUtils.statesFiles(),resizeWorkspace=true, ...props: any) => {
 
-    // Code copié à mettre dans une endroit global
-    // const os = require('os');
-    // const path = require('path');
-    // const documentsPath = os.homedir() + '\\Documents\\Lusine Game Maker\\MonProjet';
-    // let stateFilesDirectory = path.resolve(documentsPath, 'States');
 
     const [currentStateFile, setCurrentStateFile] = useState(props.initStateFile); // IStateFile
+    const [mapStateFiles,setMapStateFiles] = useState(null);
 
     const blocklyDivRef = useRef(null);
     const blocklyAreaRef = useRef(null);
 
     const [code, setCode] = useState("");
-
 
 
     const onresize = () => {
@@ -62,10 +57,15 @@ const StateEditor = (props: any) => {
 
     //vérifier si l'onglet 3 est sélectionné lorsque la propriétée resizeWorkspace change
     useEffect(() => {
-        if (props.resizeWorkspace && workspace !== undefined) {
+        if (resizeWorkspace && workspace !== undefined) {
             onresize();
         }
-    }, [props.resizeWorkspace]);
+    }, [resizeWorkspace]);
+
+    useEffect(() => {
+        setMapStateFiles(StateEditorUtils.statesFiles());
+    }, [statefiles]);
+
 
     // Lorsque la propriétée initStateFile du composant a changé
     useEffect(() => {
@@ -75,6 +75,7 @@ const StateEditor = (props: any) => {
             openStateFile(props.initStateFile);
         }
     }, [props.initStateFile]);
+
 
     useEffect(() => {
 
@@ -109,12 +110,12 @@ const StateEditor = (props: any) => {
                 scaleSpeed: 1.2
             },
             move: {
-                    scrollbars: {
-                      horizontal: true,
-                      vertical: true
-                    },
-                    drag: false,
-                    wheel:true,
+                scrollbars: {
+                    horizontal: true,
+                    vertical: true
+                },
+                drag: false,
+                wheel: true,
             },
             collapse: true,
             comments: true,
@@ -161,6 +162,7 @@ const StateEditor = (props: any) => {
     const updateCodeFromCodeEditor = () => {
         //javascriptGenerator.addReservedWords('code');
         const code: string = javascriptGenerator.workspaceToCode(workspace);
+        console.log(code);
         if (code !== "") {
             //setCode(currentStateFile.outputCode);
             setCode(code);
@@ -187,6 +189,8 @@ const StateEditor = (props: any) => {
                 const jsonDom: Element = Blockly.utils.xml.textToDom(xmlFile);
                 Blockly.Xml.clearWorkspaceAndLoadFromXml(jsonDom, workspace);
                 Blockly.Events.enable();
+
+                onresize();
 
                 setCurrentStateFile(stateFile);
                 updateCodeFromCodeEditor();
@@ -225,16 +229,16 @@ const StateEditor = (props: any) => {
                 }
                 console.log('result', response);
             }
-        },(error)=>{
+        }, (error) => {
             console.error(error);
         });
     }
 
     const newWorkspace = (): void => {
 
-        if(currentStateFile) {
+        if (currentStateFile) {
             const { dialog } = require('@electron/remote');
-    
+
             const options = {
                 type: 'warning',
                 title: `Confirmation avant création fichier d'état`,
@@ -243,7 +247,7 @@ const StateEditor = (props: any) => {
                 defaultId: 2,
                 cancelId: 2,
             };
-    
+
             const saveBeforeNewResponse = EditorUtils.showMsgDialog(options);
             switch (saveBeforeNewResponse) {
                 case 0: //yes
@@ -295,24 +299,10 @@ const StateEditor = (props: any) => {
     }
 
 
-    const [data, setData] = useState([
-        {
-            id: 1,
-            title: "StateA",
-            children: []
-        },
-        {
-            id: 2,
-            title: "AICarMainState",
-            children: []
-        }
-    ]);
-
-
     return (
         <>
             <Container fluid>
-                {currentStateFile !== null && <p>{currentStateFile.filename}</p>}
+                <p> {currentStateFile ? currentStateFile.filename : 'Aucun fichier ouvert'}</p>
 
                 <Row>
 
@@ -333,9 +323,14 @@ const StateEditor = (props: any) => {
                         <div id="blocklyDiv" ref={blocklyDivRef} />
                     </Col>
                     <Col md={2}>
-                        <StateFilesTreeView data={data} />
+                        <div className='state-files-buttons'>
+                        {mapStateFiles && Array.from(mapStateFiles).map(([key, value]) => (
+                                        <Button onClick={() => openStateFile(value)}>
+                                            {value.name}
+                                        </Button>
+                                    ))}
+                        </div>
                     </Col>
-
 
                 </Row>
             </Container>

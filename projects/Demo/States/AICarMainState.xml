@@ -1,0 +1,29 @@
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <block type="state_onupdatestate" id="qEB_G%3Z:lAs#4@?vk=T" x="38" y="113">
+    <statement name="UPDATESTATE">
+      <block type="gameobject_translate_forward" id="oIGB.m(*N7],I*^L)Gjr">
+        <value name="OBJ">
+          <block type="gameobject_this" id="%6_W{QhFR%w?v,}Up!+F"></block>
+        </value>
+        <value name="DISTZ">
+          <block type="math_number" id="~boN,K;$l`j@3sRJRr2L">
+            <field name="NUM">0.05</field>
+          </block>
+        </value>
+        <next>
+          <block type="gameobject_rotatey" id="Q@t-eKa=*UwgdHZ/iNfY">
+            <field name="SPACE">LOCAL</field>
+            <value name="OBJ">
+              <block type="gameobject_this" id="A|jmTl(9V{}/vSE$1`T$"></block>
+            </value>
+            <value name="DEGY">
+              <block type="math_number" id="-MA.-i}M=o:*LmT(D7]7">
+                <field name="NUM">0.01</field>
+              </block>
+            </value>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>

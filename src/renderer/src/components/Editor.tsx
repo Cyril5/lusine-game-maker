@@ -401,9 +401,10 @@ export default class Editor extends Component {
                         {/* {this.state.activeTab == 2 ? <StatesMachineEditor statefiles={this.state.stateFiles} fsm={this.state.fsm}/> : null} */}
                         <StatesMachineEditor statefiles={this.state.stateFiles} fsm={this.state.fsm}/>
                     </Tab>
-                    <Tab eventKey={3} title="Editeur d'état">
+                    <Tab eventKey={3} title={<span><FontAwesomeIcon icon="file-pen" />
+                     Editeur d'état</span>}>
                         {/* le useEffect sera rappelé */}
-                        <StateEditor initStateFile={this.state.initStateFile} resizeWorkspace={this.state.activeTab == 3} />
+                        <StateEditor statefiles={this.state.stateFiles} initStateFile={this.state.initStateFile} resizeWorkspace={this.state.activeTab == 3} />
                     </Tab>
                 </Tabs>
 
