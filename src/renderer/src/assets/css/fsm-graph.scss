@@ -1,12 +1,3 @@
-.startNode {
-    width: 160px;
-    height: 50px;
-    border-radius: 5%;
-    background-color: rgb(56, 187, 93);
-    text-align: center;
-    font-size: 1.5rem;
-}
-
 .node {
   position:absolute;
 }
@@ -23,6 +14,15 @@
   height: 80vh;
 }
 
+.fsm-properties-bar {
+  padding: 8px;
+  .state-file-field {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
 .statesGraphContainer {
     position: relative;
     height: 50vh;
@@ -34,4 +34,30 @@
     left: 500px;
     border: #00ffa8 5px solid;
   }
+  
+  .drawflow {
+    
+    .drawflow-node:first-child {
+      background: rgba(109, 105, 105, 0.195);
+      border-radius: 15px;
+      text-align: center;
+      font-size: 1.25rem;
+      color: #fff;
+    }
+    .connection .main-path:first-child {
+      stroke: #702727;
+    }
+  }
+  
+  .parent-node {
+    
+    .start-node:first-child {
+      /* Vos styles pour le premier élément ici */
+      background: #00bc8c;
+      border: #00bc8c 1px solid;
+      color: white;
+    }
+
+  }
+  
   
