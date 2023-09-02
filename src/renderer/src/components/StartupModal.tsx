@@ -32,6 +32,15 @@ const StartupModal = (props:any)=> {
     }
   },[props.show])
 
+
+  useEffect(()=>{
+    setTimeout(()=>{
+      handleOpenDemoProject();
+    },1000)
+  },[])
+
+  
+
   return (
     <>
       <Modal

@@ -103,10 +103,11 @@ export default class Editor extends Component {
 
 
         });
+        const car = new ProgrammableGameObject("Car_PO", scene);
+        Editor._instance.selectGameObject(car.Id);
         return;
 
 
-        const car = new ProgrammableGameObject("Car_PO", scene);
         car.qualifier = Qualifiers.PLAYER_TAG;
 
         // Créer les fichiers pour stocker le code

@@ -44,6 +44,7 @@
       font-size: 1.25rem;
       color: #fff;
     }
+
     .connection .main-path:first-child {
       stroke: #702727;
     }
@@ -52,11 +53,15 @@
   .parent-node {
     
     .start-node:first-child {
-      /* Vos styles pour le premier élément ici */
       background: #00bc8c;
       border: #00bc8c 1px solid;
       color: white;
+
+      .drawflow-delete {
+        display: none;
+      }
     }
+
 
   }
   
