@@ -1,6 +1,6 @@
 {
   "name": "lusine-game-maker",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Mini editeur de jeux 3D",
   "main": "./out/main/index.js",
   "author": "Cyril5",

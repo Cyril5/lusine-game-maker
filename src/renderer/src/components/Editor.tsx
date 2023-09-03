@@ -11,7 +11,7 @@ import AddObjectModal from "./AddObjectModal";
 import { Tab, Tabs } from "react-bootstrap";
 import LevelEditor from "@renderer/pages/LevelEditor";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import StatesMachineEditor from "@renderer/pages/StatesMachineEditor";
+import StatesMachineEditor from "@renderer/components/StatesMachineEditor/StatesMachineEditor";
 import StateEditor from "@renderer/pages/StateEditor";
 import { MeshBuilder } from "babylonjs";
 import ColliderComponent from "@renderer/engine/physics/ColliderComponent";
@@ -87,9 +87,9 @@ export default class Editor extends Component {
 
         //GRID
         const groundMaterial = new GridMaterial("groundMaterial", scene);
-        groundMaterial.majorUnitFrequency = 5;
+        groundMaterial.majorUnitFrequency = 10;
         groundMaterial.minorUnitVisibility = 0.5;
-        groundMaterial.gridRatio = 100;
+        groundMaterial.gridRatio = 10;
         groundMaterial.opacity = 0.99;
         groundMaterial.useMaxLine = true;
 
@@ -104,6 +104,7 @@ export default class Editor extends Component {
 
         });
         const car = new ProgrammableGameObject("Car_PO", scene);
+        car.fsm.states[0].name = "CarPO Main State";
         Editor._instance.selectGameObject(car.Id);
         return;
 

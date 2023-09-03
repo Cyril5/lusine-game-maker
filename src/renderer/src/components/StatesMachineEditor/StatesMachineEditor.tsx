@@ -1,13 +1,14 @@
 import { useRef, useEffect, useState } from 'react';
 
-import { Alert, Breadcrumb, Button, ButtonGroup, Card, Col, Container, Dropdown, Row } from 'react-bootstrap';
-import '../assets/css/fsm-graph.scss';
+import { Alert, Breadcrumb, Button, ButtonGroup, Card, Col, Container, Dropdown, Form, Row } from 'react-bootstrap';
+import '../../assets/css/fsm-graph.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Editor from '@renderer/components/Editor';
 import StateEditorUtils from '@renderer/editor/StateEditorUtils';
 import { IStateFile } from '@renderer/engine/FSM/IStateFile';
 
 import FSMGraph from '@renderer/components/StatesMachineEditor/FSMGraph';
+import State from '@renderer/engine/FSM/State';
 
 
 const StatesMachineEditor = ({ fsm = null, stateFiles = StateEditorUtils.statesFiles(), ...props }) => {
@@ -15,6 +16,11 @@ const StatesMachineEditor = ({ fsm = null, stateFiles = StateEditorUtils.statesF
     const [objectName, setObjectName] = useState('');
     const [fsmName, setFSMName] = useState('');
     const [firstStateFileName, setFirstStateFileName] = useState('Aucun');
+
+    const fsmGraphRef = useRef();
+
+    const [selectedState, setSelectedState] = useState(null);
+    const [stateName,setStateName] = useState("");
 
     // Si c'est un autre gameObject on met à jour la vue
     useEffect(() => {
@@ -26,10 +32,28 @@ const StatesMachineEditor = ({ fsm = null, stateFiles = StateEditorUtils.statesF
     }, [fsm]);
 
     const handleStateFile = (stateFile: IStateFile) => {
-        console.log("change");
-        fsm.states[0].stateFile = stateFile;
+        selectedState.stateFile = stateFile;
         setFirstStateFileName(stateFile.name);
-        console.log(fsm.states[0].stateFile);
+        console.log(selectedState.stateFile);
+    }
+
+    const handleCreateState = ()=>{
+        //Ajouter un nouvel état au FSM
+        fsmGraphRef.current.addNode(fsm.addState());
+    }
+
+    // Lorsqu'on sélectionne un état
+    const handleStateSelect = (state : State)=>{
+        setSelectedState(state);
+        setStateName(state.name);
+        setFirstStateFileName(state.stateFile.name);
+    }
+    
+    const handleRenameState = (e)=>{
+        const inputText = e.target.value;
+        selectedState.name = inputText;
+        setStateName(inputText);
+        fsmGraphRef.current.updateSelectedNode(inputText);
     }
 
     return (
@@ -53,24 +77,35 @@ const StatesMachineEditor = ({ fsm = null, stateFiles = StateEditorUtils.statesF
                         <Breadcrumb.Item href="#">{fsm.name}</Breadcrumb.Item>
                     </Breadcrumb>
 
-                    <Button>Ajouter un état</Button>
+                    <Button onClick={handleCreateState}>Ajouter un état</Button>
                     <Container>
                         <Row>
                             <Col>
-                                <FSMGraph />
+                                <FSMGraph ref={fsmGraphRef} fsm={fsm} onStateSelect={handleStateSelect}/>
                                 <FontAwesomeIcon icon="person-running"></FontAwesomeIcon> : Défini l'état comme Etat de départ de l'Automate Fini.
                                 <br />
                                 <FontAwesomeIcon icon="edit"></FontAwesomeIcon> : Editer le fichier d'Etat sélectionné.
                             </Col>
                             <Col md={3}>
                                 <div className='fsm-properties-bar'>
-                                    <h2><FontAwesomeIcon icon={'flag'}></FontAwesomeIcon> State A</h2>
+                                    <h3>{fsm.name}</h3>
+                                    <p>Nom AF : <Form.Control type="text" defaultValue={fsm.name}/></p>
+                                    
+                                    <p>Démarrer au début du jeu : Oui</p>
+
+                                    {selectedState && (
+                                        <h3>
+                                            <FontAwesomeIcon icon={'flag'}></FontAwesomeIcon>
+                                            <Form.Control type="text" onChange={handleRenameState} value={stateName}/>
+                                            </h3>
+                                    )}
+
 
                                     <div className="state-file-field">
                                         Fichier d'état :
                                         <Dropdown>
-                                            <Dropdown.Toggle variant="secondary" id="dropdown-basic">
-                                                {firstStateFileName}
+                                            <Dropdown.Toggle variant="warning" id="dropdown-basic">
+                                                {!firstStateFileName ? 'Aucun' : firstStateFileName}
                                             </Dropdown.Toggle>
 
                                             <Dropdown.Menu>

@@ -104,18 +104,6 @@ function AddObjectModal(props: any) {
                                     </Card.Body>
                                 </Card>
                             </Col>
-                            <Col>
-                                <Card style={{ width: '18rem' }}>
-                                    <Card.Img variant="top" src="holder.js/100px180" />
-                                    <Card.Body>
-                                        <Card.Title>Etat de Machine d'Etats</Card.Title>
-                                        <Card.Text>
-                                            Description de l'Etat de Machine
-                                        </Card.Text>
-                                        <Button variant="primary" onClick={openFileDialog}>Ajouter</Button>
-                                    </Card.Body>
-                                </Card>
-                            </Col>
                         </Row>
                         <Row>
                             <Col>
