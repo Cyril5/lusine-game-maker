@@ -14,8 +14,7 @@ Version actuelle : Alpha 0.1.1 (7 Septembre 2023)
 
 
 ## Installation
-
-Lancez le fichier ```INSTALL EDITOR.bat``` qui éxécutera automatiquement la commande :
+Installez une version de NodeJS sur votre poste puis lancez le fichier ```INSTALL EDITOR.bat``` qui éxécutera automatiquement la commande :
 
 ```bash
 $ npm install
