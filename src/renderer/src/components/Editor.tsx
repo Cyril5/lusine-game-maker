@@ -87,7 +87,7 @@ export default class Editor extends Component {
 
         //GRID
         const groundMaterial = new GridMaterial("groundMaterial", scene);
-        groundMaterial.majorUnitFrequency = 10;
+        groundMaterial.majorUnitFrequency = 100;
         groundMaterial.minorUnitVisibility = 0.5;
         groundMaterial.gridRatio = 10;
         groundMaterial.opacity = 0.99;
@@ -208,15 +208,6 @@ export default class Editor extends Component {
         });
         //});
     }
-
-    componentDidMount() {
-        console.log("Editor did mount");
-        // window.CANNON = cannon;
-    }
-
-    // useEffect(()=>{
-
-    // });
 
     handleTabChange = (tabKey) => {
         this.setState({

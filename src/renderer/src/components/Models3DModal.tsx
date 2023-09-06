@@ -17,7 +17,10 @@ const Models3DModal = (props: any) => {
 
     const fileInputRef = useRef(null);
     const [show, setShow] = useState(false);
-    const handleClose = () => setShow(false);
+    const handleClose = () => {
+        setShow(false);
+        props.onClose();
+    }
 
     const [selectedFile, setSelectedFile] = useState(null);
     const [progress, setProgress] = useState(0);
@@ -36,7 +39,8 @@ const Models3DModal = (props: any) => {
             // Filtrer les fichiers avec les extensions .obj, .fbx et .glb
             const filteredFiles = files.filter(file => {
                 const ext = EditorUtils.path.extname(file).toLowerCase();
-                return ext === '.obj' || ext === '.fbx' || ext === '.glb';
+                return ext == '.glb';
+                //return ext === '.obj' || ext === '.fbx' || ext === '.glb';
             });
 
             setFiles(filteredFiles);
@@ -46,7 +50,6 @@ const Models3DModal = (props: any) => {
     // Récupérer la liste de tous les modèles dans le dossier Models du projet
     useEffect(() => {
 
-
         modelsDirectory = ProjectManager.getModelsDirectory();
 
         console.log(modelsDirectory);
@@ -54,6 +57,10 @@ const Models3DModal = (props: any) => {
         readModelsFiles();
 
     }, []);
+
+    useEffect(()=>{
+        setShow(props.show);
+    },[props.show])
 
 
     // Importation nouveau modèle dans le projet 
@@ -93,10 +100,6 @@ const Models3DModal = (props: any) => {
 
     };
 
-    const handleTest = () => {
-        setShow(true);
-    }
-
     const handleSelectModel = (file) => {
         setSelectedFile(file);
         console.log(file);
@@ -117,10 +120,6 @@ const Models3DModal = (props: any) => {
 
     return (
         <>
-            <Button variant="primary" onClick={() => handleTest()}>
-                Ajouter <FontAwesomeIcon icon="plus" />
-            </Button>
-
             <Modal show={show} onHide={handleClose} backdrop={false}>
                 <Modal.Header closeButton>
                     <Modal.Title>Ajouter un Objet3D</Modal.Title>
@@ -129,7 +128,7 @@ const Models3DModal = (props: any) => {
 
                     <Button variant="primary" onClick={openFileDialog}>
                         Importer <FontAwesomeIcon icon="file-import" />
-                        <input type="file" ref={fileInputRef} accept={".obj,.fbx,.glb,.gltf"} onChange={handleFileChange} style={{ display: "none" }} />
+                        <input type="file" ref={fileInputRef} accept={".glb"} onChange={handleFileChange} style={{ display: "none" }} />
                     </Button>
 
                     <Stack direction='horizontal'>
@@ -141,17 +140,8 @@ const Models3DModal = (props: any) => {
                     <Container fluid>
                         <Row>
                             <Stack direction="vertical">
-                                {modelfiles.map((file) => (
-                                    // <Card key={file} className={modelfiles === file ? 'selected' : ''} onClick={() => handleSelectModel(file)}>
-                                    //     <Card.Img variant="top" src="https://via.placeholder.com/150" />
-                                    //     <Card.Body>
-                                    //         <Card.Title>{getModelText(file)}</Card.Title>
-                                    //         <Card.Text>
-                                    //             {file}
-                                    //         </Card.Text>
-                                    //     </Card.Body>
-                                    // </Card>
-                                        <Button variant='secondary' onClick={() => handleSelectModel(file)}>{file}</Button>
+                                {modelfiles.map((file,key) => (
+                                        <Button key={key} variant='secondary' onClick={() => handleSelectModel(file)}>{file}</Button>
                                 ))}
                             </Stack>
                         </Row>

@@ -74,15 +74,7 @@ javascriptGenerator['state_leave_state_checks'] = function (/** @type {any} */ b
 
 
 
-javascriptGenerator['gameobject_find_by_id'] = function (block: any) {
 
-  var value_id = BlocklyJS.valueToCode(block, 'ID', BlocklyJS.ORDER_NONE);
-  // TODO: Assemble JavaScript into code variable.
-  var code = 'GameObject.getById(' + value_id + ')';
-  // TODO: Change ORDER_NONE to the correct strength.
-
-  return [code, BlocklyJS.ORDER_NONE];
-};
 
 javascriptGenerator['compare_distance_objects'] = function (/** @type {any} */ block: any) {
 

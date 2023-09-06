@@ -38,7 +38,6 @@ export default class StateEditorUtils {
                     for(let file of files) {
                         const className = file.split(".")[0];
                         StateEditorUtils.addStateFile(className);
-                        console.log(file);
                     }
                 });
     
@@ -93,7 +92,6 @@ export default class StateEditorUtils {
         const stateFile: IStateFile = new IStateFile(name);
         stateFile.filename = fileLocation;
         stateFile.codeFilename = codeFileLocation;
-        console.warn(stateFile.codeFilename);
         stateFile.needToLoad = true;
 
         StateEditorUtils._stateFiles.set(name, stateFile);

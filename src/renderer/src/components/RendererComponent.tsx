@@ -24,8 +24,8 @@ export default class RendererComponent extends Component {
     if (this.box !== undefined) {
       const deltaTimeInMillis = scene.getEngine().getDeltaTime();
 
-      const rpm = 10;
-      this.box.rotation.y += (rpm / 60) * Math.PI * 2 * (deltaTimeInMillis / 1000);
+      // const rpm = 10;
+      // this.box.rotation.y += (rpm / 60) * Math.PI * 2 * (deltaTimeInMillis / 1000);
     }
   };
   render() {

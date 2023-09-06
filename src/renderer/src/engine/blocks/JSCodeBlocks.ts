@@ -65,33 +65,44 @@ export class JSCodeBlocks {
             }
           };
 
-          javascriptGenerator['qualifier_player'] = function(block) {
+          javascriptGenerator.forBlock['gameobject_find_by_id'] = function (block: any,generator : any) {
+
+            const value_id = generator.valueToCode(block, 'ID', generator.ORDER_NONE);
+            // TODO: Assemble JavaScript into code variable.
+            const code = 'GameObject.getById(' + value_id + ')';
+            // TODO: Change ORDER_NONE to the correct strength.
+          
+            return [code, generator.ORDER_NONE];
+          };
+
+
+          javascriptGenerator.forBlock['qualifier_player'] = function(block) {
             // TODO: Assemble javascript into code variable.
             const code = Qualifiers.PLAYER_TAG;
             // TODO: Change ORDER_NONE to the correct strength.
             return [code, javascriptGenerator.ORDER_NONE];
           };
           
-          javascriptGenerator['qualifier_good'] = function(block) {
+          javascriptGenerator.forBlock['qualifier_good'] = function(block) {
             const code = Qualifiers.GOOD_TAG;
             // TODO: Change ORDER_NONE to the correct strength.
             return [code, javascriptGenerator.ORDER_NONE];
           };
           
-          javascriptGenerator['qualifier_neutral'] = function(block) {
+          javascriptGenerator.forBlock['qualifier_neutral'] = function(block) {
 
             const code = Qualifiers.NEUTRAL_TAG;
             // TODO: Change ORDER_NONE to the correct strength.
             return [code, javascriptGenerator.ORDER_NONE];
           };
           
-          javascriptGenerator['qualifier_bad'] = function(block) {
+          javascriptGenerator.forBlock['qualifier_bad'] = function(block) {
             const code = Qualifiers.BAD_TAG;
             // TODO: Change ORDER_NONE to the correct strength.
             return [code, javascriptGenerator.ORDER_NONE];
           };
 
-          javascriptGenerator['collision_other_gameobject'] = function(block) {
+          javascriptGenerator.forBlock['collision_other_gameobject'] = function(block) {
             // TODO: Assemble javascript into code variable.
             const code = 'other.gameObject';
             // TODO: Change ORDER_NONE to the correct strength.
@@ -124,7 +135,7 @@ export class JSCodeBlocks {
             }
           };
 
-          javascriptGenerator['gameobject_qualifier'] = function(block) {
+          javascriptGenerator.forBlock['gameobject_qualifier'] = function(block) {
             const value_gameobject = javascriptGenerator.valueToCode(block, 'GAMEOBJECT', javascriptGenerator.ORDER_ATOMIC);
             const value_qualifier = javascriptGenerator.valueToCode(block, 'QUALIFIER', javascriptGenerator.ORDER_ATOMIC);
             // TODO: Assemble javascript into code variable.
@@ -133,7 +144,7 @@ export class JSCodeBlocks {
             return [code, javascriptGenerator.ORDER_NONE];
           };
           
-          javascriptGenerator['qualifier_enemy'] = function(block) {
+          javascriptGenerator.forBlock['qualifier_enemy'] = function(block) {
             // TODO: Assemble javascript into code variable.
             const code = '...';
             // TODO: Change ORDER_NONE to the correct strength.
@@ -141,7 +152,7 @@ export class JSCodeBlocks {
           };
 
 
-        javascriptGenerator['debug_console_log'] = function (block) {
+        javascriptGenerator.forBlock['debug_console_log'] = function (block) {
             const value_log = javascriptGenerator.valueToCode(block, 'LOG', javascriptGenerator.ORDER_ATOMIC);
             // TODO: Assemble JavaScript into code variable.
             const code = 'console.log(' + value_log + ');\n';
@@ -160,7 +171,7 @@ export class JSCodeBlocks {
             }
 
         };
-        javascriptGenerator['fsm_oncollisionenter'] = (block)=> {
+        javascriptGenerator.forBlock['fsm_oncollisionenter'] = (block)=> {
             const statements_oncollisionenter = javascriptGenerator.statementToCode(block, 'ONCOLLISIONENTER');
             // TODO: Assemble javascript into code variable.
             const code = `this.fsm.onCollisionEnter.add((other) => {\n${statements_oncollisionenter}});\n`;
@@ -169,14 +180,14 @@ export class JSCodeBlocks {
 
         // ------------------------- GAME OBJECTS ------------------------------
 
-        javascriptGenerator['gameobject_this'] = function (block) {
+        javascriptGenerator.forBlock['gameobject_this'] = function (block) {
             // TODO: Assemble JavaScript into code variable.
             const code = 'this.gameObject';
             // TODO: Change ORDER_NONE to the correct strength.
             return [code, javascriptGenerator.ORDER_ATOMIC];
         };
 
-        javascriptGenerator['gameobject_get_posy'] = function (block) {
+        javascriptGenerator.forBlock['gameobject_get_posy'] = function (block) {
             const value_obj = javascriptGenerator.valueToCode(block, 'OBJ', javascriptGenerator.ORDER_NONE);
             // TODO: Assemble JavaScript into code variable.
             const code = value_obj + '.position.y';
@@ -184,7 +195,7 @@ export class JSCodeBlocks {
         };
 
 
-        javascriptGenerator['gameobject_setpos_numbers'] = function (block: any) {
+        javascriptGenerator.forBlock['gameobject_setpos_numbers'] = function (block: any) {
 
             const value_obj = javascriptGenerator.valueToCode(block, 'OBJ', javascriptGenerator.ORDER_ATOMIC);
             const value_posx = javascriptGenerator.valueToCode(block, 'POSX', javascriptGenerator.ORDER_ATOMIC);
@@ -200,7 +211,7 @@ export class JSCodeBlocks {
 
         //------------------ INPUTS ------------------------------------------------------------------
 
-        javascriptGenerator['keycode'] = function (block) {
+        javascriptGenerator.forBlock['keycode'] = function (block) {
             const dropdown_keycodes = block.getFieldValue('KEYCODES');
             // TODO: Assemble JavaScript into code variable.
             const code = 'KeyCode.' + dropdown_keycodes;
@@ -209,7 +220,7 @@ export class JSCodeBlocks {
         };
 
 
-        javascriptGenerator['inputs_if_keydown'] = (block: any) => {
+        javascriptGenerator.forBlock['inputs_if_keydown'] = (block: any) => {
 
             const value_keycode = javascriptGenerator.valueToCode(block, 'KEYCODE', javascriptGenerator.ORDER_ATOMIC);
             // TODO: Assemble JavaScript into code constiable.
@@ -217,19 +228,19 @@ export class JSCodeBlocks {
             return [code, javascriptGenerator.ORDER_NONE];
         };
 
-        javascriptGenerator['keycode_d'] = function (block: any) {
+        javascriptGenerator.forBlock['keycode_d'] = function (block: any) {
             // TODO: Assemble JavaScript into code constiable.
             return 'KeyCode.D';
             // TODO: Change ORDER_NONE to the correct strength.
             //return [code,javascriptGenerator.ORDER_ATOMIC];
         };
-        javascriptGenerator['keycode_space'] = function (block: any) {
+        javascriptGenerator.forBlock['keycode_space'] = function (block: any) {
             // TODO: Assemble JavaScript into code constiable.
             const code = 'KeyCode.Space';
             // TODO: Change ORDER_NONE to the correct strength.
             return [code, javascriptGenerator.ORDER_ATOMIC];
         };
-        javascriptGenerator['keycode_z'] = function (block: any) {
+        javascriptGenerator.forBlock['keycode_z'] = function (block: any) {
             // TODO: Assemble JavaScript into code constiable.
             const code = 'KeyCode.Z';
             // TODO: Change ORDER_NONE to the correct strength.
@@ -237,7 +248,7 @@ export class JSCodeBlocks {
             return [code, javascriptGenerator.ORDER_ATOMIC];
         };
 
-        javascriptGenerator['inputs_onkeydown'] = function (block: any) {
+        javascriptGenerator.forBlock['inputs_onkeydown'] = function (block: any) {
 
             const value_keycode = javascriptGenerator.valueToCode(block, 'KEYCODE', javascriptGenerator.ORDER_ATOMIC);
             const statements_onkeydown = javascriptGenerator.statementToCode(block, 'ONKEYDOWN');
@@ -246,7 +257,7 @@ export class JSCodeBlocks {
             return code;
         };
 
-        javascriptGenerator['keycode_s'] = function (block: any) {
+        javascriptGenerator.forBlock['keycode_s'] = function (block: any) {
             // TODO: Assemble JavaScript into code constiable.
             const code = 'KeyCode.S';
             // TODO: Change ORDER_NONE to the correct strength.
@@ -255,7 +266,7 @@ export class JSCodeBlocks {
         };
 
 
-        javascriptGenerator['keycode_q'] = function (block: any) {
+        javascriptGenerator.forBlock['keycode_q'] = function (block: any) {
             // TODO: Assemble JavaScript into code constiable.
             const code = 'KeyCode.Q';
             // TODO: Change ORDER_NONE to the correct strength.
@@ -264,9 +275,9 @@ export class JSCodeBlocks {
         };
 
 
-        javascriptGenerator['inputs_onkey'] = function (block: any) {
-            const value_keycode = javascriptGenerator.valueToCode(block, 'KEYCODE', javascriptGenerator.ORDER_ATOMIC);
-            const statements_onkey = javascriptGenerator.statementToCode(block, 'ONKEY');
+        javascriptGenerator.forBlock['inputs_onkey'] = function (block: any,generator : any) {
+            const value_keycode = generator.valueToCode(block, 'KEYCODE', generator.ORDER_ATOMIC);
+            const statements_onkey = generator.statementToCode(block, 'ONKEY');
             // TODO: Assemble JavaScript into code constiable.
             const code = '...;\n';
             return code;
@@ -354,7 +365,7 @@ export class JSCodeBlocks {
             }
         };
 
-        javascriptGenerator['fsm_init'] = function (/** @type {any} */ block: any) {
+        javascriptGenerator.forBlock['fsm_init'] = function (/** @type {any} */ block: any) {
 
             const statements_init = javascriptGenerator.statementToCode(block, 'INIT');
             // TODO: Assemble JavaScript into code variable.
@@ -362,7 +373,7 @@ export class JSCodeBlocks {
             return code;
         };
 
-        javascriptGenerator['fsm_start'] = function (/** @type {any} */ block: any) {
+        javascriptGenerator.forBlock['fsm_start'] = function (/** @type {any} */ block: any) {
 
             const statements_start = javascriptGenerator.statementToCode(block, 'START');
             // TODO: Assemble JavaScript into code variable.
@@ -372,7 +383,7 @@ export class JSCodeBlocks {
 
 
         // S'execute depuis un FSM
-        javascriptGenerator['fsm_update'] = function (/** @type {any} */ block: any) {
+        javascriptGenerator.forBlock['fsm_update'] = function (/** @type {any} */ block: any) {
 
             const statements_update = javascriptGenerator.statementToCode(block, 'UPDATE');
             // TODO: Assemble JavaScript into code variable.
@@ -382,26 +393,26 @@ export class JSCodeBlocks {
 
 
 
-        javascriptGenerator['state_onenterstate'] = function (block) {
+        javascriptGenerator.forBlock['state_onenterstate'] = function (block,generator) {
 
-            const statements_enterstate = javascriptGenerator.statementToCode(block, 'ENTERSTATE');
+            const statements_enterstate = generator.statementToCode(block, 'ENTERSTATE');
             // TODO: Assemble JavaScript into code variable.
             const code = `this.onEnterState.add(() => {\n ${statements_enterstate} } );\n`;
             return code;
         };
 
-        javascriptGenerator['state_onupdatestate'] = function (/** @type {any} */ block: any) {
+        javascriptGenerator.forBlock['state_onupdatestate'] = function (block: any,generator : any) {
 
-            const statements_updatestate = javascriptGenerator.statementToCode(block, 'UPDATESTATE');
+            const statements_updatestate = generator.statementToCode(block, 'UPDATESTATE');
             // TODO: Assemble JavaScript into code variable.
             const code = `this.onUpdateState.add(() => {\n${statements_updatestate}});\n`;
             return code;
         };
 
 
-        javascriptGenerator['state_onexitstate'] = function (/** @type {any} */ block: any) {
+        javascriptGenerator['state_onexitstate'] = function (block: any,generator : any) {
 
-            const statements_onexitstate = javascriptGenerator.statementToCode(block, 'ONEXITSTATE');
+            const statements_onexitstate = generator.statementToCode(block, 'ONEXITSTATE');
             // TODO: Assemble JavaScript into code variable.
             const code = "this.onExitState = () => {\n" + statements_onexitstate + "}\n";
             return code;

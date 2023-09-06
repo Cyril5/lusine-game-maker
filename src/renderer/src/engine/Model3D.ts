@@ -20,9 +20,6 @@ export class Model3D extends GameObject {
             //SceneLoader.ImportMesh("", "https://models.babylonjs.com/", "aerobatic_plane.glb", scene, (meshes) => {
             const mesh = SceneLoader.ImportMesh("", directoryOrUrl+'/', filename, scene, (meshes) => {
 
-                console.log(meshes.length);
-
-
                      // Fusionner tous les maillages individuels en un seul maillage
                     const mergedMesh = BABYLON.Mesh.MergeMeshes(meshes[0].getChildMeshes(), true, true, undefined, false, true);
                     //enlever le mesh root "__root__"

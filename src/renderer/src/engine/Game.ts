@@ -12,8 +12,6 @@ export class Game {
     onGameUpdate : Observable<void>;
     onGameStoped : Observable<void>;
 
-    private static os = require('os');
-    private static path = require('path');
     private static _instance: any;
 
     private _deltaTime: Number = 0;
@@ -74,10 +72,6 @@ export class Game {
 
         InputManager.initKeyboardListeners();
 
-
-
-        this.playerCar = GameObject.gameObjects.get(8);
-
         // Interpretation des codes de chaques states de chaques fsm
         const gameObjects = GameObject.gameObjects.values();
         for (const gameObject of gameObjects) {
@@ -92,12 +86,13 @@ export class Game {
 
         GameObject.saveAllTransforms();
 
-        //this.playerCar.fsm.states[0].runCode();
         this.onGameStarted.notifyObservers();
 
         scene.physicsEnabled = true;
-        scene.setActiveCameraByName("FollowCam");
-
+        //const followCam = scene.setActiveCameraByName("FollowCam");
+        // const camera = scene.cameras[0];
+        // followCam.position.copyFrom(camera.position);
+        // followCam.rotation.copyFrom(camera.rotation);
 
     }
 
@@ -111,7 +106,7 @@ export class Game {
         this._isRunning = false;
         
         Renderer.getInstance().scene.physicsEnabled = false;
-        scene.setActiveCameraByName("Camera");
+        scene.setActiveCameraByName("Camera").setEnabled(true);
         GameObject.resetAllTransforms();
         
         this.onGameStoped.notifyObservers();

@@ -1,7 +1,7 @@
 import { Engine, GizmoManager, HemisphericLight, SceneLoader, Space, StandardMaterial, Texture, Vector3 } from "@babylonjs/core";
 
 import { Game } from "./Game";
-import { FBXLoader } from "babylon-fbx-loader";
+// import { FBXLoader } from "babylon-fbx-loader";
 
 import { Observable } from "babylonjs";
 import Ammo from 'ammojs-typed';
@@ -66,7 +66,7 @@ export class Renderer {
         
         this._engine.getRenderingCanvas().addEventListener("wheel", evt => evt.preventDefault());
         
-        SceneLoader.RegisterPlugin(new FBXLoader());
+        //SceneLoader.RegisterPlugin(new FBXLoader());
         //BABYLON.SceneLoader.RegisterPlugin(new FBXLoader());
         // await SceneLoader.ImportMeshAsync(null, 'models/fbxtest/', 'cube.fbx', this._scene);
         
@@ -78,7 +78,7 @@ export class Renderer {
         this._camera.panningSensibility = this.CAMERA_PANNING_SENSTIVITY;
         this._camera.zoomOnFactor = this.CAMERA_ZOOM_SENSTIVITY;
         
-        this._scene.debugLayer.show();
+        //this._scene.debugLayer.show();
         
         // // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
         const light = new HemisphericLight("light", new Vector3(0, 1, 0), this._scene);
@@ -179,7 +179,7 @@ export class Renderer {
         this.init();
     }
 
-    public static async initAndGetInstance(engine: Engine, scene: BABYLON.Scene): Renderer {
+    public static async initAndGetInstance(engine: Engine, scene: BABYLON.Scene) {
         if (Renderer.instance === undefined) {
             Renderer.instance = new Renderer(engine, scene);
         }

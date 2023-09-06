@@ -1,5 +1,6 @@
 import React, { useEffect,forwardRef, useImperativeHandle, useRef } from 'react';
-import Drawflow from 'drawflow';
+//import Drawflow from 'drawflow';
+import Drawflow from '../../../src/assets/drawflow-modified.js';
 import 'drawflow/dist/drawflow.min.css';
 import '../../assets/css/fsm-graph.scss';
 import ReactDOMServer from 'react-dom/server';
@@ -16,14 +17,6 @@ const FSMGraph = forwardRef((props,ref) => {
   const selectedNodeRef = useRef(null);
   const currentFSMRef = useRef(props.fsm);
 
-  const getNodeOutput = (node)=> {
-    return node.outputs[MAIN_OUTPUT_SOURCE_NODE];
-  }
-  const getNodeInput = (node)=>{
-    return node.inputs[MAIN_INPUT_TARGET_NODE];
-  }
-
-  
 
   const addNode = (state: State)=>{
     const data = {
@@ -31,6 +24,7 @@ const FSMGraph = forwardRef((props,ref) => {
         "output_id": 0,
         "input_id": 0, // l'id du noeud cible
       },
+      "noDelete":false,
       "stateIndex": props.fsm.states.indexOf(state)
     }
     drawflowRef.current.addNode('state-node', 1, 1, 100, 200, 'state-node', data, state.name);
@@ -107,7 +101,7 @@ const FSMGraph = forwardRef((props,ref) => {
     },[props.fsm])
 
   useEffect(() => {
-    const container = document.getElementById('drawflow-container');
+    const container : HTMLElement | null = document.getElementById('drawflow-container');
     drawflowRef.current = new Drawflow(container);
 
     const drawflow : Drawflow = drawflowRef.current;
@@ -123,7 +117,7 @@ const FSMGraph = forwardRef((props,ref) => {
       },
     };
 
-    drawflow.addNode('start-node', 0, 1, 100, 200, 'start-node', startNodeData, 'Start');
+    drawflow.addNode('start-node', 0, 1, 100, 200, 'start-node', startNodeData, 'START');
 
     // const test = ReactDOMServer.renderToString(<FSMNode />);
     drawflow.addNode('state-node', 1, 1, 400, 300, 'state-node', data, 'Nouvel Etat');
@@ -134,7 +128,11 @@ const FSMGraph = forwardRef((props,ref) => {
 
     drawflow.on('nodeRemoved',(id)=>{
       currentFSMRef.current.removeState(selectedNodeRef.current.data.stateIndex);
-      console.log(currentFSMRef.current);
+      if(id == 1) {
+        const n = drawflow.addNode('start-node',0,1,100,200,'start-node',startNodeData,'START');
+        //container.querySelector('#node-'+n).id = 'node-1';
+        //drawflow.getNodeFromId(n).id = 1;
+      }
     });
 
     // Si une connection a été enlevé 
@@ -148,6 +146,7 @@ const FSMGraph = forwardRef((props,ref) => {
     
     // Lors de la sélection d'un noeud
     drawflow.on('nodeSelected',(id)=>{
+      console.log(id);
       selectedNodeRef.current = drawflow.getNodeFromId(id);
 
       if(id > 1) {

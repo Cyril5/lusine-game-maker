@@ -6,6 +6,7 @@ import { darcula } from '@uiw/codemirror-theme-darcula';
 import '../assets/css/states-editor.scss';
 
 import Blockly from 'blockly';
+import { TypedVariableModal } from '@blockly/plugin-typed-variable-modal';
 import toolboxXml from '../assets/blocks/toolbox.xml?raw'; // ?raw to import as string
 import LusineBlocksDarkTheme from '../engine/blocks/themes/lusine-gm-dark'
 import '../engine/blocks/blocksDefs';
@@ -21,15 +22,17 @@ import FileManager from '@renderer/engine/FileManager';
 import { IStateFile } from '@renderer/engine/FSM/IStateFile';
 import StateEditorUtils from '@renderer/editor/StateEditorUtils';
 import EditorUtils from '@renderer/editor/EditorUtils';
+import { cp } from 'fs';
+import CustomPrompt from '@renderer/components/StatesEditor/CustomPrompt';
 
 //const serializer: Blockly.serialization.blocks.BlockSerializer = new Blockly.serialization.blocks.BlockSerializer();
 let workspace: Blockly.WorkspaceSvg;
 
-const StateEditor = (statefiles=StateEditorUtils.statesFiles(),resizeWorkspace=true, ...props: any) => {
+const StateEditor = (statefiles = StateEditorUtils.statesFiles(), resizeWorkspace = true, ...props: any) => {
 
 
     const [currentStateFile, setCurrentStateFile] = useState(props.initStateFile); // IStateFile
-    const [mapStateFiles,setMapStateFiles] = useState(null);
+    const [mapStateFiles, setMapStateFiles] = useState(null);
 
     const blocklyDivRef = useRef(null);
     const blocklyAreaRef = useRef(null);
@@ -69,14 +72,13 @@ const StateEditor = (statefiles=StateEditorUtils.statesFiles(),resizeWorkspace=t
 
     // Lorsque la propriétée initStateFile du composant a changé
     useEffect(() => {
-        console.log(props.initStateFile);
         if (props.initStateFile) {
             setCurrentStateFile(props.initStateFile);
             openStateFile(props.initStateFile);
         }
     }, [props.initStateFile]);
 
-
+    let inputField;
     useEffect(() => {
 
         console.log("use effect state editor");
@@ -150,6 +152,29 @@ const StateEditor = (statefiles=StateEditorUtils.statesFiles(),resizeWorkspace=t
         }
 
         workspace.addChangeListener(onChangeWorkspace);
+        const typedVarModal = new TypedVariableModal(workspace, 'callbackName', [["Nombre", "Number"], ["Texte", "String"],["Booléen","Boolean"]]);
+        typedVarModal.init();
+
+        workspace.registerToolboxCategoryCallback('CREATE_TYPED_VARIABLE', createFlyout);
+
+
+        /** Override Blockly.dialog.setPrompt() with custom implementation. 
+        */
+        Blockly.dialog.setPrompt(function (message, defaultValue, callback) {
+
+            show('Prompt', message, {
+                showInput: true,
+                showOkay: true,
+                onOkay: function () {
+                    callback(inputField.value);
+                },
+                showCancel: true,
+                onCancel: function () {
+                    callback(null);
+                },
+            });
+            inputField.value = defaultValue;
+        });
 
     }, []); // Le deuxième argument est un tableau de dépendances. Si le tableau est vide, l'effet ne se déclenchera qu'une seule fois lors du premier rendu du composant.
 
@@ -158,6 +183,22 @@ const StateEditor = (statefiles=StateEditorUtils.statesFiles(),resizeWorkspace=t
     //     height: "50vh",
     // }
     Blockly.setLocale(Fr);
+
+    const createFlyout = (workspace)=> {
+        let xmlList = [];
+        // Add your button and give it a callback name.
+        const button = document.createElement('button');
+        button.setAttribute('text', 'Créer une variable');
+        button.setAttribute('callbackKey', 'callbackName');
+
+        xmlList.push(button);
+
+        // This gets all the variables that the user creates and adds them to the
+        // flyout.
+        const blockList: Element[] = Blockly.VariablesDynamic.flyoutCategoryBlocks(workspace);
+        xmlList = xmlList.concat(blockList);
+        return xmlList;
+    };
 
     const updateCodeFromCodeEditor = () => {
         //javascriptGenerator.addReservedWords('code');
@@ -298,9 +339,122 @@ const StateEditor = (statefiles=StateEditorUtils.statesFiles(),resizeWorkspace=t
         // console.log(code);
     }
 
+    let backdropDiv_;
+    let dialogDiv_;
+
+    /** Hides any currently visible dialog. */
+    const hide = ()=> {
+    if (backdropDiv_) {
+      backdropDiv_.style.display = 'none';
+      dialogDiv_.style.display = 'none';
+    }
+  };
+
+    /**
+ * Shows the dialog.
+ * Allowed options:
+ *  - showOkay: Whether to show the OK button.
+ *  - showCancel: Whether to show the Cancel button.
+ *  - showInput: Whether to show the text input field.
+ *  - onOkay: Callback to handle the okay button.
+ *  - onCancel: Callback to handle the cancel button and backdrop clicks.
+ */
+    const show = (title, message, options) => {
+        let backdropDiv = backdropDiv_;
+        let dialogDiv = dialogDiv_;
+        if (!dialogDiv) {
+            // Generate HTML
+            backdropDiv = document.createElement('div');
+            backdropDiv.id = 'customDialogBackdrop';
+            backdropDiv.style.cssText =
+                'position: absolute;' +
+                'color: black;'+
+                'top: 0; left: 0; right: 0; bottom: 0;' +
+                'background-color: rgba(0, 0, 0, 0.7);' +
+                'z-index: 100;';
+            document.body.appendChild(backdropDiv);
+
+            dialogDiv = document.createElement('div');
+            dialogDiv.id = 'customDialog';
+            dialogDiv.style.cssText =
+                'background-color: #fff;' +
+                'color: black;' +
+                'width: 400px;' +
+                'margin: 20px auto 0;' +
+                'padding: 10px;';
+            backdropDiv.appendChild(dialogDiv);
+
+            dialogDiv.onclick = function (event) {
+                event.stopPropagation();
+            };
+
+            backdropDiv_ = backdropDiv;
+            dialogDiv_ = dialogDiv;
+        }
+        backdropDiv.style.display = 'block';
+        dialogDiv.style.display = 'block';
+
+        dialogDiv.innerHTML =
+            '<header class="customDialogTitle"></header>' +
+            '<p class="customDialogMessage"></p>' +
+            (options.showInput ? '<div><input id="customDialogInput"></div>' : '') +
+            '<div class="customDialogButtons">' +
+            (options.showCancel ? '<button id="customDialogCancel">Cancel</button>' : '') +
+            (options.showOkay ? '<button id="customDialogOkay">OK</button>' : '') +
+            '</div>';
+        dialogDiv.getElementsByClassName('customDialogTitle')[0]
+            .appendChild(document.createTextNode(title));
+        dialogDiv.getElementsByClassName('customDialogMessage')[0]
+            .appendChild(document.createTextNode(message));
+
+        const onOkay = (event)=> {
+            hide();
+            options.onOkay && options.onOkay();
+            event && event.stopPropagation();
+        };
+        const onCancel = (event)=> {
+            hide();
+            options.onCancel && options.onCancel();
+            event && event.stopPropagation();
+        };
+
+        const dialogInput = document.getElementById('customDialogInput');
+        inputField = dialogInput;
+        if (dialogInput) {
+            dialogInput.focus();
+
+            dialogInput.onkeyup = function (event) {
+                if (event.key === 'Enter') {
+                    // Process as OK when user hits enter.
+                    onOkay();
+                    return false;
+                } else if (event.key === 'Escape') {
+                    // Process as cancel when user hits esc.
+                    onCancel();
+                    return false;
+                }
+            };
+        } else {
+            var okay = document.getElementById('customDialogOkay');
+            okay && okay.focus();
+        }
+
+        if (options.showOkay) {
+            document.getElementById('customDialogOkay')
+                .addEventListener('click', onOkay);
+        }
+        if (options.showCancel) {
+            document.getElementById('customDialogCancel')
+                .addEventListener('click', onCancel);
+        }
+
+        backdropDiv.onclick = onCancel;
+    };
+
 
     return (
         <>
+            <CustomPrompt/>
             <Container fluid>
                 <p> {currentStateFile ? currentStateFile.filename : 'Aucun fichier ouvert'}</p>
 
@@ -324,11 +478,11 @@ const StateEditor = (statefiles=StateEditorUtils.statesFiles(),resizeWorkspace=t
                     </Col>
                     <Col md={2}>
                         <div className='state-files-buttons'>
-                        {mapStateFiles && Array.from(mapStateFiles).map(([key, value]) => (
-                                        <Button onClick={() => openStateFile(value)}>
-                                            {value.name}
-                                        </Button>
-                                    ))}
+                            {mapStateFiles && Array.from(mapStateFiles).map(([key, value]) => (
+                                <Button onClick={() => openStateFile(value)} key={key}>
+                                     {value.name}
+                                </Button>
+                            ))}
                         </div>
                     </Col>
 

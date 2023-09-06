@@ -10,6 +10,7 @@ import Models3DModal from './Models3DModal';
 function AddObjectModal(props: any) {
 
     const [show, setShow] = useState(false);
+    const [showModelsModal,setShowModalsModal] = useState(false);
 
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
@@ -46,6 +47,10 @@ function AddObjectModal(props: any) {
 
     };
 
+    const handleOpenModelsModal = (event) => {
+        setShowModalsModal(true);
+    };
+
     return (
         <>
             <input type="file" ref={fileInputRef} accept={".obj,.fbx,.glb,.gltf"} onChange={handleFileChange} style={{ display: "none" }} />
@@ -62,7 +67,7 @@ function AddObjectModal(props: any) {
                     <Modal.Title>Ajouter un objet</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <p>Double cliquez pour ajouter l'objet</p>
+                    <p>Double cliquez pour ajouter un objet</p>
 
                         <Row>
                             <Col md={6}>
@@ -73,7 +78,7 @@ function AddObjectModal(props: any) {
                                         <Card.Text>
                                             Description
                                         </Card.Text>
-                                        <Button variant="primary">Ajouter</Button>
+                                        <Button variant="primary" disabled>Ajouter</Button>
                                     </Card.Body>
                                 </Card>
                             </Col>
@@ -92,15 +97,14 @@ function AddObjectModal(props: any) {
                                 </Card>
                             </Col>
                             <Col md={4}>
-                                <Card style={{ width: '18rem' }}>
+                                <Card style={{ width: '18rem' }} onDoubleClick={handleOpenModelsModal}>
                                     <Card.Img variant="top" src="holder.js/100px180" />
                                     <Card.Body>
                                         <Card.Title>Modèle 3D</Card.Title>
                                         <Card.Text>
                                             Description model 3D
                                         </Card.Text>
-                                        {/* <Button variant="primary" onClick={openFileDialog}>Ajouter</Button> */}
-                                        <Models3DModal />
+                                        <Models3DModal show={showModelsModal} onClose={()=>setShowModalsModal(false)}/>
                                     </Card.Body>
                                 </Card>
                             </Col>
@@ -114,7 +118,7 @@ function AddObjectModal(props: any) {
                                         <Card.Text>
                                             Description du collider
                                         </Card.Text>
-                                        <Button variant="primary">Ajouter</Button>
+                                        <Button variant="primary" disabled>Ajouter</Button>
                                     </Card.Body>
                                 </Card>
                             </Col>

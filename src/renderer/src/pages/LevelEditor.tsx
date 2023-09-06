@@ -1,15 +1,10 @@
-import React, { useRef, useEffect, useState, useMemo } from 'react';
 import Editor from "../components/Editor";
 import RendererComponent from "../components/RendererComponent";
 
-import { Button, ButtonGroup, ButtonToolbar, Col, Container, Row, Tab, Tabs } from 'react-bootstrap';
-import TreeView from '../components/GameObjectsTreeView';
-import NavBarEditor from '../components/NavBarEditor';
-import { GameObject } from '../engine/GameObject';
+import { Button, ButtonGroup, ButtonToolbar, Col, Container, Row} from 'react-bootstrap';
 import PropertiesBar from '../components/PropertiesBar';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import GameObjectsTreeView from '../components/GameObjectsTreeView';
 import GameObjectsTreeBar from '@renderer/components/GameObjectsTreeBar';
 
 

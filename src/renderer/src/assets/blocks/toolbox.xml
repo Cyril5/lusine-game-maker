@@ -513,7 +513,8 @@
       </value>
     </block>
   </category>
-  <category name="Variables" colour="#a55b80" custom="VARIABLE"></category>
+  <!-- <category name="Variables" colour="#a55b80" custom="VARIABLE"></category> -->
+  <category name="Variables" custom="CREATE_TYPED_VARIABLE"></category>
   <category name="Functions" colour="#995ba5" custom="PROCEDURE"></category>
   <sep></sep>
   <category name="Qualifieurs">

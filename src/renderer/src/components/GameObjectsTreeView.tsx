@@ -6,68 +6,66 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { Button } from 'react-bootstrap';
 import Editor from './Editor';
 
-const initialData = [
-  {
-    "id": 1,
-    "parent": 0,
-    "droppable": true,
-    "text": "Folder 1",
-    "data": {
-      "type" : "GameObject"
-    }
-  },
-  {
-    "id": 2,
-    "parent": 1,
-    "text": "File 1-1",
-    "data": {
-      "type" : "GameObject"
-    }
-  },
-  {
-    "id": 3,
-    "parent": 1,
-    "text": "File 1-2",
-    "data": {
-      "type" : "GameObject"
-    }
-  },
-  {
-    "id": 4,
-    "parent": 0,
-    "droppable": true,
-    "text": "Folder 2",
-    "data": {
-      "type" : "GameObject"
-    }
-  },
-  {
-    "id": 5,
-    "parent": 4,
-    "droppable": true,
-    "text": "Folder 2-1",
-    "data": {
-      "type" : "GameObject"
-    }
-  },
-  {
-    "id": 6,
-    "parent": 5,
-    "text": "File 2-1-1",
-    "data": {
-      "type" : "GameObject"
-    }
-  }
-];
+// const initialData = [
+//   {
+//     "id": 1,
+//     "parent": 0,
+//     "droppable": true,
+//     "text": "Folder 1",
+//     "data": {
+//       "type" : "GameObject"
+//     }
+//   },
+//   {
+//     "id": 2,
+//     "parent": 1,
+//     "text": "File 1-1",
+//     "data": {
+//       "type" : "GameObject"
+//     }
+//   },
+//   {
+//     "id": 3,
+//     "parent": 1,
+//     "text": "File 1-2",
+//     "data": {
+//       "type" : "GameObject"
+//     }
+//   },
+//   {
+//     "id": 4,
+//     "parent": 0,
+//     "droppable": true,
+//     "text": "Folder 2",
+//     "data": {
+//       "type" : "GameObject"
+//     }
+//   },
+//   {
+//     "id": 5,
+//     "parent": 4,
+//     "droppable": true,
+//     "text": "Folder 2-1",
+//     "data": {
+//       "type" : "GameObject"
+//     }
+//   },
+//   {
+//     "id": 6,
+//     "parent": 5,
+//     "text": "File 2-1-1",
+//     "data": {
+//       "type" : "GameObject"
+//     }
+//   }
+// ];
 
 
 const GameObjectsTreeView = (props: any) => {
-  const [treeData, setTreeData] = useState(initialData);
+  const [treeData, setTreeData] = useState(props.gameObject);
 
   useEffect(() => {
     if(props.gameObjects) {
-      console.log(props.gameObjects);
-  
         setTreeData(props.gameObjects);
     }
 
@@ -101,6 +99,7 @@ const GameObjectsTreeView = (props: any) => {
   //   />
   // </DndProvider>
 
+    treeData && (
     <DndProvider backend={MultiBackend} options={getBackendOptions()}>
       <Tree
         tree={treeData}
@@ -124,6 +123,7 @@ const GameObjectsTreeView = (props: any) => {
 
       />
     </DndProvider>
+    )
   );
 };
 export default GameObjectsTreeView;
