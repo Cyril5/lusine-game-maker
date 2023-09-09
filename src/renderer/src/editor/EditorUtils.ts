@@ -51,7 +51,6 @@ export default class EditorUtils {
       }
 
     static showErrorMsg(message : string="",title : string = "error") {
-        const { dialog } = require('@electron/remote');
 
         const options = {
             type: 'error',
@@ -61,4 +60,25 @@ export default class EditorUtils {
 
           dialog.showMessageBoxSync(options);
     }
+
+    static showInfoMsg(message : string="",title : string = "Lusine Game Maker 3D") {
+      const options = {
+        type: 'info',
+        title: title,
+        message: message,
+      };
+
+      dialog.showMessageBoxSync(options);
+    }
+
+    static showWarnMsg(message : string="",title : string = "Lusine Game Maker 3D") {
+
+      const options = {
+          type: 'warning',
+          title: title,
+          message: message,
+        };
+
+        dialog.showMessageBoxSync(options);
+  }
 }

@@ -87,9 +87,9 @@ export class FiniteStateMachine {
         }
 
         if (this._currState)
-            this._currState.onExitState();
+            this._currState.onExitState.notifyObservers();
         this._currState = state;
-        this._currState.onEnterState();
+        this._currState.onEnterState.notifyObservers();
     }
 
     /**

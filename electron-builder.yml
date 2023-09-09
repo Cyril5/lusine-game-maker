@@ -1,5 +1,5 @@
-appId: com.electron.app
-productName: electron-app
+appId: com.nocturn-system.lgm3d
+productName: Lusine Game Maker 3D (Alpha 0.1)
 directories:
   buildResources: build
 files:
@@ -12,7 +12,7 @@ asarUnpack:
   - resources/*
 afterSign: build/notarize.js
 win:
-  executableName: electron-app
+  executableName: LGM3D
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}

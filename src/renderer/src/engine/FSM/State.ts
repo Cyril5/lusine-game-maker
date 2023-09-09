@@ -44,8 +44,8 @@ export default class State {
   }
 
   onUpdateState: FSMObservable<void>;
-  onEnterState: () => void;
-  onExitState: () => void;
+  onEnterState: FSMObservable<void>;
+  onExitState: FSMObservable<void>;
 
   constructor(fsm: FiniteStateMachine | undefined, stateFile: IStateFile | undefined) {
     if (fsm) {
@@ -58,8 +58,14 @@ export default class State {
       this.stateFile = stateFile;
     }
 
-    this.onExitState = ()=> {};
-    this.onEnterState = () => { };
+    this.onExitState = new FSMObservable();
+    this.onEnterState = new FSMObservable();
+
+    this.onEnterState.add(() => {
+   console.log('ENTER !!');
+ } );
+
+
     this.onUpdateState = new FSMObservable();
 
   }
@@ -123,35 +129,25 @@ export default class State {
 
 
     // Clear all states callbacks
-    this.onEnterState = () => { };
-    //this.onUpdateState.clear();
-    this.onExitState = () => { };
-
+    this.onEnterState.clear();
+    this.onExitState.clear();
     this.onUpdateState.clear(); 
-
-    // this.onUpdateState.add(() => {
-    //   //console.log("loop");
-    //   if (InputManager.getKeyDown(KeyCode.Z)) {
-    //     console.log("keydown Z");
-    //   } 
-    // });
-
 
     console.log(this.stateFile.codeFilename);
     console.log(this.stateFile.outputCode);
 
     if (this.stateFile.outputCode === "" && this.stateFile.needToLoad) {
       // récupérer le code depuis le fichier .state
-      FileManager.readFile(this.stateFile.codeFilename, (data) => {
+      FileManager.readFile(this.stateFile.codeFilename, async (data) => {
         this.stateFile.outputCode = data;
         console.log(this.stateFile.outputCode);
         this.stateFile.needToLoad = false;
-        this.evalStateCode(options);
+        await this.evalStateCode(options);
       });
     }else{
 
       // ne pas ré-evaluer le code car il a déjà était fait après l'ouverture du fichier du code
-      this.evalStateCode(options);
+      await this.evalStateCode(options);
     }
 
 

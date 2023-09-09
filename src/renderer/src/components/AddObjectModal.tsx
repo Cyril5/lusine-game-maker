@@ -53,7 +53,7 @@ function AddObjectModal(props: any) {
 
     return (
         <>
-            <input type="file" ref={fileInputRef} accept={".obj,.fbx,.glb,.gltf"} onChange={handleFileChange} style={{ display: "none" }} />
+            <input type="file" ref={fileInputRef} accept={".glb,.gltf"} onChange={handleFileChange} style={{ display: "none" }} />
             <ProgressBar animated now={progress} />
 
             <Button variant="primary" onClick={handleShow}>

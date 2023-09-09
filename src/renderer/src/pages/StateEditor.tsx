@@ -13,7 +13,7 @@ import '../engine/blocks/blocksDefs';
 import { javascriptGenerator } from 'blockly/javascript';
 //import '@blockly/block-plus-minus';
 import * as Fr from 'blockly/msg/fr';
-import { Button, Col, Container, Dropdown, Row } from 'react-bootstrap';
+import { Button, Col, Container, Dropdown, Offcanvas, Row } from 'react-bootstrap';
 import StateFilesTreeView from '@renderer/components/StateFilesTreeView';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Editor from '@renderer/components/Editor';
@@ -26,46 +26,51 @@ import { cp } from 'fs';
 import CustomPrompt from '@renderer/components/StatesEditor/CustomPrompt';
 
 //const serializer: Blockly.serialization.blocks.BlockSerializer = new Blockly.serialization.blocks.BlockSerializer();
-let workspace: Blockly.WorkspaceSvg;
 
 const StateEditor = (statefiles = StateEditorUtils.statesFiles(), resizeWorkspace = true, ...props: any) => {
 
 
     const [currentStateFile, setCurrentStateFile] = useState(props.initStateFile); // IStateFile
-    const [mapStateFiles, setMapStateFiles] = useState(null);
+    const [mapStateFiles, setMapStateFiles]: any = useState(null);
+    const [showOutputCodeModal,setShowOutputCodeModal] = useState(false);
 
     const blocklyDivRef = useRef(null);
     const blocklyAreaRef = useRef(null);
+    const workspaceRef = useRef(null); //: Blockly.WorkspaceSvg;
 
     const [code, setCode] = useState("");
 
 
     const onresize = () => {
         // Compute the absolute coordinates and dimensions of blocklyArea.
-        let element = blocklyAreaRef.current;
-        let x = 0;
-        let y = 0;
-        do {
-            x += element.offsetLeft;
-            y += element.offsetTop;
-            element = element.offsetParent;
-        } while (element);
-        // Position blocklyDiv over blocklyArea.
-        blocklyDivRef.current.style.left = x + 'px';
-        blocklyDivRef.current.style.top = y + 'px';
-        blocklyDivRef.current.style.width = blocklyAreaRef.current.offsetWidth + 'px';
-        blocklyDivRef.current.style.height = blocklyAreaRef.current.offsetHeight + 'px';
-        Blockly.svgResize(workspace);
+        let element: any = blocklyAreaRef.current;
+        if (element) {
+            let x = 0;
+            let y = 0;
+            do {
+                x += element.offsetLeft;
+                y += element.offsetTop;
+                element = element.offsetParent;
+            } while (element);
+            // Position blocklyDiv over blocklyArea.
+            blocklyDivRef.current.style.left = x + 'px';
+            blocklyDivRef.current.style.top = y + 'px';
+            blocklyDivRef.current.style.width = blocklyAreaRef.current.offsetWidth + 'px';
+            blocklyDivRef.current.style.height = blocklyAreaRef.current.offsetHeight + 'px';
+            Blockly.svgResize(workspaceRef.current);
+        }
     };
 
     //vérifier si l'onglet 3 est sélectionné lorsque la propriétée resizeWorkspace change
     useEffect(() => {
-        if (resizeWorkspace && workspace !== undefined) {
+        console.log(workspaceRef.current);
+        if (resizeWorkspace && workspaceRef.current) {
             onresize();
         }
     }, [resizeWorkspace]);
 
     useEffect(() => {
+        console.log(StateEditorUtils.statesFiles());
         setMapStateFiles(StateEditorUtils.statesFiles());
     }, [statefiles]);
 
@@ -83,7 +88,7 @@ const StateEditor = (statefiles = StateEditorUtils.statesFiles(), resizeWorkspac
 
         console.log("use effect state editor");
 
-        workspace = Blockly.inject(blocklyDivRef.current, {
+        workspaceRef.current = Blockly.inject(blocklyDivRef.current, {
             theme: LusineBlocksDarkTheme,
             // toolbox: `
             //   <xml>
@@ -116,7 +121,7 @@ const StateEditor = (statefiles = StateEditorUtils.statesFiles(), resizeWorkspac
                     horizontal: true,
                     vertical: true
                 },
-                drag: false,
+                drag: true,
                 wheel: true,
             },
             collapse: true,
@@ -151,11 +156,11 @@ const StateEditor = (statefiles = StateEditorUtils.statesFiles(), resizeWorkspac
             // }
         }
 
-        workspace.addChangeListener(onChangeWorkspace);
-        const typedVarModal = new TypedVariableModal(workspace, 'callbackName', [["Nombre", "Number"], ["Texte", "String"],["Booléen","Boolean"]]);
+        workspaceRef.current.addChangeListener(onChangeWorkspace);
+        const typedVarModal = new TypedVariableModal(workspaceRef.current, 'callbackName', [["Nombre", "Number"], ["Texte", "String"], ["Booléen", "Boolean"]]);
         typedVarModal.init();
 
-        workspace.registerToolboxCategoryCallback('CREATE_TYPED_VARIABLE', createFlyout);
+        workspaceRef.current.registerToolboxCategoryCallback('CREATE_TYPED_VARIABLE', createFlyout);
 
 
         /** Override Blockly.dialog.setPrompt() with custom implementation. 
@@ -184,10 +189,10 @@ const StateEditor = (statefiles = StateEditorUtils.statesFiles(), resizeWorkspac
     // }
     Blockly.setLocale(Fr);
 
-    const createFlyout = (workspace)=> {
+    const createFlyout = (workspace) => {
         let xmlList = [];
         // Add your button and give it a callback name.
-        const button = document.createElement('button');
+        const button: HTMLButtonElement = document.createElement('button');
         button.setAttribute('text', 'Créer une variable');
         button.setAttribute('callbackKey', 'callbackName');
 
@@ -202,13 +207,14 @@ const StateEditor = (statefiles = StateEditorUtils.statesFiles(), resizeWorkspac
 
     const updateCodeFromCodeEditor = () => {
         //javascriptGenerator.addReservedWords('code');
-        const code: string = javascriptGenerator.workspaceToCode(workspace);
+        const code: string = javascriptGenerator.workspaceToCode(workspaceRef.current);
         console.log(code);
         if (code !== "") {
             //setCode(currentStateFile.outputCode);
             setCode(code);
         }
     }
+
 
     const openStateFile = (stateFile: IStateFile): void => {
 
@@ -228,7 +234,7 @@ const StateEditor = (statefiles = StateEditorUtils.statesFiles(), resizeWorkspac
                 //workspace.clear();
                 Blockly.Events.disable(); // Désactiver les événements pour éviter les collisions d'ID
                 const jsonDom: Element = Blockly.utils.xml.textToDom(xmlFile);
-                Blockly.Xml.clearWorkspaceAndLoadFromXml(jsonDom, workspace);
+                Blockly.Xml.clearWorkspaceAndLoadFromXml(jsonDom, workspaceRef.current);
                 Blockly.Events.enable();
 
                 onresize();
@@ -313,7 +319,7 @@ const StateEditor = (statefiles = StateEditorUtils.statesFiles(), resizeWorkspac
             //const content = JSON.stringify(serializer.save(workspace));
 
             // Convertir l'espace de travail en nœud DOM
-            const xmlDom = Blockly.Xml.workspaceToDom(workspace);
+            const xmlDom = Blockly.Xml.workspaceToDom(workspaceRef.current);
 
             // Convertir le nœud DOM en chaîne de texte XML
             const content = Blockly.Xml.domToPrettyText(xmlDom);
@@ -343,12 +349,12 @@ const StateEditor = (statefiles = StateEditorUtils.statesFiles(), resizeWorkspac
     let dialogDiv_;
 
     /** Hides any currently visible dialog. */
-    const hide = ()=> {
-    if (backdropDiv_) {
-      backdropDiv_.style.display = 'none';
-      dialogDiv_.style.display = 'none';
-    }
-  };
+    const hide = () => {
+        if (backdropDiv_) {
+            backdropDiv_.style.display = 'none';
+            dialogDiv_.style.display = 'none';
+        }
+    };
 
     /**
  * Shows the dialog.
@@ -368,7 +374,7 @@ const StateEditor = (statefiles = StateEditorUtils.statesFiles(), resizeWorkspac
             backdropDiv.id = 'customDialogBackdrop';
             backdropDiv.style.cssText =
                 'position: absolute;' +
-                'color: black;'+
+                'color: black;' +
                 'top: 0; left: 0; right: 0; bottom: 0;' +
                 'background-color: rgba(0, 0, 0, 0.7);' +
                 'z-index: 100;';
@@ -407,12 +413,12 @@ const StateEditor = (statefiles = StateEditorUtils.statesFiles(), resizeWorkspac
         dialogDiv.getElementsByClassName('customDialogMessage')[0]
             .appendChild(document.createTextNode(message));
 
-        const onOkay = (event)=> {
+        const onOkay = (event) => {
             hide();
             options.onOkay && options.onOkay();
             event && event.stopPropagation();
         };
-        const onCancel = (event)=> {
+        const onCancel = (event) => {
             hide();
             options.onCancel && options.onCancel();
             event && event.stopPropagation();
@@ -423,14 +429,14 @@ const StateEditor = (statefiles = StateEditorUtils.statesFiles(), resizeWorkspac
         if (dialogInput) {
             dialogInput.focus();
 
-            dialogInput.onkeyup = function (event) {
+            dialogInput.onkeyup = (event) => {
                 if (event.key === 'Enter') {
                     // Process as OK when user hits enter.
-                    onOkay();
+                    onOkay(null);
                     return false;
                 } else if (event.key === 'Escape') {
                     // Process as cancel when user hits esc.
-                    onCancel();
+                    onCancel(null);
                     return false;
                 }
             };
@@ -440,12 +446,10 @@ const StateEditor = (statefiles = StateEditorUtils.statesFiles(), resizeWorkspac
         }
 
         if (options.showOkay) {
-            document.getElementById('customDialogOkay')
-                .addEventListener('click', onOkay);
+            document.getElementById('customDialogOkay')!.addEventListener('click', onOkay);
         }
         if (options.showCancel) {
-            document.getElementById('customDialogCancel')
-                .addEventListener('click', onCancel);
+            document.getElementById('customDialogCancel')!.addEventListener('click', onCancel);
         }
 
         backdropDiv.onclick = onCancel;
@@ -454,7 +458,7 @@ const StateEditor = (statefiles = StateEditorUtils.statesFiles(), resizeWorkspac
 
     return (
         <>
-            <CustomPrompt/>
+            <CustomPrompt />
             <Container fluid>
                 <p> {currentStateFile ? currentStateFile.filename : 'Aucun fichier ouvert'}</p>
 
@@ -471,7 +475,8 @@ const StateEditor = (statefiles = StateEditorUtils.statesFiles(), resizeWorkspac
                         <Button variant='warning' size="lg" onClick={saveWorkspace} disabled={!currentStateFile}><FontAwesomeIcon icon="save"></FontAwesomeIcon></Button>
 
                         <div id="blocklyArea" ref={blocklyAreaRef}>
-                            Si ce message s'affiche : Redimensionner la fenêtre pour afficher l'espace de travail.
+                            Si ce message s'affiche : Redimensionner la fenêtre pour afficher l'espace de travail
+                            <br/>ou sélectionnez un fichier d'état dans la liste à droite de l'écran.
                         </div>
 
                         <div id="blocklyDiv" ref={blocklyDivRef} />
@@ -479,10 +484,10 @@ const StateEditor = (statefiles = StateEditorUtils.statesFiles(), resizeWorkspac
                     <Col md={2}>
                         <div className='state-files-buttons'>
                             {mapStateFiles && Array.from(mapStateFiles).map(([key, value]) => (
-                                <Button onClick={() => openStateFile(value)} key={key}>
-                                     {value.name}
+                                <Button key={key} onClick={() => openStateFile(value as IStateFile)}>
+                                    {(value as IStateFile).name}
                                 </Button>
-                            ))}
+                            ))} 
                         </div>
                     </Col>
 
@@ -490,14 +495,25 @@ const StateEditor = (statefiles = StateEditorUtils.statesFiles(), resizeWorkspac
             </Container>
 
 
-            <CodeMirror
-                id="command-area"
-                value={code}
-                theme={darcula}
-                height="200px"
-                extensions={[javascript({ jsx: false })]}
-                readOnly={true}
-            />
+
+            <Button variant="secondary" className="me-2" onClick={()=>setShowOutputCodeModal(true)}>
+                <FontAwesomeIcon icon="code" />
+            </Button>
+            <Offcanvas placement="bottom" scroll backdrop={false} onHide={()=>setShowOutputCodeModal(false)} show={showOutputCodeModal} {...props}>
+                <Offcanvas.Header closeButton>
+                    <Offcanvas.Title>Code sortie<FontAwesomeIcon icon="code" /></Offcanvas.Title>
+                </Offcanvas.Header>
+                <Offcanvas.Body>
+                    <CodeMirror
+                        id="command-area"
+                        value={code}
+                        theme={darcula}
+                        height="200px"
+                        extensions={[javascript({ jsx: false })]}
+                        readOnly={true}
+                    />
+                </Offcanvas.Body>
+            </Offcanvas>
 
 
 

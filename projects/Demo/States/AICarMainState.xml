@@ -1,7 +1,15 @@
 <xml xmlns="https://developers.google.com/blockly/xml">
-  <variables>
-    <variable type="Number" id="e[;J.Akh}jjGat({r,{T">kebab</variable>
-  </variables>
+  <block type="state_onenterstate" id="H%YXBvVWXQ,a}mk~eA.L" x="62" y="-37">
+    <statement name="ENTERSTATE">
+      <block type="debug_console_log" id="Xv-[IFwJ2Ri`fhq_bm+_">
+        <value name="LOG">
+          <block type="text" id="zW-17TzjV6y0~`#pEl@M">
+            <field name="TEXT">Hello World</field>
+          </block>
+        </value>
+      </block>
+    </statement>
+  </block>
   <block type="state_onupdatestate" id="qEB_G%3Z:lAs#4@?vk=T" x="63" y="113">
     <statement name="UPDATESTATE">
       <block type="gameobject_translate_forward" id="oIGB.m(*N7],I*^L)Gjr">
@@ -24,16 +32,6 @@
                 <field name="NUM">0.01</field>
               </block>
             </value>
-            <next>
-              <block type="variables_set_dynamic" id="Jb)0Y^x3BOpP?vID|7m#">
-                <field name="VAR" id="e[;J.Akh}jjGat({r,{T" variabletype="Number">kebab</field>
-                <value name="VALUE">
-                  <block type="math_number" id="VY]-RB[1X]VynCK:fIC[">
-                    <field name="NUM">36</field>
-                  </block>
-                </value>
-              </block>
-            </next>
           </block>
         </next>
       </block>

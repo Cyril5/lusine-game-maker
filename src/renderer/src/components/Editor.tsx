@@ -30,6 +30,10 @@ enum Mode {
 
 export default class Editor extends Component {
 
+    showDebugInspector(): void {
+      Renderer.getInstance().scene.debugLayer.show();
+    }
+
     eMode: Mode = Mode.LevelEditor;
 
     // TODO : A déplacer dans un export de EditorAlert 
@@ -39,8 +43,8 @@ export default class Editor extends Component {
         })
     }
 
-    hideStartupModal() {
-        this.setState({ showStartupModal: false });
+    showStartupModal(show : boolean = true) {
+        this.setState({ showStartupModal: show });
     }
 
     // use state REACT
@@ -72,11 +76,8 @@ export default class Editor extends Component {
 
     }
 
-    loadDefaultGame() {
-        //Renderer.isReadyObservable.add(async () => {
-
-        this.hideStartupModal();
-
+    setupBaseScene() {
+        this.showStartupModal(false);
 
         const scene = Renderer.getInstance().scene;
 
@@ -96,6 +97,12 @@ export default class Editor extends Component {
         const ground = MeshBuilder.CreateGround("ground", { width: 1000, height: 1000 }, scene);
         ground.material = groundMaterial;
 
+    }
+
+    loadDemo() {
+        //Renderer.isReadyObservable.add(async () => {
+        this.setupBaseScene();
+       
         const city = this.addModel3DObject("PizzaHome.glb", null, (city) => {
 
             city.name = "PizzaHome";

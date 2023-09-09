@@ -51,7 +51,7 @@ const NavBarEditor = (props: any)=> {
 
             <DropdownButton id="dropdown-basic-button" title={<span><FontAwesomeIcon icon="gear" /> Options</span>}>
               <Dropdown.Item href="#">Physique</Dropdown.Item>
-              <Dropdown.Item href="#">Option 2</Dropdown.Item>
+              <Dropdown.Item onClick={()=>Editor.getInstance().showDebugInspector()}>Show Debug Inspector</Dropdown.Item>
               <Dropdown.Item href="#">Option 3</Dropdown.Item>
             </DropdownButton>
 

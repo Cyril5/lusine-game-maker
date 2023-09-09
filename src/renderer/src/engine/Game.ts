@@ -31,6 +31,47 @@ export class Game {
         }
     }
 
+
+    public async start() {
+
+        this._isRunning = true;
+        console.log("Game started");
+
+        const scene = Renderer.getInstance().scene;
+
+        InputManager.initKeyboardListeners();
+
+        // Interpretation des codes de chaques states de chaques fsm
+        const gameObjects = GameObject.gameObjects.values();
+
+        let runCodeSuccess = 0;
+
+        for (const gameObject of gameObjects) {
+            if(gameObject instanceof ProgrammableGameObject) {
+                const states = gameObject.fsm.states.length;
+                for (let index = 0; index < states; index++) {
+                    const state = gameObject.fsm.states[index];
+                    await state.runCode();
+                }
+            }
+            console.log(gameObject.fsm.currentState.onEnterState);
+            gameObject.fsm.currentState.onEnterState.notifyObservers();
+        }
+
+        GameObject.saveAllTransforms();
+
+        this.onGameStarted.notifyObservers();
+
+        scene.physicsEnabled = true;
+        //const followCam = scene.setActiveCameraByName("FollowCam");
+        // const camera = scene.cameras[0];
+        // followCam.position.copyFrom(camera.position);
+        // followCam.rotation.copyFrom(camera.rotation);
+
+    }
+
+
+
     private update(deltaTime: Number) {
 
         if (!this._isRunning)
@@ -64,37 +105,6 @@ export class Game {
 
     }
 
-    public start() {
-        this._isRunning = true;
-        console.log("Game started");
-
-        const scene = Renderer.getInstance().scene;
-
-        InputManager.initKeyboardListeners();
-
-        // Interpretation des codes de chaques states de chaques fsm
-        const gameObjects = GameObject.gameObjects.values();
-        for (const gameObject of gameObjects) {
-            if(gameObject instanceof ProgrammableGameObject) {
-                const states = gameObject.fsm.states.length;
-                for (let index = 0; index < states; index++) {
-                    const state = gameObject.fsm.states[index];
-                    state.runCode();
-                }
-            }
-        }
-
-        GameObject.saveAllTransforms();
-
-        this.onGameStarted.notifyObservers();
-
-        scene.physicsEnabled = true;
-        //const followCam = scene.setActiveCameraByName("FollowCam");
-        // const camera = scene.cameras[0];
-        // followCam.position.copyFrom(camera.position);
-        // followCam.rotation.copyFrom(camera.rotation);
-
-    }
 
     public stop() {
         

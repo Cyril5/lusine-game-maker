@@ -8,7 +8,7 @@ export default class ProjectManager {
 
     // Au début les projets Lusine Game Maker était dans le dossier "Mes documents/Lusine Game Maker/Nom du projet"
 
-    private static _projectName : string | null = null;
+    private static _projectName: string | null = null;
     private static _currentProjectDir = null;
 
     // Créer un nom de chemin complet
@@ -19,36 +19,36 @@ export default class ProjectManager {
         //const dir = Game.path.resolve(documentsPath, directory);
         const projDir = ProjectManager._currentProjectDir;
         const path = EditorUtils.path.resolve(projDir, directory);
-        return EditorUtils.path.resolve(path,file);
+        return EditorUtils.path.resolve(path, file);
     }
 
     // TODO : remplacer par un getter
-    static getModelsDirectory() : string {
-        return ProjectManager.getFilePath(ProjectManager._currentProjectDir,'Models');
+    static getModelsDirectory(): string {
+        return ProjectManager.getFilePath(ProjectManager._currentProjectDir, 'Models');
     }
-    
+
     // TODO : remplacer par un getter
-    static getStateFilesDirectory() : string {
-        return ProjectManager.getFilePath(ProjectManager._currentProjectDir,'States');
+    static getStateFilesDirectory(): string {
+        return ProjectManager.getFilePath(ProjectManager._currentProjectDir, 'States');
     }
 
     static openDemoProject() {
         ProjectManager._projectName = "Demo";
-        ProjectManager._currentProjectDir = EditorUtils.path.resolve(EditorUtils.path.resolve(EditorUtils.appPath,'projects'),'Demo'); 
+        ProjectManager._currentProjectDir = EditorUtils.path.resolve(EditorUtils.path.resolve(EditorUtils.appPath, 'projects'), 'Demo');
         StateEditorUtils.loadStateFilesList();
-        Editor.getInstance().loadDefaultGame();
+        Editor.getInstance().setupBaseScene();
     }
 
 
     static openProject() {
         EditorUtils.openDirectoryDialog().then((result) => {
             const selectedDir = result.filePaths[0];
-            if(selectedDir) {
+            if (selectedDir) {
                 ProjectManager._currentProjectDir = selectedDir;
                 ProjectManager._projectName = "Mon Projet";
                 Editor.showAlert(ProjectManager._currentProjectDir);
                 StateEditorUtils.loadStateFilesList();
-                Editor.getInstance().loadDefaultGame();
+                Editor.getInstance().setupBaseScene();
 
             }
         });
@@ -111,12 +111,17 @@ export default class ProjectManager {
                             return false;
                             break;
                     }
-                    Editor.getInstance().hideStartupModal();
 
                     //Création des dossiers du projets
                     try {
                         FileManager.createDir(ProjectManager.getFilePath(ProjectManager._currentProjectDir, 'States'));
                         FileManager.createDir(ProjectManager.getFilePath(ProjectManager._currentProjectDir, 'Models'));
+                        //Charger le projet
+                        StateEditorUtils.loadStateFilesList();
+                        Editor.getInstance().setupBaseScene();
+                        EditorUtils.showInfoMsg(`Projet : ${ProjectManager._projectName} crée !`);
+                        Editor.getInstance().showStartupModal(true);
+
                     } catch (error: any) {
                         EditorUtils.showErrorMsg(error.message, "Error");
                         return false;
@@ -131,6 +136,7 @@ export default class ProjectManager {
         })
 
 
-        //Charger le projet
+
+
     }
 }

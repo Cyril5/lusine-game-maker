@@ -48,7 +48,7 @@ export default class StateEditorUtils {
 
     }
 
-    static createStateFile = (className: string) => {
+    static createStateFile = async (className: string) => {
         // 1.Créer le fichier dans le dossier States du projet 
         // 2.Attribuer un code de base
         const fileLocation = ProjectManager.getFilePath("States", className + '.' + StateEditorUtils._stateFilesFormat);
@@ -62,15 +62,18 @@ export default class StateEditorUtils {
             return;
         }
 
-        FileManager.writeInFile(fileLocation, BaseStateFile, () => {
-            console.log('Le fichier a été créé ! => ' + fileLocation);
-        });
+        const t = async()=>{
+            FileManager.writeInFile(fileLocation, BaseStateFile, () => {
+                console.log('Le fichier a été créé ! => ' + fileLocation);
+            });
+    
+            // Code vide
+            FileManager.writeInFile(fileCodeLocation, "", () => {
+    
+            });
+        }
 
-        // Code vide
-        FileManager.writeInFile(fileCodeLocation, "", () => {
-
-        });
-
+        await t();
         this.addStateFile(className);
 
     }

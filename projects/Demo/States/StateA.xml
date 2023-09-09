@@ -13,7 +13,7 @@
             </value>
           </block>
         </value>
-        <statement name="DO0">
+        <statement name="ELSE">
           <block type="controls_if" id="5beUjl2nybh:Y;~O#}c]">
             <mutation elseif="1"></mutation>
             <value name="IF0">
@@ -32,7 +32,7 @@
                 </value>
                 <value name="DISTZ">
                   <block type="math_number" id="rzcJR|8g+GOJ5-RmYcAx">
-                    <field name="NUM">10</field>
+                    <field name="NUM">0.5</field>
                   </block>
                 </value>
               </block>
@@ -53,7 +53,7 @@
                 </value>
                 <value name="DISTZ">
                   <block type="math_number" id="WH#dghgp]`u4fNUsz]+p">
-                    <field name="NUM">-5</field>
+                    <field name="NUM">-0.5</field>
                   </block>
                 </value>
               </block>
@@ -116,19 +116,6 @@
                 </statement>
               </block>
             </next>
-          </block>
-        </statement>
-        <statement name="ELSE">
-          <block type="gameobject_translate_forward" id="5V|G%Js[w:0wmc/xxeVc">
-            <comment pinned="true" h="80" w="160">AI Car</comment>
-            <value name="OBJ">
-              <block type="gameobject_this" id="_I[V*s3?Lvi2pGzd:Q_n"></block>
-            </value>
-            <value name="DISTZ">
-              <block type="math_number" id="+p91e#^|tVatFhiAir.f">
-                <field name="NUM">3</field>
-              </block>
-            </value>
           </block>
         </statement>
         <next>

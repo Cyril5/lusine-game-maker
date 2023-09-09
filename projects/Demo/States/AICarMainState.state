@@ -1,8 +1,8 @@
-var kebab;
-
+this.onEnterState.add(() => {
+   console.log('Hello World');
+ } );
 
 this.onUpdateState.add(() => {
   this.gameObject.translate(BABYLON.Axis.Z, 0.05, BABYLON.Space.LOCAL);
   this.gameObject.rotate(BABYLON.Axis.Y, 0.01, BABYLON.Space.LOCAL);
-  kebab = 36;
 });

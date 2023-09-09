@@ -7,6 +7,8 @@ import { Observable } from "babylonjs";
 import Ammo from 'ammojs-typed';
 import { AmmoJSPlugin } from "babylonjs";
 
+import '@renderer/assets/css/index.scss';
+
 
 export class Renderer {
     
