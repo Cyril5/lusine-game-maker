@@ -1,0 +1,7 @@
+this.onEnterState.add(() => {
+  } );
+
+this.onUpdateState.add(() => {
+  this.gameObject.rotate(BABYLON.Axis.Y, 0.03, BABYLON.Space.LOCAL);
+  this.gameObject.translate(BABYLON.Axis.Z, 0.5, BABYLON.Space.LOCAL);
+});

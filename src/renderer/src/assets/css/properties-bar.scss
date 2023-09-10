@@ -1,0 +1,14 @@
+.transform-positions, .transform-rotations, .transform-scales {
+    display: flex;
+    flex-direction: row;
+}
+
+.x-axis {
+    color: red;
+}
+.y-axis {
+    color: lightgreen;
+}
+.z-axis {
+    color: rgb(0, 128, 255);
+}

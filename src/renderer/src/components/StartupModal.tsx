@@ -5,6 +5,7 @@ import Modal from 'react-bootstrap/Modal';
 import '../assets/css/startup-modal.scss'; 
 import logo from '../assets/logo.png';
 import ProjectManager from '@renderer/editor/ProjectManager';
+import EditorUtils from '@renderer/editor/EditorUtils';
 
 const StartupModal = (props:any)=> {
 
@@ -50,7 +51,7 @@ const StartupModal = (props:any)=> {
         centered
       >
         <Modal.Header>
-          <Modal.Title>Lusine Game Maker - Alpha 0.1.1</Modal.Title>
+          <Modal.Title>Lusine Game Maker - {EditorUtils.VERSION}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <div className="btns-group">
@@ -67,7 +68,7 @@ const StartupModal = (props:any)=> {
             {/* <a href="https://github.com/Cyril5/lusine-game-maker">https://github.com/Cyril5/lusine-game-maker</a> */}
             <a>https://github.com/Cyril5/lusine-game-maker</a>
             
-            <p>v. alpha0.1.1</p>
+            <p>v.{EditorUtils.VERSION.toLowerCase().trim()}</p>
 
           </div>
         </Modal.Footer>

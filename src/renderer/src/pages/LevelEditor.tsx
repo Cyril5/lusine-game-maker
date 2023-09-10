@@ -6,6 +6,7 @@ import PropertiesBar from '../components/PropertiesBar';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import GameObjectsTreeBar from '@renderer/components/GameObjectsTreeBar';
+import ConsoleModal from "@renderer/components/ConsoleModal";
 
 
 const LevelEditor = (props) => {
@@ -60,6 +61,8 @@ const LevelEditor = (props) => {
                             gameobject_name={objJeu?.name}
                             parentid={objJeu?.parent?.id}
                         />
+
+                        <ConsoleModal/>
                     {/* <Col md={2}> */}
                     {/* <h2>Objets <FontAwesomeIcon icon="cubes" /></h2> */}
                     {/* <Button onClick={() => Editor.getInstance().handleAddObject()}>Ajouter</Button> */}

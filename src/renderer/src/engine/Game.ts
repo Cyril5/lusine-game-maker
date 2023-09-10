@@ -4,7 +4,8 @@ import { Renderer } from "./Renderer";
 import { ProgrammableGameObject } from "./ProgrammableGameObject";
 import InputManager, { KeyCode } from "./InputManager";
 import State from "./FSM/State";
-import { Observable } from "babylonjs";
+import { Observable, Vector3 } from "babylonjs";
+import Editor from "@renderer/components/Editor";
 
 export class Game {
 
@@ -18,7 +19,7 @@ export class Game {
     private _engine: Engine | undefined;
     private _isRunning: boolean = false;
 
-
+    private _t;
 
 
     public static getInstance() {
@@ -37,7 +38,9 @@ export class Game {
         this._isRunning = true;
         console.log("Game started");
 
+        
         const scene = Renderer.getInstance().scene;
+        
 
         InputManager.initKeyboardListeners();
 
@@ -53,16 +56,20 @@ export class Game {
                     const state = gameObject.fsm.states[index];
                     await state.runCode();
                 }
+                console.log(gameObject.fsm.currentState.onEnterState);
+                gameObject.fsm.currentState.onEnterState.notifyObservers();
             }
-            console.log(gameObject.fsm.currentState.onEnterState);
-            gameObject.fsm.currentState.onEnterState.notifyObservers();
         }
 
-        GameObject.saveAllTransforms();
+        //GameObject.saveAllTransforms();
 
         this.onGameStarted.notifyObservers();
 
+        clearTimeout(this._t);
+
         scene.physicsEnabled = true;
+        GameObject.saveAllTransforms();
+
         //const followCam = scene.setActiveCameraByName("FollowCam");
         // const camera = scene.cameras[0];
         // followCam.position.copyFrom(camera.position);
@@ -108,6 +115,8 @@ export class Game {
 
     public stop() {
         
+        console.log('stop game');
+
         State.deleteRuntimeGlobalVars();
         
         const scene = Renderer.getInstance().scene;
@@ -115,9 +124,18 @@ export class Game {
         InputManager.removeKeyboardListeners();
         this._isRunning = false;
         
+        //GameObject.resetAllTransforms();    
+
+        //Editor.getInstance().selectedGameObject!.setAbsolutePosition(new BABYLON.Vector3(0,45,0));
+
+        GameObject.gameObjects.forEach((value,key)=>{
+            //value.setAbsolutePosition(new BABYLON.Vector3(0,45,0));
+            value.resetTransform();
+        })
+
         Renderer.getInstance().scene.physicsEnabled = false;
+
         scene.setActiveCameraByName("Camera").setEnabled(true);
-        GameObject.resetAllTransforms();
         
         this.onGameStoped.notifyObservers();
         

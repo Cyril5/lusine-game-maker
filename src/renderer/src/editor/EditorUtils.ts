@@ -7,6 +7,8 @@ const prompt = require('electron-prompt');
 
 export default class EditorUtils {
 
+    static readonly VERSION : string = 'Alpha 0.1.2';
+
     static updateStatesFilesList() {
         Editor.getInstance().setState({stateFiles:StateEditorUtils.statesFiles});
     }

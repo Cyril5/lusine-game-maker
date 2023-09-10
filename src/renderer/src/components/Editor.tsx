@@ -29,24 +29,9 @@ enum Mode {
 }
 
 export default class Editor extends Component {
-
-    showDebugInspector(): void {
-      Renderer.getInstance().scene.debugLayer.show();
-    }
-
+    
     eMode: Mode = Mode.LevelEditor;
-
-    // TODO : A déplacer dans un export de EditorAlert 
-    static showAlert(message: string, type?: EditorAlertType, onClose?: () => void) {
-        Editor.getInstance().setState({
-            alert: { show: true, message: message, onCloseCallback: onClose }
-        })
-    }
-
-    showStartupModal(show : boolean = true) {
-        this.setState({ showStartupModal: show });
-    }
-
+    
     // use state REACT
     state = {
         eMode: 1,
@@ -66,6 +51,33 @@ export default class Editor extends Component {
         fsm : null,
         stateFiles : null,
     };
+
+    getGizmo(arg0: 'POS' | 'ROT') {
+        const gizmoManager = Renderer.getInstance().gizmoManager;
+        switch (arg0) {
+            case 'POS':
+                return gizmoManager.gizmos.positionGizmo;
+            case 'ROT':
+                return gizmoManager.gizmos.rotationGizmo;
+        }
+    }
+
+    showDebugInspector(): void {
+      Renderer.getInstance().scene.debugLayer.show();
+    }
+
+
+    // TODO : A déplacer dans un export de EditorAlert 
+    static showAlert(message: string, type?: EditorAlertType, onClose?: () => void) {
+        Editor.getInstance().setState({
+            alert: { show: true, message: message, onCloseCallback: onClose }
+        })
+    }
+
+    showStartupModal(show : boolean = true) {
+        this.setState({ showStartupModal: show });
+    }
+
 
     constructor(props: { objetJeu }) {
         super(props);
@@ -97,6 +109,11 @@ export default class Editor extends Component {
         const ground = MeshBuilder.CreateGround("ground", { width: 1000, height: 1000 }, scene);
         ground.material = groundMaterial;
 
+        const car = new ProgrammableGameObject("Car_PO", scene);
+        car.fsm.states[0].name = "CarPO Main State";
+        car.setAbsolutePosition(new BABYLON.Vector3(0,45,0));
+        Editor._instance.selectGameObject(car.Id);
+        return;
     }
 
     loadDemo() {
@@ -108,12 +125,9 @@ export default class Editor extends Component {
             city.name = "PizzaHome";
 
 
-
+ 
         });
-        const car = new ProgrammableGameObject("Car_PO", scene);
-        car.fsm.states[0].name = "CarPO Main State";
-        Editor._instance.selectGameObject(car.Id);
-        return;
+
 
 
         car.qualifier = Qualifiers.PLAYER_TAG;
@@ -214,6 +228,8 @@ export default class Editor extends Component {
             // }
         });
         //});
+
+
     }
 
     handleTabChange = (tabKey) => {
