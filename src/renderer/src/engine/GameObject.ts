@@ -1,9 +1,9 @@
 import { IPhysicsEnabledObject, PhysicsImpostor, Scene, Vector3 } from "@babylonjs/core";
 import { Observable, Quaternion, TransformNode } from "babylonjs";
 
-export class GameObject extends TransformNode  implements IPhysicsEnabledObject {
+export class GameObject extends TransformNode implements IPhysicsEnabledObject {
 
-    private _physicsImpostor : PhysicsImpostor | null;
+    private _physicsImpostor: PhysicsImpostor | null;
     private static _gameObjects = new Map<number | string, GameObject>() //unique id or uuid // map uuid,gameObject
 
     qualifier: number = 0;
@@ -39,8 +39,8 @@ export class GameObject extends TransformNode  implements IPhysicsEnabledObject 
         return GameObject._gameObjects;
     }
 
-    initPosition: Vector3 = new Vector3();
-    initRotation: BABYLON.Quaternion = new Quaternion();
+    private _initLocalPos: Vector3 = new Vector3();
+    private _initRotation;
     initScale: Vector3 = Vector3.One();
 
     constructor(name: string, scene: Scene) {
@@ -69,36 +69,41 @@ export class GameObject extends TransformNode  implements IPhysicsEnabledObject 
         this.dispose();
     }
 
-    addRigidbody(options : { mass : number,restitution : number,friction : number}) : void {
+    addRigidbody(options: { mass: number, restitution: number, friction: number }): void {
 
-        if(!this._physicsImpostor) {
-            this._physicsImpostor = new BABYLON.PhysicsImpostor(this, 
+        if (!this._physicsImpostor) {
+            this._physicsImpostor = new BABYLON.PhysicsImpostor(this,
                 BABYLON.PhysicsImpostor.NoImpostor, options
                 , this._scene); // Ajouter l'imposteur de boîte à la voiture 
-                return;
+            return;
         }
         this._physicsImpostor.dispose();
     }
 
 
     saveTransform() {
-        this.initPosition.copyFrom(this.position);
-        this.initRotation.copyFrom(this.rotationQuaternion);
-        this.scaling.copyFrom(this.scaling);
+        this.initLocalPos = this.position.clone();
+        this._initRotation = this.rotation.clone();
+        console.log(this._initRotation);
     }
 
     resetTransform = () => {
-
-        this.setPositionWithLocalVector(new BABYLON.Vector3(this.initPosition.x,this.initPosition.y,this.initPosition.z));
-        //this.setAbsolutePosition(new BABYLON.Vector3(0,45,0));
-
-        this.rotationQuaternion = new Quaternion(this.initRotation.x,this.initRotation.y, this.initRotation.z,this.initRotation.w);
-        // this.scaling = this.initScale;
-
-        if(this._physicsImpostor) {
+        if (this._physicsImpostor) {
             this._physicsImpostor.sleep();
             this._physicsImpostor.setLinearVelocity(Vector3.Zero());
         }
+        
+        this.position.copyFrom(this.initLocalPos);
+        //this.setAbsolutePosition(new BABYLON.Vector3(this.initWoldPos.x,this.initWoldPos.y,this.initWoldPos.z));
+        
+        //this.setPositionWithLocalVector(new BABYLON.Vector3(this.initLocalPos.x,this.initLocalPos.y,this.initLocalPos.z));
+        
+        console.log(this._initRotation);
+        this.rotation = this._initRotation;
+        console.log(this.rotation);
+        //this.rotation = new Vector3(this.initRotation!.x,this.initRotation!.y,this.initRotation!.z);
+        // this.scaling = this.initScale;
+
     }
 
     // getObjectOfTypeInParent<T>(targetType: new () => T): T | null {

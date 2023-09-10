@@ -1,25 +1,39 @@
 <xml xmlns="https://developers.google.com/blockly/xml">
-  <block type="state_onenterstate" id="$%`P8_I%J~DX;x%zlMub" x="13" y="-162"></block>
+  <variables>
+    <variable type="Number" id="G~gS!ZVkA+@sz*i3|d1^">test</variable>
+  </variables>
+  <block type="state_onenterstate" id="$%`P8_I%J~DX;x%zlMub" x="13" y="-162">
+    <statement name="ENTERSTATE">
+      <block type="variables_set_dynamic" id="N%.YU9`Vnd7gX:Y[YCq_">
+        <field name="VAR" id="G~gS!ZVkA+@sz*i3|d1^" variabletype="Number">test</field>
+        <value name="VALUE">
+          <block type="math_number" id="J,xr+32AfP_($f`Ru{@w">
+            <field name="NUM">3</field>
+          </block>
+        </value>
+      </block>
+    </statement>
+  </block>
   <block type="state_onupdatestate" id="=2I,Vk7*J.TR~d/IVv0V" x="13" y="-62">
     <statement name="UPDATESTATE">
-      <block type="gameobject_rotatey" id="}[2`u?(!dwXQW,IV)@*I">
-        <field name="SPACE">LOCAL</field>
+      <block type="gameobject_translate_forward" id="~!pp/Hs80,1nq@L,Oo,P">
         <value name="OBJ">
-          <block type="gameobject_this" id="#NV|zA=Vkennuf#-h3is"></block>
+          <block type="gameobject_this" id="up)rCBoJ;sI|p3udni.R"></block>
         </value>
-        <value name="DEGY">
-          <block type="math_number" id="/0bPVM9C#h3L+{DKq8`k">
-            <field name="NUM">0.03</field>
+        <value name="DISTZ">
+          <block type="math_number" id="Xlu61:^b@#JprYsv@fuK">
+            <field name="NUM">1</field>
           </block>
         </value>
         <next>
-          <block type="gameobject_translate_forward" id="~!pp/Hs80,1nq@L,Oo,P">
+          <block type="gameobject_rotatey" id="}[2`u?(!dwXQW,IV)@*I">
+            <field name="SPACE">LOCAL</field>
             <value name="OBJ">
-              <block type="gameobject_this" id="up)rCBoJ;sI|p3udni.R"></block>
+              <block type="gameobject_this" id="#NV|zA=Vkennuf#-h3is"></block>
             </value>
-            <value name="DISTZ">
-              <block type="math_number" id="Xlu61:^b@#JprYsv@fuK">
-                <field name="NUM">0.5</field>
+            <value name="DEGY">
+              <block type="math_number" id="/0bPVM9C#h3L+{DKq8`k">
+                <field name="NUM">3</field>
               </block>
             </value>
           </block>

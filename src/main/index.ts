@@ -1,9 +1,10 @@
-import { app, shell, BrowserWindow } from 'electron'
+import { app, shell, BrowserWindow} from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
 require('@electron/remote/main').initialize();
+
 
 app.commandLine.appendSwitch('enable-unsafe-webgpu');
 
@@ -22,9 +23,20 @@ function createWindow(): void {
       contextIsolation: false,
       webSecurity: false
     }
+
+
   })
-  
+
   require("@electron/remote/main").enable(mainWindow.webContents);
+
+  // Interceptez les messages de la console DevTools et envoyez-les au processus de rendu
+  mainWindow.webContents.on('console-message', (_event, level, message, line, sourceId) => {
+    // Envoyez le message au processus de rendu
+    // 3 pour les erreurs
+    if(level===3) {
+      mainWindow.webContents.send('console-message', { level, message, line, sourceId });
+    }
+  });
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
@@ -58,14 +70,19 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  createWindow()
+  createWindow();
+
+
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
-  })
+  });
+
+
 })
+
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
@@ -78,3 +95,5 @@ app.on('window-all-closed', () => {
 
 // In this file you can include the rest of your app"s specific main process
 // code. You can also put them in separate files and require them here.
+
+

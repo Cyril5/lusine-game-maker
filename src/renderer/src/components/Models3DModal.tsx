@@ -148,7 +148,7 @@ const Models3DModal = (props: any) => {
                         <p>Séléctionnez un modèle dans la liste ci-dessus ou importez un nouveau.</p>
                         <p>Modèle selectionné : {selectedFile}</p>
                         <Form.Check type="checkbox" disabled label=" Convertir en mètres (l'échelle sera à 0.001m) " />
-                        <Button variant='success' onClick={() => handleAddModelToScene(selectedFile)}>Ajouter dans la scène</Button>
+                        <Button variant='success' disabled={!selectedFile} onClick={() => handleAddModelToScene(selectedFile)}>Ajouter dans la scène</Button>
                     </Container>
 
 

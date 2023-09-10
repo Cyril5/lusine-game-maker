@@ -10,20 +10,24 @@ const GameObjectsTreeBar = (props : any) => {
     const [divWidth, setDivWidth] = useState(250);
     const {gameObjects} = props;
 
-    const handleMouseDown = (e) => {
+    const handleMouseDown = (e) : void => {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
     };
   
-    const handleMouseMove = (e) => {
+    const handleMouseMove = (e) : void => {
       const newWidth = divWidth + (e.movementX || 0);
       setDivWidth(newWidth);
     };
   
-    const handleMouseUp = () => {
+    const handleMouseUp = () : void => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
+
+  const handleRefreshObjectsList = (event): void=> {
+    Editor.getInstance().updateObjectsTreeView();
+  }
 
     return (
         <div
@@ -44,6 +48,7 @@ const GameObjectsTreeBar = (props : any) => {
 
               
               <h5><FontAwesomeIcon icon={'cubes'}/> Objets</h5>
+              <Button variant="success" size="sm"><FontAwesomeIcon icon={'refresh'} onClick={handleRefreshObjectsList}/></Button>
 
             <GameObjectsTreeView gameObjects={gameObjects}/>
             <AddObjectModal show={false} />

@@ -37,12 +37,17 @@ const PropertiesBar = ({ id, gameobject_name = '', gameobject_type = '', parentI
         const newGameObjectName = e.target.value;
         Editor.getInstance().selectedGameObject!.name = newGameObjectName;
         setName(newGameObjectName);
+        Editor.getInstance().updateObjectsTreeView();
     });
 
-
+    // Déparenter l'objet sélectionné
+    const handleUnparent = ()=>{
+        Editor.getInstance().selectedGameObject!.setParent(null);
+        Editor.getInstance().updateObjectsTreeView();
+    }
 
     const handleAddRigidbody = () => {
-        Editor.getInstance().selectedGameObject.addRigidbody({ mass: 1, restitution: 0.2, friction: 0.5 });
+        Editor.getInstance().selectedGameObject!.addRigidbody({ mass: 1, restitution: 0.2, friction: 0.5 });
     }
     return (
         <div>
@@ -54,7 +59,7 @@ const PropertiesBar = ({ id, gameobject_name = '', gameobject_type = '', parentI
                     <Offcanvas.Title>Propriétées <FontAwesomeIcon icon="wrench" /></Offcanvas.Title>
                 </Offcanvas.Header>
                 <Offcanvas.Body>
-                    <Accordion defaultActiveKey={['0']} alwaysOpen>
+                    <Accordion defaultActiveKey={['0','1']} alwaysOpen>
                         <Accordion.Item eventKey="0">
                             <Accordion.Header>Objet</Accordion.Header>
                             <Accordion.Body>
@@ -63,7 +68,7 @@ const PropertiesBar = ({ id, gameobject_name = '', gameobject_type = '', parentI
                                     <Form.Control onChange={handleSetGameObjectName} value={name} />
                                 </Form.Group>
                                 <p>ID : {id}</p>
-                                <p>Parent : <Button variant="primary" size="sm">{parentId}</Button></p>
+                                <p>Parent : <Button variant="primary" size="sm">{parentId}</Button> <Button onClick={handleUnparent} variant="danger" size="sm" disabled={!parentId}>Déparenter</Button></p>
                             </Accordion.Body>
                         </Accordion.Item>
                         <Accordion.Item eventKey="1">

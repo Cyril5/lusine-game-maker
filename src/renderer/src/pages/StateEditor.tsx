@@ -70,7 +70,7 @@ const StateEditor = (statefiles = StateEditorUtils.statesFiles(), resizeWorkspac
     }, [resizeWorkspace]);
 
     useEffect(() => {
-        console.log(StateEditorUtils.statesFiles());
+        // console.log(StateEditorUtils.statesFiles());
         setMapStateFiles(StateEditorUtils.statesFiles());
     }, [statefiles]);
 
@@ -208,10 +208,11 @@ const StateEditor = (statefiles = StateEditorUtils.statesFiles(), resizeWorkspac
     const updateCodeFromCodeEditor = () => {
         //javascriptGenerator.addReservedWords('code');
         const code: string = javascriptGenerator.workspaceToCode(workspaceRef.current);
-        console.log(code);
         if (code !== "") {
             //setCode(currentStateFile.outputCode);
-            setCode(code);
+            const updatedCode = code.replace(/\bvar\b/g, 'let'); // Remplacez toutes les occurrences de "var" par "let"
+            console.log(updatedCode);
+            setCode(updatedCode);
         }
     }
 

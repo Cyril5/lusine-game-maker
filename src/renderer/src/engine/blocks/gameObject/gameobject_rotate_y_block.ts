@@ -9,13 +9,13 @@ export class GameObjectRotateYBlock {
 
     constructor() {
 
-        javascriptGenerator['gameobject_rotatey'] = (block : any)=> {
+      javascriptGenerator.forBlock['gameobject_rotatey'] = (block : any)=> {
 
           const value_obj = javascriptGenerator.valueToCode(block, 'OBJ', javascriptGenerator.ORDER_ATOMIC);
           const value_degy = javascriptGenerator.valueToCode(block, 'DEGY', javascriptGenerator.ORDER_ATOMIC);
           const dropdown_space = block.getFieldValue('SPACE');
           // TODO: Assemble JavaScript into code variable.
-          return `${value_obj}.rotate(BABYLON.Axis.Y, ${value_degy}, BABYLON.Space.${dropdown_space});\n`
+          return `${value_obj}.rotate(BABYLON.Axis.Y, ${BABYLON.Tools.ToRadians(value_degy)}, BABYLON.Space.${dropdown_space});\n`
         };
 
         Blockly.Blocks['gameobject_rotatey'] = {

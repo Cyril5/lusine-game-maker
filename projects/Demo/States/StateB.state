@@ -1,7 +1,11 @@
+let test;
+
+
 this.onEnterState.add(() => {
-  } );
+   test = 3;
+ } );
 
 this.onUpdateState.add(() => {
-  this.gameObject.rotate(BABYLON.Axis.Y, 0.03, BABYLON.Space.LOCAL);
-  this.gameObject.translate(BABYLON.Axis.Z, 0.5, BABYLON.Space.LOCAL);
+  this.gameObject.translate(BABYLON.Axis.Z, 1, BABYLON.Space.LOCAL);
+  this.gameObject.rotate(BABYLON.Axis.Y, 0.05235987755982988, BABYLON.Space.LOCAL);
 });

@@ -20,7 +20,7 @@ const StatesMachineEditor = ({ fsm = null, stateFiles = StateEditorUtils.statesF
     const fsmGraphRef = useRef();
 
     const [selectedState, setSelectedState] = useState(null);
-    const [stateName,setStateName] = useState("");
+    const [stateName, setStateName] = useState("");
 
     // Si c'est un autre gameObject on met à jour la vue
     useEffect(() => {
@@ -37,19 +37,19 @@ const StatesMachineEditor = ({ fsm = null, stateFiles = StateEditorUtils.statesF
         console.log(selectedState.stateFile);
     }
 
-    const handleCreateState = ()=>{
+    const handleCreateState = () => {
         //Ajouter un nouvel état au FSM
         fsmGraphRef.current.addNode(fsm.addState());
     }
 
     // Lorsqu'on sélectionne un état
-    const handleStateSelect = (state : State)=>{
+    const handleStateSelect = (state: State) => {
         setSelectedState(state);
         setStateName(state.name);
         setFirstStateFileName(state.stateFile.name);
     }
-    
-    const handleRenameState = (e)=>{
+
+    const handleRenameState = (e) => {
         const inputText = e.target.value;
         selectedState.name = inputText;
         setStateName(inputText);
@@ -81,7 +81,7 @@ const StatesMachineEditor = ({ fsm = null, stateFiles = StateEditorUtils.statesF
                     <Container>
                         <Row>
                             <Col>
-                                <FSMGraph ref={fsmGraphRef} fsm={fsm} onStateSelect={handleStateSelect}/>
+                                <FSMGraph ref={fsmGraphRef} fsm={fsm} onStateSelect={handleStateSelect} />
                                 <FontAwesomeIcon icon="person-running"></FontAwesomeIcon> : Défini l'état comme Etat de départ de l'Automate Fini.
                                 <br />
                                 <FontAwesomeIcon icon="edit"></FontAwesomeIcon> : Editer le fichier d'Etat sélectionné.
@@ -89,38 +89,38 @@ const StatesMachineEditor = ({ fsm = null, stateFiles = StateEditorUtils.statesF
                             <Col md={3}>
                                 <div className='fsm-properties-bar'>
                                     <h3>{fsm.name}</h3>
-                                    <p>Nom AF : <Form.Control type="text" defaultValue={fsm.name}/></p>
-                                    
+                                    <p>Nom AF : <Form.Control type="text" defaultValue={fsm.name} /></p>
+
                                     <p>Démarrer au début du jeu : Oui</p>
 
                                     {selectedState && (
-                                        <h3>
-                                            <FontAwesomeIcon icon={'flag'}></FontAwesomeIcon>
-                                            <Form.Control type="text" onChange={handleRenameState} value={stateName}/>
+                                        <>
+                                            <h3>
+                                                <FontAwesomeIcon icon={'flag'}></FontAwesomeIcon>
+                                                <Form.Control type="text" onChange={handleRenameState} value={stateName} />
                                             </h3>
+                                            <div className="state-file-field">
+                                                Fichier d'état :
+                                                <Dropdown>
+                                                    <Dropdown.Toggle variant="warning" id="dropdown-basic">
+                                                        {!firstStateFileName ? 'Aucun' : firstStateFileName}
+                                                    </Dropdown.Toggle>
+
+                                                    <Dropdown.Menu>
+
+                                                        {Array.from(stateFiles).map(([key, value]) => (
+                                                            <Dropdown.Item key={key} href={`#/${value}`} onClick={() => handleStateFile(value)}>
+                                                                {value.name}
+                                                            </Dropdown.Item>
+                                                        ))}
+                                                    </Dropdown.Menu>
+                                                </Dropdown>
+                                                <Button variant="primary"><FontAwesomeIcon icon="edit"></FontAwesomeIcon></Button>
+
+                                            </div>
+                                            <Button variant="success"><FontAwesomeIcon icon="person-running"></FontAwesomeIcon></Button>
+                                        </>
                                     )}
-
-
-                                    <div className="state-file-field">
-                                        Fichier d'état :
-                                        <Dropdown>
-                                            <Dropdown.Toggle variant="warning" id="dropdown-basic">
-                                                {!firstStateFileName ? 'Aucun' : firstStateFileName}
-                                            </Dropdown.Toggle>
-
-                                            <Dropdown.Menu>
-
-                                                {Array.from(stateFiles).map(([key, value]) => (
-                                                    <Dropdown.Item key={key} href={`#/${value}`} onClick={() => handleStateFile(value)}>
-                                                        {value.name}
-                                                    </Dropdown.Item>
-                                                ))}
-                                            </Dropdown.Menu>
-                                        </Dropdown>
-                                        <Button variant="primary"><FontAwesomeIcon icon="edit"></FontAwesomeIcon></Button>
-
-                                    </div>
-                                    <Button variant="success"><FontAwesomeIcon icon="person-running"></FontAwesomeIcon></Button>
                                 </div>
                             </Col>
                         </Row>

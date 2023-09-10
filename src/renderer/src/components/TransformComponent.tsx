@@ -13,11 +13,11 @@ const TransformComponent = (gameObjectId) => {
         // Evenement Quand on bouge l'objet avec le gizmo  
         const posGizmo = Editor.getInstance().getGizmo('POS');
 
-        ['x', 'y', 'z'].forEach(axis => {
-            posGizmo![axis + 'Gizmo'].dragBehavior.onDragObservable.add(() => {
-                handleSetPosition();
-            });
-        });
+        // ['x', 'y', 'z'].forEach(axis => {
+        //     posGizmo![axis + 'Gizmo'].dragBehavior.onDragObservable.add(() => {
+        //         handleSetPosition();
+        //     });
+        // });
 
         // const rotGizmo = Editor.getInstance().getGizmo('ROT');
         // rotGizmo!.xGizmo.dragBehavior.onDragObservable.add(()=>{
@@ -54,12 +54,12 @@ const TransformComponent = (gameObjectId) => {
         setGOTransformPos(gameObjectRef.current.position);
     }
 
-    const handleSetRotation = (x: number | null = null, y: number | null = null, z: number | null = null) => {
+    const handleSetRotation = (event) => {
         const rot = gameObjectRef.current.rotation;
         gameObjectRef.current.rotation = new BABYLON.Vector3(
-            (x ? x : rot.x),
-            (y ? y : rot.y),
-            (z ? z : rot.z)
+            0,
+            BABYLON.Tools.ToRadians(event.target.value),
+            0
         );
         setGOTransformRot({ 'x': gameObjectRef.current!.rotation.x, 'y': gameObjectRef.current!.rotation.y, 'z': gameObjectRef.current!.rotation.z });
     }
@@ -82,9 +82,9 @@ const TransformComponent = (gameObjectId) => {
                 <p className="z-axis">Z <Form.Control type="number" value={goTransformPos.z} onChange={(e) => { handleSetPosition(null, null, e.target.value) }} /></p>
             </div>
             <div className="transform-rotations">
-                <p className="x-axis">Rot X</p> <Form.Control type="number" value={goTransformRot.x} onChange={(e) => { handleSetRotation(e.target.value, null, null) }} />
-                <p className="y-axis">Rot Y</p> <Form.Control type="number" value={goTransformRot.y} onChange={(e) => { handleSetRotation(null, e.target.value, null) }} />
-                <p className="z-axis">Rot Z</p> <Form.Control type="number" value={goTransformRot.z} onChange={(e) => { handleSetRotation(null, null, e.target.value) }} />
+                {/* <p className="x-axis">Rot X</p> <Form.Control type="text" value={goTransformRot.x} onChange={(e) => { handleSetRotation(e.target.value, null, null) }} /> */}
+                <p className="y-axis">Rot Y</p> <Form.Control type="number" onChange={handleSetRotation} />
+                {/* <p className="z-axis">Rot Z</p> <Form.Control type="text" value={goTransformRot.z} onChange={(e) => { handleSetRotation(null, null, e.target.value) }} /> */}
             </div>
         </>
     )

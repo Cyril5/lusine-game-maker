@@ -21,6 +21,7 @@ import FileManager from "@renderer/engine/FileManager";
 import Qualifiers from "@renderer/editor/Qualifiers";
 import StartupModal from "./StartupModal";
 import ProjectManager from "@renderer/editor/ProjectManager";
+import OriginAxis from "@renderer/editor/OriginAxis";
 
 enum Mode {
     LevelEditor = 1,
@@ -109,11 +110,14 @@ export default class Editor extends Component {
         const ground = MeshBuilder.CreateGround("ground", { width: 1000, height: 1000 }, scene);
         ground.material = groundMaterial;
 
+        new OriginAxis(scene);
+        
         const car = new ProgrammableGameObject("Car_PO", scene);
         car.fsm.states[0].name = "CarPO Main State";
-        car.setAbsolutePosition(new BABYLON.Vector3(0,45,0));
+        //car.setAbsolutePosition(new BABYLON.Vector3(0,45,0));
         Editor._instance.selectGameObject(car.Id);
         return;
+
     }
 
     loadDemo() {
