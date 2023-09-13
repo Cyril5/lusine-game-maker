@@ -51,11 +51,11 @@ export class GameObject extends TransformNode implements IPhysicsEnabledObject {
         this.onDelete = new Observable();
         this.onCreated = new Observable();
 
-        this.metadata = { type: "GameObject" }
-
+        
         if (!GameObject._gameObjects.has(this.uniqueId)) {
             GameObject._gameObjects.set(this.uniqueId, this);
             // this.onCreated.notifyObservers();
+            this.metadata = { gameObjectId: this.uniqueId,type: "GameObject"}
         } else {
             console.error("L'objet ayant l'id :" + this.uniqueId + "existe déjà");
             return;

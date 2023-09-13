@@ -11,7 +11,7 @@ export default class ProjectManager {
     private static _projectName: string | null = null;
     private static _currentProjectDir = null;
 
-    // Créer un nom de chemin complet
+    // Créer un nom de chemin complet depuis le répertoire du projet
     public static getFilePath(directory: string, file?: string): string {
         // const os = require('os');
         // const path = require('path');
@@ -48,7 +48,7 @@ export default class ProjectManager {
                 ProjectManager._projectName = "Mon Projet";
                 Editor.showAlert(ProjectManager._currentProjectDir);
                 StateEditorUtils.loadStateFilesList();
-                Editor.getInstance().setupBaseScene();
+                Editor.getInstance().load();
 
             }
         });

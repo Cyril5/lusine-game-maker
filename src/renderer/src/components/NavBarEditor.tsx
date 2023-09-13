@@ -3,12 +3,10 @@ import { Button, Dropdown, DropdownButton } from 'react-bootstrap';
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
-import NavDropdown from 'react-bootstrap/NavDropdown';
-
 import logo from '../assets/logo.png?url';
 import Editor from './Editor';
-import { GearVRController } from 'babylonjs/Legacy/legacy';
 import { useState } from 'react';
+
 
 const NavBarEditor = (props: any)=> {
 
@@ -41,7 +39,8 @@ const NavBarEditor = (props: any)=> {
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">
 
-            <Button variant='secondary' size="sm" onClick={props.onClickAddObject}><FontAwesomeIcon icon="folder-open"></FontAwesomeIcon></Button>
+            <Button variant='secondary' onClick={()=>Editor.getInstance().load()}><FontAwesomeIcon icon="folder-open"></FontAwesomeIcon></Button>
+            <Button variant='primary' onClick={()=>Editor.getInstance().save()}><FontAwesomeIcon icon="floppy-disk"/>  Sauver</Button>
 
             <Nav.Link onClick={props.onClickAddObject}>Ajouter</Nav.Link>
 

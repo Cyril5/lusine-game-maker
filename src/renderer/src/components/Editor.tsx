@@ -7,7 +7,6 @@ import { Renderer } from "../engine/Renderer";
 import { ProgrammableGameObject } from "@renderer/engine/ProgrammableGameObject";
 import { Model3D } from "@renderer/engine/Model3D";
 import NavBarEditor from "./NavBarEditor";
-import AddObjectModal from "./AddObjectModal";
 import { Tab, Tabs } from "react-bootstrap";
 import LevelEditor from "@renderer/pages/LevelEditor";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -22,6 +21,8 @@ import Qualifiers from "@renderer/editor/Qualifiers";
 import StartupModal from "./StartupModal";
 import ProjectManager from "@renderer/editor/ProjectManager";
 import OriginAxis from "@renderer/editor/OriginAxis";
+import GameLoader from "@renderer/editor/GameLoader";
+import cannon from "cannon";
 
 enum Mode {
     LevelEditor = 1,
@@ -30,7 +31,8 @@ enum Mode {
 }
 
 export default class Editor extends Component {
-    
+
+
     eMode: Mode = Mode.LevelEditor;
     
     // use state REACT
@@ -63,6 +65,19 @@ export default class Editor extends Component {
         }
     }
 
+    load(): void {
+        console.log("ready load game");
+        const scene = Renderer.getInstance().scene;
+        GameLoader.load(scene);
+    }
+  
+
+    save(): void {
+        const scene = Renderer.getInstance().scene;
+        GameLoader.save(scene);
+    }
+    
+
     showDebugInspector(): void {
       Renderer.getInstance().scene.debugLayer.show();
     }
@@ -86,37 +101,67 @@ export default class Editor extends Component {
 
         this.state.objetJeu = props.objetJeu;
 
-
+        
     }
 
-    setupBaseScene() {
-        this.showStartupModal(false);
+    clearScene(scene : BABYLON.Scene) {
+        // Parcourez tous les meshes (objets) de la scène et détruisez-les
+        scene.meshes.forEach(function(mesh) {
+            mesh.dispose();
+        });
+    
+        // Parcourez toutes les caméras de la scène et détruisez-les
+        scene.cameras.forEach((camera)=> {
+            if(camera.name !== Renderer.CAMERA_ID) {
+                console.log(camera.id+" disposed");
+                camera.dispose();
+            }
+        });
+    
+        // Parcourez toutes les lumières de la scène et détruisez-les
+        scene.lights.forEach(function(light) {
+            light.dispose();
+        });
+
+        scene.materials.forEach((material)=>{
+            material.dispose();
+        })
+    
+    }
+
+    async setupBaseScene() {
+        
+window.CANNON = cannon;
 
         const scene = Renderer.getInstance().scene;
 
-        const ammo = Renderer.getInstance().ammo;
 
+        this.showStartupModal(false);
+        
+        
+        const ammo = Renderer.getInstance().ammo;
+        
         // Mettre en pause le moteur physique
         scene.physicsEnabled = false;
-
+        
         //GRID
-        const groundMaterial = new GridMaterial("groundMaterial", scene);
+        const groundMaterial = new GridMaterial("_EDITOR_GRIDMAT_", scene);
         groundMaterial.majorUnitFrequency = 100;
         groundMaterial.minorUnitVisibility = 0.5;
         groundMaterial.gridRatio = 10;
         groundMaterial.opacity = 0.99;
         groundMaterial.useMaxLine = true;
-
-        const ground = MeshBuilder.CreateGround("ground", { width: 1000, height: 1000 }, scene);
+        
+        const ground = MeshBuilder.CreateGround("_EDITOR_GRID_", { width: 1000, height: 1000 }, scene);
         ground.material = groundMaterial;
-
-        new OriginAxis(scene);
+        
+        const axis = new OriginAxis(scene);
+        return;
         
         const car = new ProgrammableGameObject("Car_PO", scene);
         car.fsm.states[0].name = "CarPO Main State";
         //car.setAbsolutePosition(new BABYLON.Vector3(0,45,0));
         Editor._instance.selectGameObject(car.Id);
-        return;
 
     }
 
