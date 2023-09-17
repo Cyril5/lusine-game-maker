@@ -44,7 +44,6 @@ export default class InputManager {
     }
 
     static getKeyDown(key : KeyCode) {
-        // console.log(InputManager._keys);
         return InputManager._keys.get(key)==true;
     }
 

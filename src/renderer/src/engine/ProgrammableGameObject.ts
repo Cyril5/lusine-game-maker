@@ -16,9 +16,17 @@ export class ProgrammableGameObject extends GameObject {
 
     constructor(name:string,scene : BABYLON.Scene) {
         super(name,scene);
-        this.metadata.type = ProgrammableGameObject.TYPE_NAME;
+        this.type = ProgrammableGameObject.TYPE_NAME;
         this._fsm = new FiniteStateMachine(this);
         this._scene = scene;
+    }
+
+    deserialize(): void {
+        
+    }
+
+    methodeA() {
+        alert("call");
     }
 
 

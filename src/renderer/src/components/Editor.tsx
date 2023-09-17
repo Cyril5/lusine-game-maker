@@ -23,6 +23,7 @@ import ProjectManager from "@renderer/editor/ProjectManager";
 import OriginAxis from "@renderer/editor/OriginAxis";
 import GameLoader from "@renderer/editor/GameLoader";
 import cannon from "cannon";
+import EditorUtils from "@renderer/editor/EditorUtils";
 
 enum Mode {
     LevelEditor = 1,
@@ -55,6 +56,26 @@ export default class Editor extends Component {
         stateFiles : null,
     };
 
+    // Supprimer l'objet selectionné de la scene
+    deleteSelection(): void {
+        console.log("ready to delete");
+        if(this.selectedGameObject) {
+            const deleteGo = EditorUtils.showMsgDialog({
+                message: `Voulez vous supprimer l'objet : ${this.selectedGameObject.name} (ID : ${this.selectedGameObject.Id}) ? \n Cette action est non réversible.`,
+                type: 'warning',
+                buttons: ['Oui', 'Non'],
+                defaultId: 1,
+                title: "",
+              });
+
+            if(deleteGo === 0) {
+                this.selectedGameObject.dispose();
+                this.selectGameObject(0);
+            } 
+        }
+    }
+
+
     getGizmo(arg0: 'POS' | 'ROT') {
         const gizmoManager = Renderer.getInstance().gizmoManager;
         switch (arg0) {
@@ -68,6 +89,7 @@ export default class Editor extends Component {
     load(): void {
         console.log("ready load game");
         const scene = Renderer.getInstance().scene;
+
         GameLoader.load(scene);
     }
   
@@ -329,7 +351,7 @@ window.CANNON = cannon;
         const modelsDirectory = ProjectManager.getModelsDirectory();
 
         //const model = new Model3D("https://models.babylonjs.com/", "aerobatic_plane.glb", Renderer.getInstance().scene);
-        const model = new Model3D(modelsDirectory, filename, options, Renderer.getInstance().scene);
+        const model = Model3D.createFromModel(modelsDirectory, filename, options, Renderer.getInstance().scene);
         
         // quand je clic sur un mesh je peux le sélectionner dans l'éditeur
         // Créer un action manager pour le parentNode
@@ -399,13 +421,20 @@ window.CANNON = cannon;
 
     selectGameObject = (id: number) => {
         const go = GameObject.gameObjects.get(id);
+        if(id===0) {
+            this._selectedGameObject = null;
+            this.updateObjetJeu(null);
+            return;
+        }
         if (!go) {
             console.error(`GameObject Id : ${id} non trouvé`);
             return;
         }
 
         this._selectedGameObject = go;
-        this.updateObjetJeu(this._selectedGameObject);
+        this.updateObjetJeu(this._selectedGameObject as GameObject);
+
+        Renderer.getInstance().camera.target.copyFrom(this._selectedGameObject.position);
     }
 
     handleAddObject = () => {
@@ -420,6 +449,16 @@ window.CANNON = cannon;
 
 
     updateObjetJeu = (objetJeu: GameObject) => {
+
+        if(!objetJeu) {
+            Renderer.getInstance().gizmoManager.attachToNode(null);
+            Renderer.getInstance().gizmoManager.positionGizmoEnabled = false;
+            this.setState({
+                objetJeu : null,
+            });
+            return;
+        }
+
         this.setState({
             objetJeu : objetJeu,
             fsm : objetJeu.fsm

@@ -49,6 +49,7 @@ export default class ProjectManager {
                 Editor.showAlert(ProjectManager._currentProjectDir);
                 StateEditorUtils.loadStateFilesList();
                 Editor.getInstance().load();
+                
 
             }
         });

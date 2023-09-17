@@ -1,10 +1,11 @@
-import { IPhysicsEnabledObject, PhysicsImpostor, Scene, Vector3 } from "@babylonjs/core";
-import { Observable, Quaternion, TransformNode } from "babylonjs";
+import { BoundingInfo, IPhysicsEnabledObject, IndicesArray, Nullable, PhysicsImpostor, Vector3 } from "@babylonjs/core";
+import { Observable, TransformNode } from "babylonjs";
 
 export class GameObject extends TransformNode implements IPhysicsEnabledObject {
-
+    
     private _physicsImpostor: PhysicsImpostor | null;
     private static _gameObjects = new Map<number | string, GameObject>() //unique id or uuid // map uuid,gameObject
+
 
     qualifier: number = 0;
 
@@ -28,6 +29,13 @@ export class GameObject extends TransformNode implements IPhysicsEnabledObject {
         return this._physicsImpostor;
     }
 
+    set type(value) {
+        this.metadata.type = value;
+    }
+    get type(): string {
+        return this.metadata.type;
+    }
+
     static saveAllTransforms() {
 
         GameObject._gameObjects.forEach((go, key) => {
@@ -43,7 +51,7 @@ export class GameObject extends TransformNode implements IPhysicsEnabledObject {
     private _initRotation;
     initScale: Vector3 = Vector3.One();
 
-    constructor(name: string, scene: Scene) {
+    constructor(name: string, scene: BABYLON.Scene) {
 
         super(name, scene);
         // L'accès direct au renderer provoque une erreur
@@ -55,7 +63,7 @@ export class GameObject extends TransformNode implements IPhysicsEnabledObject {
         if (!GameObject._gameObjects.has(this.uniqueId)) {
             GameObject._gameObjects.set(this.uniqueId, this);
             // this.onCreated.notifyObservers();
-            this.metadata = { gameObjectId: this.uniqueId,type: "GameObject"}
+            this.metadata = { gameObjectId: this.uniqueId,type: "GameObject",parentId : null}
         } else {
             console.error("L'objet ayant l'id :" + this.uniqueId + "existe déjà");
             return;
@@ -63,11 +71,23 @@ export class GameObject extends TransformNode implements IPhysicsEnabledObject {
 
 
     }
-
-    dispose() {
-        this.onDelete.notifyObservers();
-        this.dispose();
+    getBoundingInfo(): BoundingInfo {
+        throw new Error("Method not implemented.");
     }
+    getVerticesData(kind: string): Nullable<number[] | Float32Array> {
+        throw new Error("Method not implemented.");
+    }
+    getIndices?(): Nullable<IndicesArray> {
+        throw new Error("Method not implemented.");
+    }
+
+    // dispose() {
+    //     //this.onDelete.notifyObservers();
+    //     // this.onCreated.clear();
+    //     // this.onDelete.clear();
+    //     // this._physicsImpostor?.dispose();
+    //     this.dispose(); //attention au rapelle de la même methode
+    // }
 
     addRigidbody(options: { mass: number, restitution: number, friction: number }): void {
 
@@ -140,5 +160,10 @@ export class GameObject extends TransformNode implements IPhysicsEnabledObject {
 
         // Démarrez la recherche à partir de l'instance actuelle (this).
         return searchParent(this);
+    }
+
+    public deserialize() {
+        this.uniqueId = this.metadata.gameObjectId;
+        this.type = this.metadata.type;
     }
 }

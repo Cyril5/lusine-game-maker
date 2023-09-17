@@ -29,6 +29,10 @@ export class Renderer {
     get scene(): BABYLON.Scene {
         return this._scene;
     }
+
+    get camera() : BABYLON.ArcRotateCamera {
+        return this._camera;
+    }
     
     private _gizmoManager: GizmoManager;
     get gizmoManager(): GizmoManager {
