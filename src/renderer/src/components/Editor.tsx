@@ -58,19 +58,19 @@ export default class Editor extends Component {
 
     // Supprimer l'objet selectionné de la scene
     deleteSelection(): void {
-        console.log("ready to delete");
         if(this.selectedGameObject) {
             const deleteGo = EditorUtils.showMsgDialog({
                 message: `Voulez vous supprimer l'objet : ${this.selectedGameObject.name} (ID : ${this.selectedGameObject.Id}) ? \n Cette action est non réversible.`,
                 type: 'warning',
                 buttons: ['Oui', 'Non'],
                 defaultId: 1,
-                title: "",
+                title: "Confirmation avant suppression",
               });
 
             if(deleteGo === 0) {
+                console.log(this.selectedGameObject.type);
                 this.selectedGameObject.dispose();
-                this.selectGameObject(0);
+                this.updateObjectsTreeView();
             } 
         }
     }
@@ -421,11 +421,7 @@ window.CANNON = cannon;
 
     selectGameObject = (id: number) => {
         const go = GameObject.gameObjects.get(id);
-        if(id===0) {
-            this._selectedGameObject = null;
-            this.updateObjetJeu(null);
-            return;
-        }
+        
         if (!go) {
             console.error(`GameObject Id : ${id} non trouvé`);
             return;

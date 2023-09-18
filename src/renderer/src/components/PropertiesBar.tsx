@@ -9,7 +9,8 @@ import { GameObject } from "@renderer/engine/GameObject";
 
 const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
 
-    const gameObjectRef = useRef(Editor.getInstance().selectedGameObject);
+    const gameObjectRef = useRef(null);
+
     // useEffect(() => {
     //     // Update the 3D object represented by Babylon.TransformNode based on the props
     //     const { x, y, z } = position;
@@ -27,6 +28,7 @@ const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
     // Si c'est un autre gameObject on met à jour la vue
     useEffect(() => {
         gameObjectRef.current = Editor.getInstance().selectedGameObject;
+        console.error(gameObjectRef.current);
         if (gameObjectRef.current) {
             setName(gameObjectRef.current.name);
             console.log(gameObjectRef.current.type);
@@ -47,6 +49,10 @@ const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
     const handleUnparent = ()=>{
         Editor.getInstance().selectedGameObject!.setParent(null);
         Editor.getInstance().updateObjectsTreeView();
+    }
+
+    const handleSelectParent = ()=>{
+        Editor.getInstance().selectGameObject(gameObjectRef.current.parent.uniqueId);
     }
 
     const handleAddRigidbody = () => {
@@ -77,7 +83,7 @@ const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
                                     <Form.Control onChange={handleSetGameObjectName} value={name} />
                                 </Form.Group>
                                 <p>ID : {id}</p>
-                                <p>Parent : <Button variant="primary" size="sm">{(gameObjectRef.current?.parent as GameObject)?.Id}</Button> <Button onClick={handleUnparent} variant="danger" size="sm" disabled={!gameObjectRef.current?.parent?.uniqueId}>Déparenter</Button></p>
+                                <p>Parent : <Button variant="primary" size="sm" onClick={handleSelectParent}>{(gameObjectRef.current?.parent as GameObject)?.Id}</Button> <Button onClick={handleUnparent} variant="danger" size="sm" disabled={!gameObjectRef.current?.parent?.uniqueId}>Déparenter</Button></p>
                             </Accordion.Body>
                         </Accordion.Item>
                         <Accordion.Item eventKey="1">
@@ -87,7 +93,7 @@ const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
                             </Accordion.Body>
                         </Accordion.Item>
 
-                        {gameObjectRef.current !== null && gameObjectRef.current?.type === "PROG_GO" && (
+                        {/* {gameObjectRef.current !== undefined && gameObjectRef.current.type === "PROG_GO" && (
                             <>
                                 <Accordion.Item eventKey="2">
                                     <Accordion.Header>Automates Fini</Accordion.Header>
@@ -115,7 +121,7 @@ const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
                                     </Accordion.Body>
                                 </Accordion.Item>
                             </>
-                        )}
+                        )} */}
 
 
                     </Accordion>

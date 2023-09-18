@@ -81,13 +81,14 @@ export class GameObject extends TransformNode implements IPhysicsEnabledObject {
         throw new Error("Method not implemented.");
     }
 
-    // dispose() {
-    //     //this.onDelete.notifyObservers();
-    //     // this.onCreated.clear();
-    //     // this.onDelete.clear();
-    //     // this._physicsImpostor?.dispose();
-    //     this.dispose(); //attention au rapelle de la même methode
-    // }
+    dispose() {
+        this.onDelete.notifyObservers();
+        GameObject._gameObjects.delete(this.uniqueId);
+        // this.onCreated.clear();
+        // this.onDelete.clear();
+        // this._physicsImpostor?.dispose();
+        super.dispose();
+    }
 
     addRigidbody(options: { mass: number, restitution: number, friction: number }): void {
 

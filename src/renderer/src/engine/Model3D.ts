@@ -11,7 +11,6 @@ export class Model3D extends GameObject {
     onLoaded = new Observable<Model3D>(); // Observable pour l'événement
     
     static createFromModel(modelsDirectory: string, filename: string, options: null, scene: BABYLON.Scene) : Model3D {
-        alert(scene);
         return new Model3D({
             directoryOrUrl:modelsDirectory,
             filename:filename,
@@ -38,7 +37,6 @@ export class Model3D extends GameObject {
 
     private constructor(arg : {directoryOrUrl : string, filename : string , options : any, scene : BABYLON.Scene}) {
 
-        alert(arg.scene);
         super("Modèle 3D", arg.scene);
 
         this.type = "Model3D";
@@ -137,11 +135,6 @@ export class Model3D extends GameObject {
     deserialize(): void {
         
     }
-
-    methodeA() {
-        alert("call");
-    }
-
 
 }
 

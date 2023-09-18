@@ -117,6 +117,7 @@ export default class ProjectManager {
                     try {
                         FileManager.createDir(ProjectManager.getFilePath(ProjectManager._currentProjectDir, 'States'));
                         FileManager.createDir(ProjectManager.getFilePath(ProjectManager._currentProjectDir, 'Models'));
+                        FileManager.writeInFile(ProjectManager.getFilePath(ProjectManager._currentProjectDir,'game.lgm'),'');
                         //Charger le projet
                         StateEditorUtils.loadStateFilesList();
                         Editor.getInstance().setupBaseScene();

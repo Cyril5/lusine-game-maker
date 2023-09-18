@@ -1,41 +1,161 @@
 <xml xmlns="https://developers.google.com/blockly/xml">
   <variables>
-    <variable type="Number" id="G~gS!ZVkA+@sz*i3|d1^">test</variable>
+    <variable type="Number" id="G~gS!ZVkA+@sz*i3|d1^">vitesse</variable>
+    <variable type="Number" id="Xw5#bcLfcLNm@Ch{p40a">rotationSpeed</variable>
   </variables>
   <block type="state_onenterstate" id="$%`P8_I%J~DX;x%zlMub" x="13" y="-162">
     <statement name="ENTERSTATE">
       <block type="variables_set_dynamic" id="N%.YU9`Vnd7gX:Y[YCq_">
-        <field name="VAR" id="G~gS!ZVkA+@sz*i3|d1^" variabletype="Number">test</field>
+        <field name="VAR" id="G~gS!ZVkA+@sz*i3|d1^" variabletype="Number">vitesse</field>
         <value name="VALUE">
           <block type="math_number" id="J,xr+32AfP_($f`Ru{@w">
-            <field name="NUM">3</field>
+            <field name="NUM">0.5</field>
           </block>
         </value>
+        <next>
+          <block type="variables_set_dynamic" id="f^NJ^[Bqf`JK2xJ-8G1A">
+            <field name="VAR" id="Xw5#bcLfcLNm@Ch{p40a" variabletype="Number">rotationSpeed</field>
+            <value name="VALUE">
+              <block type="math_number" id="F8qV0*3v9S,hrGe-x@wM">
+                <field name="NUM">3</field>
+              </block>
+            </value>
+          </block>
+        </next>
       </block>
     </statement>
   </block>
   <block type="state_onupdatestate" id="=2I,Vk7*J.TR~d/IVv0V" x="13" y="-62">
     <statement name="UPDATESTATE">
-      <block type="gameobject_translate_forward" id="~!pp/Hs80,1nq@L,Oo,P">
-        <value name="OBJ">
-          <block type="gameobject_this" id="up)rCBoJ;sI|p3udni.R"></block>
-        </value>
-        <value name="DISTZ">
-          <block type="math_number" id="Xlu61:^b@#JprYsv@fuK">
-            <field name="NUM">1</field>
-          </block>
-        </value>
-        <next>
-          <block type="gameobject_rotatey" id="}[2`u?(!dwXQW,IV)@*I">
-            <field name="SPACE">LOCAL</field>
-            <value name="OBJ">
-              <block type="gameobject_this" id="#NV|zA=Vkennuf#-h3is"></block>
-            </value>
-            <value name="DEGY">
-              <block type="math_number" id="/0bPVM9C#h3L+{DKq8`k">
-                <field name="NUM">3</field>
+      <block type="controls_if" id="RRJO5r^kFPdx8DM=V)%g">
+        <mutation else="1"></mutation>
+        <value name="IF0">
+          <block type="inputs_if_keyevent" id="JJL_5(dva7drHUn|:iTh">
+            <field name="EVENT">KeyDown</field>
+            <value name="KEYCODE">
+              <block type="keycode" id="d9)(zuvj@)8uu@4HxSuU">
+                <field name="KEYCODES">S</field>
               </block>
             </value>
+          </block>
+        </value>
+        <statement name="DO0">
+          <block type="gameobject_translate_forward" id="~uj}ElNsY6a)%[_p)7fa">
+            <value name="OBJ">
+              <block type="gameobject_this" id="twx#0IH]uO+*an#@|pOT"></block>
+            </value>
+            <value name="DISTZ">
+              <block type="math_arithmetic" id="(AE*P*dLCA+wxT;/8V37">
+                <field name="OP">MULTIPLY</field>
+                <value name="A">
+                  <shadow type="math_number" id="wPfFkC.r_[F6rMgMsYUi">
+                    <field name="NUM">1</field>
+                  </shadow>
+                  <block type="variables_get_dynamic" id="@Z[6Mo=vn3z-nzaR_k5u">
+                    <field name="VAR" id="G~gS!ZVkA+@sz*i3|d1^" variabletype="Number">vitesse</field>
+                  </block>
+                </value>
+                <value name="B">
+                  <shadow type="math_number" id="$pF6yLZexAmY%I4:y-Uz">
+                    <field name="NUM">-1</field>
+                  </shadow>
+                </value>
+              </block>
+            </value>
+          </block>
+        </statement>
+        <statement name="ELSE">
+          <block type="controls_if" id="]gElzi0kR{Km?=d;b|vZ">
+            <value name="IF0">
+              <block type="inputs_if_keyevent" id="jpeqLGI`:%Bsw?/o|~v8">
+                <field name="EVENT">KeyDown</field>
+                <value name="KEYCODE">
+                  <block type="keycode" id="OcU;eCs[T)6%;w$2}G);">
+                    <field name="KEYCODES">Z</field>
+                  </block>
+                </value>
+              </block>
+            </value>
+            <statement name="DO0">
+              <block type="gameobject_translate_forward" id="~!pp/Hs80,1nq@L,Oo,P">
+                <value name="OBJ">
+                  <block type="gameobject_this" id="up)rCBoJ;sI|p3udni.R"></block>
+                </value>
+                <value name="DISTZ">
+                  <block type="variables_get_dynamic" id="z:[iX$@a,vm~Ervk{,2^">
+                    <field name="VAR" id="G~gS!ZVkA+@sz*i3|d1^" variabletype="Number">vitesse</field>
+                  </block>
+                </value>
+              </block>
+            </statement>
+          </block>
+        </statement>
+        <next>
+          <block type="controls_if" id="DB#;M]qN[:!1CkkA~_hn">
+            <mutation else="1"></mutation>
+            <value name="IF0">
+              <block type="inputs_if_keyevent" id="D[z?+FfQ6G].bvLc`]9I">
+                <field name="EVENT">KeyDown</field>
+                <value name="KEYCODE">
+                  <block type="keycode" id="puY{h_(=N6BDhhC9M,U(">
+                    <field name="KEYCODES">D</field>
+                  </block>
+                </value>
+              </block>
+            </value>
+            <statement name="DO0">
+              <block type="gameobject_rotatey" id="Ju?=1icG;=7DdjXs:cE*">
+                <field name="SPACE">LOCAL</field>
+                <value name="OBJ">
+                  <block type="gameobject_this" id="gg/~n4Gs.lA3zE+4FRW="></block>
+                </value>
+                <value name="DEGY">
+                  <block type="variables_get_dynamic" id="4@KQpb6H^=~{k0#kT?+t">
+                    <field name="VAR" id="Xw5#bcLfcLNm@Ch{p40a" variabletype="Number">rotationSpeed</field>
+                  </block>
+                </value>
+              </block>
+            </statement>
+            <statement name="ELSE">
+              <block type="controls_if" id="WM6XfVh=pIyo2]2|sXX%">
+                <value name="IF0">
+                  <block type="inputs_if_keyevent" id=".+%}d!|UZWxRJI/?|9#j">
+                    <field name="EVENT">KeyDown</field>
+                    <value name="KEYCODE">
+                      <block type="keycode" id="V~%F)=mqDv*k!F9,i~Gd">
+                        <field name="KEYCODES">Q</field>
+                      </block>
+                    </value>
+                  </block>
+                </value>
+                <statement name="DO0">
+                  <block type="gameobject_rotatey" id="`yAsf9BW`~zibXA*I~ux">
+                    <field name="SPACE">LOCAL</field>
+                    <value name="OBJ">
+                      <block type="gameobject_this" id="[qI_`lGtPNlWj+~,|$@["></block>
+                    </value>
+                    <value name="DEGY">
+                      <block type="math_arithmetic" id="x!!uh][f*E8I]Gvl^3#n">
+                        <field name="OP">MULTIPLY</field>
+                        <value name="A">
+                          <shadow type="math_number" id="wPfFkC.r_[F6rMgMsYUi">
+                            <field name="NUM">1</field>
+                          </shadow>
+                          <block type="variables_get_dynamic" id="PW+2ti1$mlI}yf_9~Ef9">
+                            <field name="VAR" id="Xw5#bcLfcLNm@Ch{p40a" variabletype="Number">rotationSpeed</field>
+                          </block>
+                        </value>
+                        <value name="B">
+                          <shadow type="math_number" id="g2QH_ws]wdN1nkfWV197">
+                            <field name="NUM">-1</field>
+                          </shadow>
+                        </value>
+                      </block>
+                    </value>
+                  </block>
+                </statement>
+              </block>
+            </statement>
           </block>
         </next>
       </block>

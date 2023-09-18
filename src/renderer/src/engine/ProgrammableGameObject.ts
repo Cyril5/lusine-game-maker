@@ -25,11 +25,5 @@ export class ProgrammableGameObject extends GameObject {
         
     }
 
-    methodeA() {
-        alert("call");
-    }
-
-
-
 
 }

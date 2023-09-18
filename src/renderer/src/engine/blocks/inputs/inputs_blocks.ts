@@ -112,19 +112,7 @@ export class InputsBlocks {
             }
         };
 
-        Blockly.Blocks['inputs_if_keypress'] = {
-            init: function () {
-                this.appendValueInput("KEYCODE")
-                    .setCheck("KeyCode")
-                    .appendField("La touche");
-                this.appendDummyInput()
-                    .appendField("est appuyée ?");
-                this.setOutput(true, "Boolean");
-                this.setColour(260);
-                this.setTooltip("Retourne vrai si la touche est appuyée");
-                this.setHelpUrl("");
-            }
-        };
+
 
 
 

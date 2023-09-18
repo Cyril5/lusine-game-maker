@@ -1,11 +1,24 @@
-let test;
+let vitesse, rotationSpeed;
 
 
 this.onEnterState.add(() => {
-   test = 3;
+   vitesse = 0.5;
+  rotationSpeed = 3;
  } );
 
 this.onUpdateState.add(() => {
-  this.gameObject.translate(BABYLON.Axis.Z, 1, BABYLON.Space.LOCAL);
-  this.gameObject.rotate(BABYLON.Axis.Y, 0.05235987755982988, BABYLON.Space.LOCAL);
+  if (InputManager.getKeyDown(KeyCode.S)) {
+    this.gameObject.translate(BABYLON.Axis.Z, (vitesse * -1), BABYLON.Space.LOCAL);
+  } else {
+    if (InputManager.getKeyDown(KeyCode.Z)) {
+      this.gameObject.translate(BABYLON.Axis.Z, vitesse, BABYLON.Space.LOCAL);
+    }
+  }
+  if (InputManager.getKeyDown(KeyCode.D)) {
+    this.gameObject.rotate(BABYLON.Axis.Y, BABYLON.Tools.ToRadians(rotationSpeed), BABYLON.Space.LOCAL);
+  } else {
+    if (InputManager.getKeyDown(KeyCode.Q)) {
+      this.gameObject.rotate(BABYLON.Axis.Y, BABYLON.Tools.ToRadians((rotationSpeed * -1)), BABYLON.Space.LOCAL);
+    }
+  }
 });

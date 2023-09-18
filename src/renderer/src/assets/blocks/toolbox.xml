@@ -121,11 +121,17 @@
         </block>
       </value>
     </block>
-    <block type="inputs_if_keypress" disabled="true">
+
+    <block type="inputs_if_keyevent">
       <value name="KEYCODE">
         <block type="keycode_space"></block>
       </value>
     </block>
+    <!-- <block type="inputs_if_keypress">
+      <value name="KEYCODE">
+        <block type="keycode_space"></block>
+      </value>
+    </block> -->
     <block type="inputs_onkeydown" disabled="true">
       <value name="KEYCODE">
         <block type="keycode_space"></block>
