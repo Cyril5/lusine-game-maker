@@ -18,6 +18,37 @@ export default abstract class GameLoader {
         console.log("saving");
         const serializedScene = BABYLON.SceneSerializer.Serialize(scene);
         console.log((serializedScene.cameras as Array<any>).shift()); //enlever le premier élement
+
+        //Enlever les transformNodes de l'editeur
+        const editorNodes = serializedScene.transformNodes as any[];
+        const meshes = serializedScene.meshes as any[];
+        const materials = serializedScene.materials as any[];
+        // const textures = serializedScene.textures as any[];
+
+        [editorNodes, meshes, materials].forEach((arr, index) => {
+            let tags: string;
+            for (let i = arr.length - 1; i >= 0; i--) {
+                let element = arr[i];
+                tags = element.tags;
+
+                // if(index != 1) { // si différent du tableau meshes
+                //     if(tags) {
+                //         if (arr[i].tags.includes(EditorUtils.EDITOR_TAG)) {
+                //             console.log('exclude : '+arr[i].name);
+                //             arr.splice(i, 1); // Retire l'élément du tableau
+                //         }
+                //     }
+                // }else{
+                if (arr[i].name.includes('_EDITOR_')) {
+                    console.log('exclude : ' + arr[i].name);
+                    arr.splice(i, 1);
+                }
+                //}
+
+            }
+        });
+
+
         const strScene = JSON.stringify(serializedScene);
         //console.log(strScene);
         FileManager.writeInFile(ProjectManager.getFilePath('', 'game.lgm'), strScene, () => {
@@ -55,39 +86,58 @@ export default abstract class GameLoader {
         const testMethode = (scene) => {
 
             //0 : source, 1 : destinationID
-            let goLinks: [number,number][] = []
+            let goLinks: [number, number][] = []
+
+            // index 0 : l'id orginal, l'id du gameObject lié à l'original 
+            let converted: Map<number, number> = new Map<number, number>();
+
 
             scene.getNodes().forEach((node) => {
 
                 if (node.metadata?.type) {
 
                     //node.parent = null;
-
                     console.log(node.name);
+                    console.log(node.metadata);
 
                     if (node.metadata.type === Model3D.name) {
 
-                        const model3d : Model3D = Model3D.createEmptyFromNodeData(node,scene);
+                        const model3d: Model3D = Model3D.createEmptyFromNodeData(node, scene);
+                        model3d.setUId(node.metadata.gameObjectId);
+                        node.name += " (orig)";
+                        model3d.position.copyFrom(node.position);
+                        model3d.rotation.copyFrom(node.rotation);
+                        // model3d.scaling = node.scaling;
+
+                        console.log('P : ' + node.parent);
+
+                        converted.set(node.uniqueId, model3d.Id);
+
+                        if (node.parent) {
+                            //test
+                            //model3d.parent = node.parent;
+
+                            goLinks.push([model3d.Id, node.parent.metadata.gameObjectId]);
+                        }
 
                         node.getChildren().forEach((child) => {
-                            console.log(child.name);
-                            goLinks.push([child.uniqueId,model3d.uniqueId]);
-                            child.setParent(null);
+                            child.parent = model3d;
                         });
-                        node.dispose();
+
+                        //node.dispose();
 
                     } else if (node.metadata.type === ProgrammableGameObject.TYPE_NAME) {
-                        const pgo = new ProgrammableGameObject(node.name,scene);
-                        pgo.uniqueId = node.metadata.gameObjectId;
+                        const pgo = new ProgrammableGameObject(node.name, scene);
+                        pgo.setUId(node.metadata.gameObjectId);
+                        node.name += " (orig)";
                         pgo.position.copyFrom(node.position);
                         pgo.rotation.copyFrom(node.rotation);
                         pgo.scaling.copyFrom(node.scaling);
-                        
-                        node.getChildren().forEach((child) => {
-                            goLinks.push([child.uniqueId,pgo.uniqueId]);
-                            child.setParent(null);
-                        });
-                        node.dispose();
+                        // node.getChildren().forEach((child) => {
+                        //     console.log("CHILD : " + child.name);
+                        //     child.parent = pgo;
+                        // });
+                        // node.dispose();
 
                     }
 
@@ -95,23 +145,27 @@ export default abstract class GameLoader {
             });
 
             goLinks.forEach(el => {
-                // alert(go.name+" \n "+JSON.stringify(go.metadata));
-                console.log(el[0]);
-                console.log(el[1]);
+
                 let source = scene.getTransformNodeByUniqueId(el[0]);
-                if(!source) {
+                if (!source) {
                     source = scene.getMeshByUniqueId(el[0]);
                 }
                 const target = scene.getTransformNodeByUniqueId(el[1]);
-                if(target && source) {
-                    source.setParent(target);
+                if (target && source) {
+                    source.parent = target;
                 }
-                console.log('-------------------');
-                
+                //console.log('-------------------');
+
             });
 
-            console.log(GameObject.gameObjects);
+            scene.getNodes().forEach(element => {
+                if(element.name.includes('(orig)')) {
+                    element.dispose();
+                }
+            });
 
+            //console.log(GameObject.gameObjects);
+            editor.setupBaseScene();
             editor.updateObjectsTreeView();
         }
 

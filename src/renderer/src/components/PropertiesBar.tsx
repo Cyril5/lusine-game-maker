@@ -28,7 +28,7 @@ const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
     // Si c'est un autre gameObject on met à jour la vue
     useEffect(() => {
         gameObjectRef.current = Editor.getInstance().selectedGameObject;
-        console.error(gameObjectRef.current);
+        console.log(gameObjectRef.current);
         if (gameObjectRef.current) {
             setName(gameObjectRef.current.name);
             console.log(gameObjectRef.current.type);

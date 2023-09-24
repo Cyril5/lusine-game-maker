@@ -54,6 +54,8 @@ export class GameObject extends TransformNode implements IPhysicsEnabledObject {
     constructor(name: string, scene: BABYLON.Scene) {
 
         super(name, scene);
+
+
         // L'accès direct au renderer provoque une erreur
         //        this._transform = new TransformComponent(this, name, scene);
         this.onDelete = new Observable();
@@ -79,6 +81,15 @@ export class GameObject extends TransformNode implements IPhysicsEnabledObject {
     }
     getIndices?(): Nullable<IndicesArray> {
         throw new Error("Method not implemented.");
+    }
+
+    setUId(value : number) {
+        const oldId = this.uniqueId;
+        super.uniqueId = value;
+        this.metadata.gameObjectId = value;
+        GameObject._gameObjects.delete(oldId);
+        GameObject._gameObjects.set(this.uniqueId,this);
+        console.log(GameObject._gameObjects);
     }
 
     dispose() {

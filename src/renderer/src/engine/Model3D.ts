@@ -23,11 +23,8 @@ export class Model3D extends GameObject {
     static createEmptyFromNodeData(node : BABYLON.TransformNode,scene : BABYLON.Scene) : Model3D {
         
         const model3d =  new Model3D({scene:scene});
-        model3d.uniqueId = node.metadata.gameObjectId;
         model3d.name = node.name;
-        model3d.position.copyFrom(node.position);
-        model3d.rotation.copyFrom(node.rotation);
-        model3d.scaling.copyFrom(node.scaling);
+       // model3d.uniqueId = node.metadata.gameObjectId;
         return model3d
     }
 
