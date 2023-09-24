@@ -1,4 +1,4 @@
-# LUsine Game Maker Alpha 0.1
+# LUsine Game Maker Alpha 0.1.2
 
 ![image](https://github.com/Cyril5/lusine-game-maker/assets/73618602/41444741-b2b3-449b-afd1-e5f777d0b24f)
 
@@ -10,22 +10,32 @@ Le nom LUsine GM est temporaire.
 
 Ce projet est le successeur de : (https://github.com/Cyril5/clight-game-maker)
 
-Version actuelle : Alpha 0.1.1 (7 Septembre 2023)
+Version actuelle : Alpha 0.1.2 (10 Septembre 2023)
 
 
 ## Installation
+
+L'installateur Windows de Lusine Game Maker est désormais disponible sur Windows, vous pouvez télécharger l'édtiteur sur [cette page](https://github.com/Cyril5/lusine-game-maker/releases)
+
+## Lancement avec NodeJS
+
 Installez une version de NodeJS sur votre poste puis lancez le fichier ```INSTALL EDITOR.bat``` qui éxécutera automatiquement la commande :
 
 ```bash
 $ npm install
 ```
 
-## Lancer Lusine Game Maker
+# Lancer Lusine Game Maker
 
 Lancez le fichier ```LUSINE GAME MAKER.bat``` qui éxécutera automatiquement la commande :
 ```bash
 $ npm run dev
 ```
+
+## Testeurs
+* Motocactus
+* Manu Amalir
+
 
 ## Librairie utilisées
 * BabylonJS
