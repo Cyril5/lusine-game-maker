@@ -1,14 +1,28 @@
 import EditorUtils from "@renderer/editor/EditorUtils";
 
 // import fs from 'fs';
-export default class FileManager {
+export default abstract class FileManager {
 
+    
     private static fs = require('fs');
     
     private constructor() {
         
     }
     
+    static fileIsEmpty(filename: string,afterCheckCallback) : void {
+        FileManager.fs.stat(filename, (err, stats) => {
+            if (err) {
+              console.error(err);
+              return true;
+            }
+            // Vérifiez si la taille du fichier est égale à 0 pour déterminer s'il est vide
+            console.log(stats.size);
+            
+            afterCheckCallback(stats.size === 0);
+            
+          });
+    }
     
     static fileExists(filename: string) : boolean {
        return FileManager.fs.existsSync(filename);

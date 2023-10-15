@@ -5,25 +5,26 @@ import EditorUtils from "@renderer/editor/EditorUtils";
 
 export default ({ antialias, engineOptions, adaptToDeviceRatio, sceneOptions, onRender, onSceneReady, ...rest }) => {
   const reactCanvas = useRef(null);
+  const engineRef = useRef(null);
 
   let scene : Scene;
 
   let rendererEngineType : number = 0;
 
   const initEngine = async (canvas)=> {
-    let engine: WebGPUEngine | Engine;
     switch (rendererEngineType) {
       case 1:
-        engine = new WebGPUEngine(canvas);
-        await engine.initAsync();
+        engineRef.current = new BABYLON.WebGPUEngine(canvas);
+        await engineRef.current.initAsync();
+        console.log("WebGPU engine ready");
         break;
     
       default:
-        engine = new Engine(canvas, antialias, engineOptions, adaptToDeviceRatio);
+        engineRef.current = new Engine(canvas, antialias, engineOptions, adaptToDeviceRatio);
         break;
     }
 
-    scene = new Scene(engine, sceneOptions);
+    scene = new Scene(engineRef.current, sceneOptions);
     if (scene.isReady()) {
       onSceneReady(scene);
     } else {
@@ -32,7 +33,7 @@ export default ({ antialias, engineOptions, adaptToDeviceRatio, sceneOptions, on
 
 
 
-    engine.runRenderLoop(() => {
+    engineRef.current.runRenderLoop(() => {
       if (typeof onRender === "function") onRender(scene);
       scene.render();
     });

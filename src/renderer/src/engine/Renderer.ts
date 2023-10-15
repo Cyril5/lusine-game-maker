@@ -12,6 +12,8 @@ import '@renderer/assets/css/index.scss';
 
 export class Renderer {
     
+    static readonly CAMERA_ID: string = '_RENDERER_CAMERA_';
+
     private readonly CAMERA_PANNING_SENSTIVITY = 25;
     private readonly CAMERA_ZOOM_SENSTIVITY = 2;  
     
@@ -26,6 +28,10 @@ export class Renderer {
     
     get scene(): BABYLON.Scene {
         return this._scene;
+    }
+
+    get camera() : BABYLON.ArcRotateCamera {
+        return this._camera;
     }
     
     private _gizmoManager: GizmoManager;
@@ -178,6 +184,10 @@ export class Renderer {
         this._engine = engine;
         this._scene = scene;
         this._camera = new BABYLON.ArcRotateCamera("Camera", 0, 0, 10, BABYLON.Vector3.Zero(), this._scene);
+        this._camera.fieldOfView = 75;
+        this._camera.farPlane = 850;
+        this._camera.id = Renderer.CAMERA_ID;
+        this._camera.name = Renderer.CAMERA_ID;
         this.init();
     }
 

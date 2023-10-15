@@ -6,6 +6,37 @@ export class JSCodeBlocks {
 
     constructor() {
 
+        Blockly.Blocks['inputs_if_keypress'] = {
+            init: function () {
+                this.appendValueInput("KEYCODE")
+                    .setCheck("KeyCode")
+                    .appendField("La touche");
+                this.appendDummyInput()
+                    .appendField("est pressée ?");
+                this.setOutput(true, "Boolean");
+                this.setColour(260);
+                this.setTooltip("Retourne vrai si la touche est pressée");
+                this.setHelpUrl("");
+            }
+        };
+
+        Blockly.Blocks['inputs_if_keyevent'] = {
+            init: function() {
+              this.appendValueInput("KEYCODE")
+                  .setCheck("KeyCode")
+                  .appendField("La touche");
+              this.appendDummyInput()
+                  .appendField("est")
+                  .appendField(new Blockly.FieldDropdown([["pressée","KeyPressed"], ["enfoncée","KeyDown"], ["relachée","KeyUp"]]), "EVENT")
+                  .appendField("?");
+              this.setOutput(true, "Boolean");
+              this.setColour(260);
+           this.setTooltip("");
+           this.setHelpUrl("");
+            }
+          };
+
+
         Blockly.Blocks['qualifier_player'] = {
             init: function() {
               this.appendDummyInput()
@@ -219,13 +250,21 @@ export class JSCodeBlocks {
             return [code, javascriptGenerator.ORDER_ATOMIC];
         };
 
+        javascriptGenerator.forBlock['inputs_if_keyevent'] = function(block, generator) {
+            const value_keycode = generator.valueToCode(block, 'KEYCODE', generator.ORDER_ATOMIC);
+            const dropdown_event = block.getFieldValue('EVENT');
+            // TODO: Assemble javascript into code variable.
+            var code = `InputManager.get${dropdown_event}(${value_keycode})`;
+            // TODO: Change ORDER_NONE to the correct strength.
+            return [code, generator.ORDER_NONE];
+          };
 
-        javascriptGenerator.forBlock['inputs_if_keydown'] = (block: any) => {
+        javascriptGenerator.forBlock['inputs_if_keydown'] = (block: any,generator : any) => {
 
-            const value_keycode = javascriptGenerator.valueToCode(block, 'KEYCODE', javascriptGenerator.ORDER_ATOMIC);
+            const value_keycode = generator.valueToCode(block, 'KEYCODE', generator.ORDER_ATOMIC);
             // TODO: Assemble JavaScript into code constiable.
             const code = `InputManager.getKeyDown(${value_keycode})`;
-            return [code, javascriptGenerator.ORDER_NONE];
+            return [code, generator.ORDER_NONE];
         };
 
         javascriptGenerator.forBlock['keycode_d'] = function (block: any) {
@@ -283,12 +322,7 @@ export class JSCodeBlocks {
             return code;
         };
 
-        // javascriptGenerator['inputs_if_keypress'] = function (block : any) {
-        //     const value_keycode = javascriptGenerator.valueToCode(block, 'KEYCODE', javascriptGenerator.ORDER_ATOMIC);
-        //     // TODO: Assemble JavaScript into code constiable.
-        //     const code = '...;\n';
-        //     return code;
-        // };
+
 
 
         Blockly.Blocks['fsm_init'] = {

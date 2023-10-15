@@ -7,7 +7,6 @@ import { Renderer } from "../engine/Renderer";
 import { ProgrammableGameObject } from "@renderer/engine/ProgrammableGameObject";
 import { Model3D } from "@renderer/engine/Model3D";
 import NavBarEditor from "./NavBarEditor";
-import AddObjectModal from "./AddObjectModal";
 import { Tab, Tabs } from "react-bootstrap";
 import LevelEditor from "@renderer/pages/LevelEditor";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -22,6 +21,9 @@ import Qualifiers from "@renderer/editor/Qualifiers";
 import StartupModal from "./StartupModal";
 import ProjectManager from "@renderer/editor/ProjectManager";
 import OriginAxis from "@renderer/editor/OriginAxis";
+import GameLoader from "@renderer/editor/GameLoader";
+import cannon from "cannon";
+import EditorUtils from "@renderer/editor/EditorUtils";
 
 enum Mode {
     LevelEditor = 1,
@@ -30,9 +32,10 @@ enum Mode {
 }
 
 export default class Editor extends Component {
-    
+
+
     eMode: Mode = Mode.LevelEditor;
-    
+
     // use state REACT
     state = {
         eMode: 1,
@@ -49,9 +52,29 @@ export default class Editor extends Component {
         },
         showStartupModal: true,
         gameObjects: null,
-        fsm : null,
-        stateFiles : null,
+        fsm: null,
+        stateFiles: null,
     };
+
+    // Supprimer l'objet selectionné de la scene
+    deleteSelection(): void {
+        if (this.selectedGameObject) {
+            const deleteGo = EditorUtils.showMsgDialog({
+                message: `Voulez vous supprimer l'objet : ${this.selectedGameObject.name} (ID : ${this.selectedGameObject.Id}) ? \n Cette action est non réversible.`,
+                type: 'warning',
+                buttons: ['Oui', 'Non'],
+                defaultId: 1,
+                title: "Confirmation avant suppression",
+            });
+
+            if (deleteGo === 0) {
+                console.log(this.selectedGameObject.type);
+                this.selectedGameObject.dispose();
+                this.updateObjectsTreeView();
+            }
+        }
+    }
+
 
     getGizmo(arg0: 'POS' | 'ROT') {
         const gizmoManager = Renderer.getInstance().gizmoManager;
@@ -63,8 +86,22 @@ export default class Editor extends Component {
         }
     }
 
+    load(): void {
+        console.log("ready load game");
+        const scene = Renderer.getInstance().scene;
+
+        GameLoader.load(scene);
+    }
+
+
+    save(): void {
+        const scene = Renderer.getInstance().scene;
+        GameLoader.save(scene);
+    }
+
+
     showDebugInspector(): void {
-      Renderer.getInstance().scene.debugLayer.show();
+        Renderer.getInstance().scene.debugLayer.show();
     }
 
 
@@ -75,7 +112,7 @@ export default class Editor extends Component {
         })
     }
 
-    showStartupModal(show : boolean = true) {
+    showStartupModal(show: boolean = true) {
         this.setState({ showStartupModal: show });
     }
 
@@ -89,47 +126,91 @@ export default class Editor extends Component {
 
     }
 
-    setupBaseScene() {
+    clearScene(scene: BABYLON.Scene) {
+        // Parcourez tous les meshes (objets) de la scène et détruisez-les
+        scene.meshes.forEach(function (mesh) {
+            mesh.dispose();
+        });
+
+        // Parcourez toutes les caméras de la scène et détruisez-les
+        scene.cameras.forEach((camera) => {
+            if (camera.name !== Renderer.CAMERA_ID) {
+                console.log(camera.id + " disposed");
+                camera.dispose();
+            }
+        });
+
+        // Parcourez toutes les lumières de la scène et détruisez-les
+        scene.lights.forEach(function (light) {
+            light.dispose();
+        });
+
+        scene.materials.forEach((material) => {
+            material.dispose();
+        });
+
+        // scene.textures.forEach((texture)=>{
+        //     texture.dispose();
+        // });
+
+    }
+
+    async setupBaseScene() {
+
+        window.CANNON = cannon;
+
+        const scene  = Renderer.getInstance().scene;
+
+        const camRenderer = Renderer.getInstance().camera
+        camRenderer.fov = 0.75;
+        camRenderer.maxZ = 850;
+
+
         this.showStartupModal(false);
 
-        const scene = Renderer.getInstance().scene;
 
         const ammo = Renderer.getInstance().ammo;
 
         // Mettre en pause le moteur physique
         scene.physicsEnabled = false;
 
-        //GRID
-        const groundMaterial = new GridMaterial("groundMaterial", scene);
-        groundMaterial.majorUnitFrequency = 100;
-        groundMaterial.minorUnitVisibility = 0.5;
-        groundMaterial.gridRatio = 10;
-        groundMaterial.opacity = 0.99;
-        groundMaterial.useMaxLine = true;
-
-        const ground = MeshBuilder.CreateGround("ground", { width: 1000, height: 1000 }, scene);
-        ground.material = groundMaterial;
-
-        new OriginAxis(scene);
+        const ground = MeshBuilder.CreateGround("_EDITOR_GRID_", { width: 1000, height: 1000 }, scene);
+        if(!scene.getEngine().isWebGPU) {
+            //GRID
+            const groundMaterial = new GridMaterial("_EDITOR_GRIDMAT_", scene);
+            groundMaterial.majorUnitFrequency = 100;
+            groundMaterial.minorUnitVisibility = 0.5;
+            groundMaterial.gridRatio = 10;
+            groundMaterial.opacity = 0.99;
+            groundMaterial.useMaxLine = true;
+    
+            ground.material = groundMaterial;
+            BABYLON.Tags.AddTagsTo({groundMaterial},EditorUtils.EDITOR_TAG);
+        }else{
+            ground.dispose();
+        }
         
+        const axis = new OriginAxis(scene);
+        BABYLON.Tags.AddTagsTo({ ground}, EditorUtils.EDITOR_TAG);
+        return;
+
         const car = new ProgrammableGameObject("Car_PO", scene);
         car.fsm.states[0].name = "CarPO Main State";
         //car.setAbsolutePosition(new BABYLON.Vector3(0,45,0));
         Editor._instance.selectGameObject(car.Id);
-        return;
 
     }
 
     loadDemo() {
         //Renderer.isReadyObservable.add(async () => {
         this.setupBaseScene();
-       
+
         const city = this.addModel3DObject("PizzaHome.glb", null, (city) => {
 
             city.name = "PizzaHome";
 
 
- 
+
         });
 
 
@@ -247,15 +328,21 @@ export default class Editor extends Component {
         // Création des noeuds pour chaques gameObject
         const arr: GameObject[] = [];
         for (const [id, gameObject] of GameObject.gameObjects) {
+
+            const parent = gameObject.parent?.metadata.gameObjectId | 0;
+            console.log(gameObject.parent?.uniqueId);
+
             arr.push({
                 "id": id,
                 "droppable": true,
-                "parent": 0,
-                "text": gameObject.name+" (ID : "+id+")",
+                "parent": parent,
+                "text": gameObject.name + " (ID : " + id + ")",
                 "data": {
-                    "type":gameObject.metadata.type
+                    "type": gameObject.metadata.type
                 }
             });
+
+            console.log(arr);
         }
 
         this.setState({
@@ -284,8 +371,8 @@ export default class Editor extends Component {
         const modelsDirectory = ProjectManager.getModelsDirectory();
 
         //const model = new Model3D("https://models.babylonjs.com/", "aerobatic_plane.glb", Renderer.getInstance().scene);
-        const model = new Model3D(modelsDirectory, filename, options, Renderer.getInstance().scene);
-        
+        const model = Model3D.createFromModel(modelsDirectory, filename, options, Renderer.getInstance().scene);
+
         // quand je clic sur un mesh je peux le sélectionner dans l'éditeur
         // Créer un action manager pour le parentNode
         // Abonnement à l'événement onModelLoaded
@@ -302,11 +389,11 @@ export default class Editor extends Component {
                     this.selectGameObject(pog.Id);
                 }));
             });
-            
+
             if (callback) {
                 callback(model);
             }
-            
+
             // Raffraichir la treeview des gameObjects
             this.updateObjectsTreeView();
 
@@ -354,13 +441,16 @@ export default class Editor extends Component {
 
     selectGameObject = (id: number) => {
         const go = GameObject.gameObjects.get(id);
+
         if (!go) {
             console.error(`GameObject Id : ${id} non trouvé`);
             return;
         }
 
         this._selectedGameObject = go;
-        this.updateObjetJeu(this._selectedGameObject);
+        this.updateObjetJeu(this._selectedGameObject as GameObject);
+
+        Renderer.getInstance().camera.target.copyFrom(this._selectedGameObject.position);
     }
 
     handleAddObject = () => {
@@ -375,9 +465,19 @@ export default class Editor extends Component {
 
 
     updateObjetJeu = (objetJeu: GameObject) => {
+
+        if (!objetJeu) {
+            Renderer.getInstance().gizmoManager.attachToNode(null);
+            Renderer.getInstance().gizmoManager.positionGizmoEnabled = false;
+            this.setState({
+                objetJeu: null,
+            });
+            return;
+        }
+
         this.setState({
-            objetJeu : objetJeu,
-            fsm : objetJeu.fsm
+            objetJeu: objetJeu,
+            fsm: objetJeu.fsm
         });
         Renderer.getInstance().gizmoManager.positionGizmoEnabled = true;
         Renderer.getInstance().gizmoManager.attachToNode(objetJeu);
@@ -419,10 +519,10 @@ export default class Editor extends Component {
                     <Tab eventKey={2} title={<span><FontAwesomeIcon icon="diagram-project" />
                         Automates Fini</span>}>
                         {/* {this.state.activeTab == 2 ? <StatesMachineEditor statefiles={this.state.stateFiles} fsm={this.state.fsm}/> : null} */}
-                        <StatesMachineEditor statefiles={this.state.stateFiles} fsm={this.state.fsm}/>
+                        <StatesMachineEditor statefiles={this.state.stateFiles} fsm={this.state.fsm} />
                     </Tab>
                     <Tab eventKey={3} title={<span><FontAwesomeIcon icon="file-pen" />
-                     Editeur d'état</span>}>
+                        Editeur d'état</span>}>
                         {/* le useEffect sera rappelé */}
                         <StateEditor statefiles={this.state.stateFiles} initStateFile={this.state.initStateFile} resizeWorkspace={this.state.activeTab == 3} />
                     </Tab>

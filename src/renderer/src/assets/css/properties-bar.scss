@@ -1,8 +1,13 @@
+
 .transform-positions, .transform-rotations, .transform-scales {
     display: flex;
     flex-direction: row;
 }
 
+.properties-bar {
+    top: 115px;
+}
+  
 .x-axis {
     color: red;
 }

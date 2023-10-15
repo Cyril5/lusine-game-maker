@@ -7,18 +7,27 @@ import PropertiesBar from '../components/PropertiesBar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import GameObjectsTreeBar from '@renderer/components/GameObjectsTreeBar';
 import ConsoleModal from "@renderer/components/ConsoleModal";
+import { useEffect, useState } from "react";
 
 
 const LevelEditor = (props) => {
 
     // Cela permet de simplifier la syntaxe lorsque vous voulez accéder à une propriété d'un objet. Au lieu d'écrire props.objJeu à plusieurs endroits, vous pouvez simplement écrire objJeu.
-    const { objJeu } = props;
     const {gameObjects} = props;
 
+    const [objetJeu,setObjetJeu] = useState(null);
 
     const setTransformMode = (transformMode: string) => {
         Editor.getInstance().setTransformMode(transformMode);
     }
+
+    useEffect(()=>{
+        console.log(props.objJeu);
+        if(props.objJeu) {
+            setObjetJeu(props.objJeu);
+        }
+
+    },[props.objJeu])
 
     return (
         <>
@@ -37,6 +46,7 @@ const LevelEditor = (props) => {
                             <ButtonGroup className="me-2" aria-label="Second group">
                                 <Button disabled variant="secondary"><FontAwesomeIcon icon="earth-europe" /> Monde</Button>
                                 <Button variant="secondary"><FontAwesomeIcon icon="location-crosshairs" /> Local</Button>
+                                <Button variant="danger" onClick={()=>Editor.getInstance().deleteSelection()}><FontAwesomeIcon icon="trash" /></Button>
                             </ButtonGroup>
                         </ButtonToolbar>
                     </Col>
@@ -56,10 +66,9 @@ const LevelEditor = (props) => {
                     </div> */}
 
                         <PropertiesBar
-                            id={objJeu?.Id}
-                            gameobject_type={objJeu?.type}
-                            gameobject_name={objJeu?.name}
-                            parentid={objJeu?.parent?.id}
+                            id={objetJeu?.Id}
+                            gameobject_name={objetJeu?.name}
+                            parentid={objetJeu?.parent?.Id}
                         />
 
                         <ConsoleModal/>

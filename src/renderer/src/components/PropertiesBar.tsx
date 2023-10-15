@@ -5,10 +5,12 @@ import FSMComponent from "./FSMComponent";
 import Editor from "./Editor";
 import '@renderer/assets/css/properties-bar.scss';
 import TransformComponent from "./TransformComponent";
+import { GameObject } from "@renderer/engine/GameObject";
 
-const PropertiesBar = ({ id, gameobject_name = '', gameobject_type = '', parentId, ...props }) => {
+const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
 
-    const gameObjectRef = useRef(Editor.getInstance().selectedGameObject);
+    const gameObjectRef = useRef(null);
+
     // useEffect(() => {
     //     // Update the 3D object represented by Babylon.TransformNode based on the props
     //     const { x, y, z } = position;
@@ -25,10 +27,13 @@ const PropertiesBar = ({ id, gameobject_name = '', gameobject_type = '', parentI
 
     // Si c'est un autre gameObject on met à jour la vue
     useEffect(() => {
-        setName(gameobject_name);
         gameObjectRef.current = Editor.getInstance().selectedGameObject;
+        console.log(gameObjectRef.current);
         if (gameObjectRef.current) {
-
+            setName(gameObjectRef.current.name);
+            console.log(gameObjectRef.current.type);
+        }else{
+            handleClose();
         }
     }, [id]);
 
@@ -46,15 +51,25 @@ const PropertiesBar = ({ id, gameobject_name = '', gameobject_type = '', parentI
         Editor.getInstance().updateObjectsTreeView();
     }
 
+    const handleSelectParent = ()=>{
+        Editor.getInstance().selectGameObject(gameObjectRef.current.parent.uniqueId);
+    }
+
     const handleAddRigidbody = () => {
         Editor.getInstance().selectedGameObject!.addRigidbody({ mass: 1, restitution: 0.2, friction: 0.5 });
     }
+
+    const style = {
+        top: '116px',
+        height: '87vh'
+      };
+
     return (
         <div>
             <Button variant="secondary" onClick={toggleShow} className="me-2 properties-btn">
                 <FontAwesomeIcon icon="wrench" />
             </Button>
-            <Offcanvas className="properties-bar" placement="end" scroll backdrop={false} show={show} onHide={handleClose} {...props}>
+            <Offcanvas className="properties-bar" style={style} placement="end" scroll backdrop={false} show={show} onHide={handleClose} {...props}>
                 <Offcanvas.Header closeButton>
                     <Offcanvas.Title>Propriétées <FontAwesomeIcon icon="wrench" /></Offcanvas.Title>
                 </Offcanvas.Header>
@@ -68,7 +83,7 @@ const PropertiesBar = ({ id, gameobject_name = '', gameobject_type = '', parentI
                                     <Form.Control onChange={handleSetGameObjectName} value={name} />
                                 </Form.Group>
                                 <p>ID : {id}</p>
-                                <p>Parent : <Button variant="primary" size="sm">{parentId}</Button> <Button onClick={handleUnparent} variant="danger" size="sm" disabled={!parentId}>Déparenter</Button></p>
+                                <p>Parent : <Button variant="primary" size="sm" onClick={handleSelectParent}>{(gameObjectRef.current?.parent as GameObject)?.Id}</Button> <Button onClick={handleUnparent} variant="danger" size="sm" disabled={!gameObjectRef.current?.parent?.uniqueId}>Déparenter</Button></p>
                             </Accordion.Body>
                         </Accordion.Item>
                         <Accordion.Item eventKey="1">
@@ -78,7 +93,7 @@ const PropertiesBar = ({ id, gameobject_name = '', gameobject_type = '', parentI
                             </Accordion.Body>
                         </Accordion.Item>
 
-                        {gameobject_type === "PROG_GO" && (
+                        {/* {gameObjectRef.current !== undefined && gameObjectRef.current.type === "PROG_GO" && (
                             <>
                                 <Accordion.Item eventKey="2">
                                     <Accordion.Header>Automates Fini</Accordion.Header>
@@ -106,7 +121,7 @@ const PropertiesBar = ({ id, gameobject_name = '', gameobject_type = '', parentI
                                     </Accordion.Body>
                                 </Accordion.Item>
                             </>
-                        )}
+                        )} */}
 
 
                     </Accordion>

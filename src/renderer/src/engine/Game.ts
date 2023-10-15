@@ -135,7 +135,7 @@ export class Game {
 
         Renderer.getInstance().scene.physicsEnabled = false;
 
-        scene.setActiveCameraByName("Camera").setEnabled(true);
+       // scene.setActiveCameraByName("Camera").setEnabled(true);
         
         this.onGameStoped.notifyObservers();
         
