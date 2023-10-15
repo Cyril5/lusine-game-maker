@@ -159,7 +159,11 @@ export default class Editor extends Component {
 
         window.CANNON = cannon;
 
-        const scene = Renderer.getInstance().scene;
+        const scene  = Renderer.getInstance().scene;
+
+        const camRenderer = Renderer.getInstance().camera
+        camRenderer.fov = 0.75;
+        camRenderer.maxZ = 850;
 
 
         this.showStartupModal(false);
@@ -170,20 +174,24 @@ export default class Editor extends Component {
         // Mettre en pause le moteur physique
         scene.physicsEnabled = false;
 
-        //GRID
-        const groundMaterial = new GridMaterial("_EDITOR_GRIDMAT_", scene);
-        groundMaterial.majorUnitFrequency = 100;
-        groundMaterial.minorUnitVisibility = 0.5;
-        groundMaterial.gridRatio = 10;
-        groundMaterial.opacity = 0.99;
-        groundMaterial.useMaxLine = true;
-
         const ground = MeshBuilder.CreateGround("_EDITOR_GRID_", { width: 1000, height: 1000 }, scene);
-        ground.material = groundMaterial;
-
-
+        if(!scene.getEngine().isWebGPU) {
+            //GRID
+            const groundMaterial = new GridMaterial("_EDITOR_GRIDMAT_", scene);
+            groundMaterial.majorUnitFrequency = 100;
+            groundMaterial.minorUnitVisibility = 0.5;
+            groundMaterial.gridRatio = 10;
+            groundMaterial.opacity = 0.99;
+            groundMaterial.useMaxLine = true;
+    
+            ground.material = groundMaterial;
+            BABYLON.Tags.AddTagsTo({groundMaterial},EditorUtils.EDITOR_TAG);
+        }else{
+            ground.dispose();
+        }
+        
         const axis = new OriginAxis(scene);
-        BABYLON.Tags.AddTagsTo({ ground, groundMaterial }, EditorUtils.EDITOR_TAG);
+        BABYLON.Tags.AddTagsTo({ ground}, EditorUtils.EDITOR_TAG);
         return;
 
         const car = new ProgrammableGameObject("Car_PO", scene);

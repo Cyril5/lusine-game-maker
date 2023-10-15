@@ -1,5 +1,7 @@
 import { AbstractMesh, Observable, SceneLoader } from "@babylonjs/core";
 import { GameObject } from "./GameObject";
+import { Material, MultiMaterial } from "babylonjs";
+import EditorUtils from "@renderer/editor/EditorUtils";
 export class Model3D extends GameObject {
 
 
@@ -44,18 +46,58 @@ export class Model3D extends GameObject {
             if (extension !== "fbx") {
                 //SceneLoader.ImportMesh("", "https://models.babylonjs.com/", "aerobatic_plane.glb", scene, (meshes) => {
                 const mesh = SceneLoader.ImportMesh("", arg.directoryOrUrl+'/', arg.filename, arg.scene, (meshes) => {
-    
-                         // Fusionner tous les maillages individuels en un seul maillage
-                        const mergedMesh = BABYLON.Mesh.MergeMeshes(meshes[0].getChildMeshes(), true, true, undefined, false, true);
-                        //enlever le mesh root "__root__"
-                        if(extension === "glb") {
-                            meshes[0].dispose();
+                    
+                    const materialsToDispose : AbstractMaterial[] = [];
+                    const materialsSceneNames = []; 
+                    arg.scene.materials.forEach((mat : AbstractMaterial)=>{
+                        console.log(mat.name);
+                        materialsSceneNames.push(mat.name);
+                    });
+
+                    // Fusionner tous les maillages individuels en un seul maillage
+                    const mergedMesh = BABYLON.Mesh.MergeMeshes(meshes[0].getChildMeshes(), true, true, undefined, false, true);
+                    //enlever le mesh root "__root__"
+                    if(extension === "glb") {
+                        meshes[0].dispose();
+                    }
+
+                    const multiMaterial = mergedMesh.material as MultiMaterial;
+
+                    // si le material existe déjà dans le projet remplacer par celui ci
+                    
+                    multiMaterial.subMaterials.forEach((subMat,index)=>{
+
+                        if(materialsSceneNames.includes(subMat.name)) {
+                            const replaceMat = EditorUtils.showMsgDialog({
+                                message: `Le matériel nommé ${subMat.name} existe déjà dans le projet. Voulez vous l'utilisez pour ce modèle ?`,
+                                type: 'warning',
+                                buttons: ['Oui', 'Non faire une copie'],
+                                defaultId: 0,
+                                title: "",
+                            });
+
+                            if(replaceMat == 0) {
+                                // findIndex pour trouver l'indice du matériau à partir du nom
+                                const materialIndex = arg.scene.materials.findIndex(mat => mat.name === subMat.name);
+                                // ajoute les materiaux actuelles à la site de suppression avant affectation
+                                materialsToDispose.push(subMat!.uniqueId);
+                                multiMaterial.subMaterials[index] = arg.scene.materials[materialIndex];
+                            }
                         }
-                        mergedMesh.setParent(this);
+                        
+                        
+                    });
+
+                    mergedMesh.setParent(this);
                     //test.freezeWorldMatrix();
                     //scene.freezeActiveMeshes();
+
+                    materialsToDispose.forEach((mat)=>{
+                        arg.scene.getMaterialByUniqueID(mat)!.dispose();
+                    })
     
                    this.onLoaded.notifyObservers(this);
+
     
                 });
             } else {
