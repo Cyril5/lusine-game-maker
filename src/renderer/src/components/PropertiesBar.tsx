@@ -6,6 +6,8 @@ import Editor from "./Editor";
 import '@renderer/assets/css/properties-bar.scss';
 import TransformComponent from "./TransformComponent";
 import { GameObject } from "@renderer/engine/GameObject";
+import ColliderComponent from "./ColliderComponent";
+import PhysicComponent from "./PhysicComponent";
 
 const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
 
@@ -32,7 +34,7 @@ const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
         if (gameObjectRef.current) {
             setName(gameObjectRef.current.name);
             console.log(gameObjectRef.current.type);
-        }else{
+        } else {
             handleClose();
         }
     }, [id]);
@@ -46,12 +48,12 @@ const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
     });
 
     // Déparenter l'objet sélectionné
-    const handleUnparent = ()=>{
+    const handleUnparent = () => {
         Editor.getInstance().selectedGameObject!.setParent(null);
         Editor.getInstance().updateObjectsTreeView();
     }
 
-    const handleSelectParent = ()=>{
+    const handleSelectParent = () => {
         Editor.getInstance().selectGameObject(gameObjectRef.current.parent.uniqueId);
     }
 
@@ -62,7 +64,7 @@ const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
     const style = {
         top: '116px',
         height: '87vh'
-      };
+    };
 
     return (
         <div>
@@ -74,7 +76,7 @@ const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
                     <Offcanvas.Title>Propriétées <FontAwesomeIcon icon="wrench" /></Offcanvas.Title>
                 </Offcanvas.Header>
                 <Offcanvas.Body>
-                    <Accordion defaultActiveKey={['0','1']} alwaysOpen>
+                    <Accordion defaultActiveKey={['0', '1']} alwaysOpen>
                         <Accordion.Item eventKey="0">
                             <Accordion.Header>Objet</Accordion.Header>
                             <Accordion.Body>
@@ -84,12 +86,33 @@ const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
                                 </Form.Group>
                                 <p>ID : {id}</p>
                                 <p>Parent : <Button variant="primary" size="sm" onClick={handleSelectParent}>{(gameObjectRef.current?.parent as GameObject)?.Id}</Button> <Button onClick={handleUnparent} variant="danger" size="sm" disabled={!gameObjectRef.current?.parent?.uniqueId}>Déparenter</Button></p>
+
+                                Qualifieur <Form.Select aria-label="Default select example">
+                                    <option value="1">Aucun</option>
+                                    <option value="2">Joueur</option>
+                                    <option value="3">Bon</option>
+                                </Form.Select>
+
                             </Accordion.Body>
                         </Accordion.Item>
                         <Accordion.Item eventKey="1">
                             <Accordion.Header>Transformations</Accordion.Header>
                             <Accordion.Body>
                                 <TransformComponent gameObjectId={id} />
+                            </Accordion.Body>
+                        </Accordion.Item>
+
+                        <Accordion.Item eventKey="2">
+                            <Accordion.Header>Collision</Accordion.Header>
+                            <Accordion.Body>
+                                <ColliderComponent gameObjectId={id} />
+                            </Accordion.Body>
+                        </Accordion.Item>
+
+                        <Accordion.Item eventKey="3">
+                            <Accordion.Header>Physique</Accordion.Header>
+                            <Accordion.Body>
+                                <PhysicComponent gameObjectId={id} />
                             </Accordion.Body>
                         </Accordion.Item>
 

@@ -10,7 +10,7 @@ import { ProgrammableGameObject } from '../ProgrammableGameObject';
 import InputManager, { KeyCode } from '../InputManager';
 import FileManager from '../FileManager';
 import StateEditorUtils from '@renderer/editor/StateEditorUtils';
-import ColliderComponent from '../physics/ColliderComponent';
+import BoxCollider from '../physics/BoxCollider';
 
 export default class State {
 

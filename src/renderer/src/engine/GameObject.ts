@@ -1,9 +1,10 @@
 import { BoundingInfo, IPhysicsEnabledObject, IndicesArray, Nullable, PhysicsImpostor, Vector3 } from "@babylonjs/core";
-import { Observable, TransformNode } from "babylonjs";
+import { Mesh, Observable, TransformNode } from "babylonjs";
 
-export class GameObject extends TransformNode implements IPhysicsEnabledObject {
+export class GameObject extends TransformNode  {
     
-    private _physicsImpostor: PhysicsImpostor | null;
+    private _rigidbody: PhysicsImpostor | null;
+    private _physicsRootMesh : Mesh;
     private static _gameObjects = new Map<number | string, GameObject>() //unique id or uuid // map uuid,gameObject
 
 
@@ -26,7 +27,7 @@ export class GameObject extends TransformNode implements IPhysicsEnabledObject {
     }
 
     get PhysicsImpostor(): PhysicsImpostor {
-        return this._physicsImpostor;
+        return this._rigidbody;
     }
 
     set type(value) {
@@ -55,6 +56,7 @@ export class GameObject extends TransformNode implements IPhysicsEnabledObject {
 
         super(name, scene);
 
+        //this._physicsRootMesh.setParent(this);
 
         // L'accès direct au renderer provoque une erreur
         //        this._transform = new TransformComponent(this, name, scene);
@@ -73,15 +75,15 @@ export class GameObject extends TransformNode implements IPhysicsEnabledObject {
 
 
     }
-    getBoundingInfo(): BoundingInfo {
-        throw new Error("Method not implemented.");
-    }
-    getVerticesData(kind: string): Nullable<number[] | Float32Array> {
-        throw new Error("Method not implemented.");
-    }
-    getIndices?(): Nullable<IndicesArray> {
-        throw new Error("Method not implemented.");
-    }
+    // getBoundingInfo(): BoundingInfo {
+    //     return this._physicsRootMesh.getBoundingInfo();
+    // }
+    // getVerticesData(kind: string): Nullable<number[] | Float32Array> {
+    //     return this._physicsRootMesh.getVerticesData();
+    // }
+    // getIndices?(): Nullable<IndicesArray> {
+    //     return this._physicsRootMesh.getIndices();
+    // }
 
     setUId(value : number) {
         const oldId = this.uniqueId;
@@ -101,28 +103,34 @@ export class GameObject extends TransformNode implements IPhysicsEnabledObject {
         super.dispose();
     }
 
-    addRigidbody(options: { mass: number, restitution: number, friction: number }): void {
+    addRigidbody(options: { mass: 1, restitution: 0.2, friction: 0.5 }): void {
 
-        if (!this._physicsImpostor) {
-            this._physicsImpostor = new BABYLON.PhysicsImpostor(this,
-                BABYLON.PhysicsImpostor.NoImpostor, options
-                , this._scene); // Ajouter l'imposteur de boîte à la voiture 
-            return;
+        console.log(this._rigidbody);
+        //if (!this._physicsImpostor) {
+            console.log("add rb to "+this.name);
+            this.physicsImpostor = new BABYLON.PhysicsImpostor(this,
+                BABYLON.PhysicsImpostor.NoImpostor, options, this._scene); // Ajouter l'imposteur de boîte à la voiture
+        //}        
+    }
+    
+    removeRigidbody() : void {
+        if(this._rigidbody) { 
+            console.log("remove rb to "+this.name);          
+            this._rigidbody.dispose();
+            this._physicsRootMesh.dispose();
         }
-        this._physicsImpostor.dispose();
     }
 
-
-    saveTransform() {
+    saveTransform() : void {
         this.initLocalPos = this.position.clone();
         this._initRotation = this.rotation.clone();
         console.log(this._initRotation);
     }
 
     resetTransform = () => {
-        if (this._physicsImpostor) {
-            this._physicsImpostor.sleep();
-            this._physicsImpostor.setLinearVelocity(Vector3.Zero());
+        if (this._rigidbody) {
+            this._rigidbody.sleep();
+            this._rigidbody.setLinearVelocity(Vector3.Zero());
         }
         
         this.position.copyFrom(this.initLocalPos);

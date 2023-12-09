@@ -2,7 +2,7 @@ import State from "./State";
 import { ProgrammableGameObject } from "../ProgrammableGameObject";
 import { IStateFile } from "./IStateFile";
 import { Observable } from "babylonjs";
-import ColliderComponent from "../physics/ColliderComponent";
+import BoxCollider from "../physics/BoxCollider";
 import { Game } from "../Game";
 import { EditorObservable } from "@renderer/editor/EditorObservable";
 
@@ -28,9 +28,9 @@ export class FiniteStateMachine {
     //#region "Evenements"
     onStart: FSMObservable<void>;
     onUpdate: FSMObservable<void>;
-    onCollisionEnter: FSMObservable<ColliderComponent | null>;
-    onCollisionStay: FSMObservable<ColliderComponent | null>;
-    onCollisionExit: FSMObservable<ColliderComponent | null>;
+    onCollisionEnter: FSMObservable<BoxCollider | null>;
+    onCollisionStay: FSMObservable<BoxCollider | null>;
+    onCollisionExit: FSMObservable<BoxCollider | null>;
 
     /**
     * Observable lorsqu'un état est ajouté

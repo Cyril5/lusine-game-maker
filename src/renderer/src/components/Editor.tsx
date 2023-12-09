@@ -13,7 +13,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import StatesMachineEditor from "@renderer/components/StatesMachineEditor/StatesMachineEditor";
 import StateEditor from "@renderer/pages/StateEditor";
 import { MeshBuilder } from "babylonjs";
-import ColliderComponent from "@renderer/engine/physics/ColliderComponent";
+import BoxCollider from "@renderer/engine/physics/BoxCollider";
 import EditorAlert, { EditorAlertType } from "./EditorAlert";
 import StateEditorUtils from "../editor/StateEditorUtils";
 import FileManager from "@renderer/engine/FileManager";
@@ -235,7 +235,7 @@ export default class Editor extends Component {
         StateEditorUtils.addStateFile("AICarMainState");
         car2.fsm.states[0].stateFile = StateEditorUtils.getStateFile("AICarMainState");
 
-        const carCollider = new ColliderComponent(car, scene);
+        const carCollider = new BoxCollider(car, scene);
 
         this.addModel3DObject("Car_04_3.fbx", null, (carModel) => {
 
@@ -259,7 +259,7 @@ export default class Editor extends Component {
         });
 
 
-        const carCollider2: ColliderComponent = new ColliderComponent(car2, scene);
+        const carCollider2: BoxCollider = new BoxCollider(car2, scene);
         carCollider2.isTrigger = true;
         carCollider2.shape.name = "CarCollider2";
 
@@ -356,6 +356,11 @@ export default class Editor extends Component {
         const pog = new ProgrammableGameObject("ObjetProgrammable", Renderer.getInstance().scene);
 
         this.selectGameObject(pog.Id);
+        this.updateObjectsTreeView();
+    }
+
+    addBoxCollider() {
+        const boxCollider = new BoxCollider(Renderer.getInstance().scene);
         this.updateObjectsTreeView();
     }
 

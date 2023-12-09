@@ -6,6 +6,7 @@ import InputManager, { KeyCode } from "./InputManager";
 import State from "./FSM/State";
 import { Observable, Vector3 } from "babylonjs";
 import Editor from "@renderer/components/Editor";
+import DemoTest from "./DemoTest";
 
 export class Game {
 
@@ -34,23 +35,26 @@ export class Game {
 
 
     public async start() {
-
+        
+        
         this._isRunning = true;
         console.log("Game started");
-
+        
         
         const scene = Renderer.getInstance().scene;
         
-
+        new DemoTest().run(scene);
+        
         InputManager.initKeyboardListeners();
-
+        
         // Interpretation des codes de chaques states de chaques fsm
         const gameObjects = GameObject.gameObjects.values();
-
+        
         let runCodeSuccess = 0;
-
+        
         for (const gameObject of gameObjects) {
             if(gameObject instanceof ProgrammableGameObject) {
+
                 const states = gameObject.fsm.states.length;
                 for (let index = 0; index < states; index++) {
                     const state = gameObject.fsm.states[index];
@@ -60,20 +64,22 @@ export class Game {
                 gameObject.fsm.currentState.onEnterState.notifyObservers();
             }
         }
-
+        
         //GameObject.saveAllTransforms();
 
         this.onGameStarted.notifyObservers();
-
+        
         clearTimeout(this._t);
-
+        
         scene.physicsEnabled = true;
         GameObject.saveAllTransforms();
-
+        
         //const followCam = scene.setActiveCameraByName("FollowCam");
         // const camera = scene.cameras[0];
         // followCam.position.copyFrom(camera.position);
         // followCam.rotation.copyFrom(camera.rotation);
+
+
 
     }
 
@@ -123,24 +129,16 @@ export class Game {
         
         InputManager.removeKeyboardListeners();
         this._isRunning = false;
-        
-        //GameObject.resetAllTransforms();    
-
-        //Editor.getInstance().selectedGameObject!.setAbsolutePosition(new BABYLON.Vector3(0,45,0));
 
         GameObject.gameObjects.forEach((value,key)=>{
             //value.setAbsolutePosition(new BABYLON.Vector3(0,45,0));
-            value.resetTransform();
+            //value.resetTransform();
         })
 
         Renderer.getInstance().scene.physicsEnabled = false;
-
-       // scene.setActiveCameraByName("Camera").setEnabled(true);
         
         this.onGameStoped.notifyObservers();
-        
-        // removeEventListener("keydown");
-        // removeEventListener("keyup");
+
     }
 
     private constructor() {

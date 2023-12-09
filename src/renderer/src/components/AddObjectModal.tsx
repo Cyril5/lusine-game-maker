@@ -111,14 +111,14 @@ function AddObjectModal(props: any) {
                         </Row>
                         <Row>
                             <Col>
-                                <Card style={{ width: '18rem' }}>
+                                <Card style={{ width: '18rem' }} onDoubleClick={()=>Editor.getInstance().addBoxCollider()}>
                                     <Card.Img variant="top" src="holder.js/100px180" />
                                     <Card.Body>
-                                        <Card.Title>Collider</Card.Title>
+                                        <Card.Title>Boite de collision</Card.Title>
                                         <Card.Text>
                                             Description du collider
                                         </Card.Text>
-                                        <Button variant="primary" disabled>Ajouter</Button>
+                                        <Button variant="primary">Ajouter</Button>
                                     </Card.Body>
                                 </Card>
                             </Col>

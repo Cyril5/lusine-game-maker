@@ -38,9 +38,9 @@
     "ammojs": "^0.0.2",
     "ammojs-typed": "^1.0.6",
     "babylon-fbx-loader": "^1.0.9",
-    "babylonjs": "^6.20.1",
-    "babylonjs-inspector": "^6.20.1",
-    "babylonjs-serializers": "^6.20.1",
+    "babylonjs": "^6.33.1",
+    "babylonjs-inspector": "^6.33.1",
+    "babylonjs-serializers": "^6.33.1",
     "blockly": "^10.0.0",
     "bootstrap": "^5.2.3",
     "bootswatch": "^5.2.3",
@@ -59,8 +59,8 @@
     "terser": "^5.17.1"
   },
   "devDependencies": {
-    "@babylonjs/core": "^6.20.1",
-    "@babylonjs/inspector": "^6.20.1",
+    "@babylonjs/core": "^6.33.1",
+    "@babylonjs/inspector": "^6.33.1",
     "@electron-toolkit/tsconfig": "^1.0.1",
     "@electron/notarize": "^1.2.3",
     "@types/drawflow": "^0.0.5",
