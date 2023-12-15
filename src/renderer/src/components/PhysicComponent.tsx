@@ -37,6 +37,7 @@ const PhysicComponent = (gameObjectId) => {
         const go = Editor.getInstance().selectedGameObject;
         if (go) {
             gameObjectRef.current = go;
+            setPhysicsEnabled(go.rigidbody != null);
         }
     }, [gameObjectId]);
 

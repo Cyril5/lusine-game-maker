@@ -1,4 +1,4 @@
-import { BoundingInfo, IPhysicsEnabledObject, IndicesArray, Nullable, PhysicsImpostor, Vector3 } from "@babylonjs/core";
+import { PhysicsImpostor, Vector3 } from "@babylonjs/core";
 import { Mesh, Observable, TransformNode } from "babylonjs";
 
 export class GameObject extends TransformNode  {
@@ -15,9 +15,13 @@ export class GameObject extends TransformNode  {
     */
     onDelete: Observable<void>;
     /**
-    * Observable lorsque l'objet est détruit.
+    * Observable lorsque l'objet est créé.
     */
     onCreated: Observable<void>;
+    /**
+     * Observable lorsque le parent change
+     */
+    onParentChange : Observable<GameObject>;
 
     /**
     * Get l'identifiant unique du GameObject.
@@ -26,7 +30,7 @@ export class GameObject extends TransformNode  {
         return this.uniqueId;
     }
 
-    get PhysicsImpostor(): PhysicsImpostor {
+    get rigidbody(): PhysicsImpostor {
         return this._rigidbody;
     }
 
@@ -62,6 +66,7 @@ export class GameObject extends TransformNode  {
         //        this._transform = new TransformComponent(this, name, scene);
         this.onDelete = new Observable();
         this.onCreated = new Observable();
+        this.onParentChange = new Observable();
 
         
         if (!GameObject._gameObjects.has(this.uniqueId)) {
@@ -103,6 +108,11 @@ export class GameObject extends TransformNode  {
         super.dispose();
     }
 
+    setParent(newParent : GameObject) {
+        super.setParent(newParent);
+        this.onParentChange.notifyObservers(newParent);
+    }
+
     addRigidbody(options: { mass: 1, restitution: 0.2, friction: 0.5 }): void {
 
         console.log(this._rigidbody);
@@ -110,21 +120,25 @@ export class GameObject extends TransformNode  {
             console.log("add rb to "+this.name);
             this.physicsImpostor = new BABYLON.PhysicsImpostor(this,
                 BABYLON.PhysicsImpostor.NoImpostor, options, this._scene); // Ajouter l'imposteur de boîte à la voiture
+            this._rigidbody = this.physicsImpostor;
         //}        
     }
     
     removeRigidbody() : void {
-        if(this._rigidbody) { 
-            console.log("remove rb to "+this.name);          
+        //if(this._rigidbody) { 
+            console.log("remove rb to "+this.name);    
+            this.physicsImpostor.dispose();      
             this._rigidbody.dispose();
-            this._physicsRootMesh.dispose();
-        }
+            //this._physicsRootMesh.dispose();
+        //}
     }
+
+    
 
     saveTransform() : void {
         this.initLocalPos = this.position.clone();
         this._initRotation = this.rotation.clone();
-        console.log(this._initRotation);
+        //console.log(this._initRotation);
     }
 
     resetTransform = () => {
@@ -138,9 +152,9 @@ export class GameObject extends TransformNode  {
         
         //this.setPositionWithLocalVector(new BABYLON.Vector3(this.initLocalPos.x,this.initLocalPos.y,this.initLocalPos.z));
         
-        console.log(this._initRotation);
+        //console.log(this._initRotation);
         this.rotation = this._initRotation;
-        console.log(this.rotation);
+        //console.log(this.rotation);
         //this.rotation = new Vector3(this.initRotation!.x,this.initRotation!.y,this.initRotation!.z);
         // this.scaling = this.initScale;
 

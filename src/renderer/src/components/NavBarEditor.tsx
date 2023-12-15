@@ -41,7 +41,7 @@ const NavBarEditor = (props: any)=> {
           <Nav className="me-auto">
 
             {/* <Button variant='secondary' onClick={()=>Editor.getInstance().load()}><FontAwesomeIcon icon="folder-open"></FontAwesomeIcon></Button> */}
-            <Button variant='primary' onClick={()=>Editor.getInstance().save()}><FontAwesomeIcon icon="floppy-disk"/>  Sauver</Button>
+            <Button variant='primary' onClick={()=>Editor.getInstance().save()} disabled={gameIsRunning}><FontAwesomeIcon icon="floppy-disk"/>  Sauver</Button>
 
             {/* <Nav.Link onClick={props.onClickAddObject}>Ajouter</Nav.Link> */}
 
