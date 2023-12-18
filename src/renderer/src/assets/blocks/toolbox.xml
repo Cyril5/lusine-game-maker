@@ -28,6 +28,16 @@
         </block>
       </value>
     </block>
+    <block type="gameobject_move_forward">
+      <value name="OBJ">
+        <block type="gameobject_this"></block>
+      </value>
+      <value name="SPEED">
+        <block type="math_number">
+          <field name="NUM">5</field>
+        </block>
+      </value>
+    </block>
     <block type="gameobject_rotatey">
       <field name="SPACE">LOCAL</field>
       <value name="OBJ">
@@ -39,6 +49,19 @@
         </block>
       </value>
     </block>
+
+    <block type="gameobject_turny">
+      <field name="SPACE">LOCAL</field>
+      <value name="OBJ">
+        <block type="gameobject_this"></block>
+      </value>
+      <value name="ROTSPEEDY">
+        <block type="math_number">
+          <field name="NUM">3</field>
+        </block>
+      </value>
+    </block>
+
     <block type="gameobject_setpos_numbers">
       <field name="SPACE">LOCAL</field>
       <value name="OBJ">

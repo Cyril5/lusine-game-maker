@@ -6,6 +6,8 @@ import BoxCollider from "../physics/BoxCollider";
 import { Game } from "../Game";
 import { EditorObservable } from "@renderer/editor/EditorObservable";
 
+
+
 // Machine d'états fini attachable sur des ProgrammableGameObject seulement
 export class FiniteStateMachine {
 
@@ -81,14 +83,17 @@ export class FiniteStateMachine {
     }
 
     setState(state: State | null) : void {
+
+        
         if(!state) {
             this._currState = null;
             return;
         }
-
+        
         if (this._currState)
             this._currState.onExitState.notifyObservers();
         this._currState = state;
+        console.log(this._currState.onEnterState);
         this._currState.onEnterState.notifyObservers();
     }
 
@@ -120,6 +125,32 @@ export class FiniteStateMachine {
         this.onCollisionEnter.clear();
         this.onCollisionStay.clear();
         this.onCollisionExit.clear();
+    }
+
+    deserialize() : any {
+        const states : any = {};
+        this.states.forEach((state)=>{
+            const stateJson = {};
+            stateJson["stateFilename"] = state.stateFile.filename;
+            states.push(stateJson);
+        });
+        return states;
+    }
+
+    serialize() : any {
+        // "finiteStateMachines":[
+            //{
+                //"states":[
+                    //{
+                    //    "statefile": {
+                  //          "name": "StateA"
+                //        }
+              //      }
+            //    ]
+          //  }
+        //]
+
+        return {};
     }
 
 }

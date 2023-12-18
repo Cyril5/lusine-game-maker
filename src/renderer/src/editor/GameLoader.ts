@@ -5,6 +5,8 @@ import { GameObject } from "@renderer/engine/GameObject";
 import { Model3D } from "@renderer/engine/Model3D";
 import Editor from "@renderer/components/Editor";
 import { ProgrammableGameObject } from "@renderer/engine/ProgrammableGameObject";
+import StateEditorUtils from "./StateEditorUtils";
+import { IStateFile } from "@renderer/engine/FSM/IStateFile";
 
 export default abstract class GameLoader {
 
@@ -31,19 +33,10 @@ export default abstract class GameLoader {
                 let element = arr[i];
                 tags = element.tags;
 
-                // if(index != 1) { // si différent du tableau meshes
-                //     if(tags) {
-                //         if (arr[i].tags.includes(EditorUtils.EDITOR_TAG)) {
-                //             console.log('exclude : '+arr[i].name);
-                //             arr.splice(i, 1); // Retire l'élément du tableau
-                //         }
-                //     }
-                // }else{
                 if (arr[i].name.includes('_EDITOR_')) {
                     console.log('exclude : ' + arr[i].name);
                     arr.splice(i, 1);
                 }
-                //}
 
             }
         });
@@ -96,10 +89,6 @@ export default abstract class GameLoader {
 
                 if (node.metadata?.type) {
 
-                    //node.parent = null;
-                    console.log(node.name);
-                    console.log(node.metadata);
-
                     if (node.metadata.type === Model3D.name) {
 
                         const model3d: Model3D = Model3D.createEmptyFromNodeData(node, scene);
@@ -108,9 +97,6 @@ export default abstract class GameLoader {
                         model3d.position.copyFrom(node.position);
                         model3d.rotation.copyFrom(node.rotation);
                         // model3d.scaling = node.scaling;
-
-                        console.log('P : ' + node.parent);
-
                         converted.set(node.uniqueId, model3d.Id);
 
                         if (node.parent) {
@@ -133,6 +119,19 @@ export default abstract class GameLoader {
                         pgo.position.copyFrom(node.position);
                         pgo.rotation.copyFrom(node.rotation);
                         pgo.scaling.copyFrom(node.scaling);
+                        
+                        //FSM
+                        node.metadata.finiteStateMachines.forEach((fsmData,index) => {
+                            const fsm = pgo.finiteStateMachines[index];
+                            fsm.name = fsmData.name;
+
+                            fsmData.states.forEach((stateData,index) => {
+                                const state = fsm.states[index];
+                                state.stateFile = StateEditorUtils.getStateFile(stateData.statefile.name);
+                            });
+                            
+                        });
+
                         // node.getChildren().forEach((child) => {
                         //     console.log("CHILD : " + child.name);
                         //     child.parent = pgo;

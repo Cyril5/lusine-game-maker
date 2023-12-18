@@ -17,6 +17,43 @@ export class JSCodeBlocks {
             }
         };
 
+        Blockly.Blocks['gameobject_move_forward'] = {
+            init: function () {
+                this.appendValueInput("OBJ")
+                    .setCheck("GameObject")
+                    .appendField("Déplacer l'objet");
+                this.appendValueInput("SPEED")
+                    .setCheck(null)
+                    .appendField("vers l'avant à la vitesse de");
+                this.setInputsInline(true);
+                this.setPreviousStatement(true, null);
+                this.setNextStatement(true, null);
+                this.setColour(260);
+                this.setTooltip("Déplace l'objet à une vitesse vers l'avant");
+                this.setHelpUrl("");
+            }
+        };
+
+        Blockly.Blocks['gameobject_turny'] = {
+            init: function () {
+                this.appendValueInput("OBJ")
+                    .setCheck("GameObject")
+                    .appendField("Tourner l'objet");
+                this.appendValueInput("ROTSPEEDY")
+                    .setCheck("Number")
+                    .appendField("sur l'axe Y à la vitesse de");
+                this.appendDummyInput()
+                    .appendField(". Dans l'espace :")
+                    .appendField(new Blockly.FieldDropdown([["Local", "LOCAL"], ["Monde", "WORLD"]]), "SPACE");
+                this.setPreviousStatement(true, null);
+                this.setNextStatement(true, null);
+                this.setColour(260);
+                this.setTooltip("Tourne l'objet à une vitesse sur l'axe Y");
+                this.setHelpUrl("");
+            }
+        };
+
+
         Blockly.Blocks['inputs_if_keypress'] = {
             init: function () {
                 this.appendValueInput("KEYCODE")
@@ -222,12 +259,12 @@ export class JSCodeBlocks {
             return code;
         };
 
-        javascriptGenerator.forBlock['game_ongamestoped'] = function(block, generator) {
+        javascriptGenerator.forBlock['game_ongamestoped'] = function (block, generator) {
             const statements_ongamestopped = generator.statementToCode(block, 'ONGAMESTOPPED');
             // TODO: Assemble javascript into code variable.
             const code = `this.onGameStopped.add(() => {\n${statements_ongamestopped}});\n`;
             return code;
-          };
+        };
 
         // ------------------------- GAME OBJECTS ------------------------------
 
@@ -259,6 +296,23 @@ export class JSCodeBlocks {
             return code;
         };
 
+        javascriptGenerator.forBlock['gameobject_move_forward'] = function (block, generator) {
+            const value_obj = generator.valueToCode(block, 'OBJ', generator.ORDER_ATOMIC);
+            const value_speed = generator.valueToCode(block, 'SPEED', generator.ORDER_ATOMIC);
+            // TODO: Assemble javascript into code variable.
+            const code = `${value_obj}.translate(BABYLON.Axis.Z,${value_speed} * Game.deltaTime, BABYLON.Space.LOCAL);\n`
+            return code;
+        };
+
+        javascriptGenerator.forBlock['gameobject_turny'] = function(block, generator) {
+            const value_obj = generator.valueToCode(block, 'OBJ', generator.ORDER_ATOMIC);
+            const value_rotspeedy = generator.valueToCode(block, 'ROTSPEEDY',generator.ORDER_ATOMIC);
+            const dropdown_space = block.getFieldValue('SPACE');
+            // TODO: Assemble javascript into code variable.
+            const code = `${value_obj}.rotate(BABYLON.Axis.Y, BABYLON.Tools.ToRadians(${value_rotspeedy} * Game.deltaTime), BABYLON.Space.${dropdown_space});\n`;
+            //return `${value_obj}.rotate(BABYLON.Axis.Y, BABYLON.Tools.ToRadians(${value_degy}), BABYLON.Space.${dropdown_space});\n`;
+            return code;
+          };
 
         //------------------ INPUTS ------------------------------------------------------------------
 

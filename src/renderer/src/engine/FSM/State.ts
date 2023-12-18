@@ -7,14 +7,17 @@ import { FSMObservable, FiniteStateMachine } from './FiniteStateMachine';
 import { ProgrammableGameObject } from '../ProgrammableGameObject';
 
 // NE PAS RETIRER CES IMPORTS ! (pour l'interprétation du code js avec eval)
+
 import InputManager, { KeyCode } from '../InputManager';
 import FileManager from '../FileManager';
-import StateEditorUtils from '@renderer/editor/StateEditorUtils';
-import BoxCollider from '../physics/BoxCollider';
+import { Game } from '../Game';
+
+//import StateEditorUtils from '@renderer/editor/StateEditorUtils';
+//import BoxCollider from '../physics/BoxCollider';
 
 export default class State {
 
-  private static _runtimeGlobalVars: any[] = [InputManager, ["KeyCode", KeyCode]]; // ne pas oublier de supprimer la variable lorsqu'on clic sur Stop
+  private static _runtimeGlobalVars: Array<any> = [InputManager, ["KeyCode", KeyCode]]; // ne pas oublier de supprimer la variable lorsqu'on clic sur Stop
 
 
   static deleteRuntimeGlobalVars() {
@@ -94,6 +97,11 @@ export default class State {
       },
       nameCache: {},
     };
+    
+    if(!State._runtimeGlobalVars.includes(Game)) {
+      State._runtimeGlobalVars.push(Game);
+    }
+
     const objects = State._runtimeGlobalVars;
     for (let i = 0; i < objects.length; i++) {
       let object = objects[i];

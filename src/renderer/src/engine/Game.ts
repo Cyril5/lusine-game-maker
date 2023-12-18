@@ -5,7 +5,6 @@ import { ProgrammableGameObject } from "./ProgrammableGameObject";
 import InputManager, { KeyCode } from "./InputManager";
 import State from "./FSM/State";
 import { Observable, Vector3 } from "babylonjs";
-import Editor from "@renderer/components/Editor";
 import DemoTest from "./DemoTest";
 
 export class Game {
@@ -16,7 +15,7 @@ export class Game {
 
     private static _instance: any;
 
-    private _deltaTime: Number = 0;
+    private static _deltaTime: Number = 0;
     private _engine: Engine | undefined;
     private _isRunning: boolean = false;
 
@@ -32,6 +31,12 @@ export class Game {
             return Game._instance;
         }
     }
+
+    // Deltatime in seconds
+    static get deltaTime(): Number {
+        return Game._deltaTime;
+    }
+
 
 
     public async start() {
@@ -55,13 +60,13 @@ export class Game {
         for (const gameObject of gameObjects) {
             if(gameObject instanceof ProgrammableGameObject) {
 
-                const states = gameObject.fsm.states.length;
+                const states = gameObject.finiteStateMachines[0].states.length;
                 for (let index = 0; index < states; index++) {
-                    const state = gameObject.fsm.states[index];
+                    const state = gameObject.finiteStateMachines[0].states[index];
                     await state.runCode();
                 }
-                console.log(gameObject.fsm.currentState.onEnterState);
-                gameObject.fsm.currentState.onEnterState.notifyObservers();
+                console.log(gameObject.finiteStateMachines[0].currentState.onEnterState);
+                gameObject.finiteStateMachines[0].currentState.onEnterState.notifyObservers();
             }
         }
         
@@ -90,15 +95,15 @@ export class Game {
         if (!this._isRunning)
             return;
 
-        this._deltaTime = deltaTime;
+        Game._deltaTime = deltaTime/1000;
         // console.log(this._isRunning);
-        //console.log(this._deltaTime);
         this.onGameUpdate.notifyObservers();
-
+        
         const gameObjects = GameObject.gameObjects.values();
         for (const go of gameObjects) {
             if(go instanceof ProgrammableGameObject) {
-                go.fsm.currentState.onUpdateState.notifyObservers();
+                //console.log(Game.deltaTime);
+                go.finiteStateMachines[0].currentState.onUpdateState.notifyObservers();
             }
         }
 

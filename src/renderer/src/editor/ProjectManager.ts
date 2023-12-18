@@ -5,18 +5,11 @@ import StateEditorUtils from "./StateEditorUtils";
 
 export default class ProjectManager {
 
-
-    // Au début les projets Lusine Game Maker était dans le dossier "Mes documents/Lusine Game Maker/Nom du projet"
-
     private static _projectName: string | null = null;
     private static _currentProjectDir = null;
 
     // Créer un nom de chemin complet depuis le répertoire du projet
     public static getFilePath(directory: string, file?: string): string {
-        // const os = require('os');
-        // const path = require('path');
-        //const documentsPath = Game.os.homedir() + '\\Documents\\Lusine Game Maker\\MonProjet';
-        //const dir = Game.path.resolve(documentsPath, directory);
         const projDir = ProjectManager._currentProjectDir;
         const path = EditorUtils.path.resolve(projDir, directory);
         return EditorUtils.path.resolve(path, file);

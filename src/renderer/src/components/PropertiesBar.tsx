@@ -102,6 +102,7 @@ const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
                             </Accordion.Body>
                         </Accordion.Item>
 
+                        
                         <Accordion.Item eventKey="2">
                             <Accordion.Header>Collision</Accordion.Header>
                             <Accordion.Body>

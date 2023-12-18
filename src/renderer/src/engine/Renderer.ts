@@ -1,6 +1,5 @@
 import { Engine, GizmoManager, HemisphericLight, SceneLoader, Space, StandardMaterial, Texture, Vector3 } from "@babylonjs/core";
 
-import { Game } from "./Game";
 // import { FBXLoader } from "babylon-fbx-loader";
 
 import { Observable } from "babylonjs";
@@ -21,7 +20,6 @@ export class Renderer {
     private _engine: Engine;
     private _camera: BABYLON.ArcRotateCamera;
     
-    private _game: Game | undefined;
     private static instance: Renderer;
     
     static isReadyObservable: Observable<any> = new Observable();
@@ -32,6 +30,10 @@ export class Renderer {
 
     get camera() : BABYLON.ArcRotateCamera {
         return this._camera;
+    }
+
+    get canvas():BABYLON.Nullable<HTMLCanvasElement> {
+        return this._engine.getRenderingCanvas();
     }
     
     private _gizmoManager: GizmoManager;

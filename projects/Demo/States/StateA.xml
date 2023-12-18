@@ -1,5 +1,27 @@
 <xml xmlns="https://developers.google.com/blockly/xml">
-  <block type="state_onupdatestate" id="=2I,Vk7*J.TR~d/IVv0V" x="13" y="13">
+  <variables>
+    <variable type="Number" id="G%LH2XJP=xRCy|F@M|_s">vitesse</variable>
+    <variable type="Number" id="}e`ym?}JU-./bb:0)/w_">vitesseRotation</variable>
+  </variables>
+  <block type="variables_set_dynamic" id="!0_lLNq`iHP`,]:`K+V)" x="37" y="-37">
+    <field name="VAR" id="G%LH2XJP=xRCy|F@M|_s" variabletype="Number">vitesse</field>
+    <value name="VALUE">
+      <block type="math_number" id="RbHL3n1e0l9m8+f/pZaz">
+        <field name="NUM">20</field>
+      </block>
+    </value>
+    <next>
+      <block type="variables_set_dynamic" id="Xv/T,`beu!LpCV[l@b_D">
+        <field name="VAR" id="}e`ym?}JU-./bb:0)/w_" variabletype="Number">vitesseRotation</field>
+        <value name="VALUE">
+          <block type="math_number" id="DV0$8PmNdmj4sN$pG|Mo">
+            <field name="NUM">60</field>
+          </block>
+        </value>
+      </block>
+    </next>
+  </block>
+  <block type="state_onupdatestate" id="=2I,Vk7*J.TR~d/IVv0V" x="41" y="28">
     <statement name="UPDATESTATE">
       <block type="controls_if" id="AN1`+B~~NZ=49mxN2c77">
         <mutation else="1"></mutation>
@@ -26,13 +48,13 @@
               </block>
             </value>
             <statement name="DO0">
-              <block type="gameobject_translate_forward" id="(N:WO9{oPO%9q6J9HMT|">
+              <block type="gameobject_move_forward" id="_noZi#^g/#HovVtnq:4^">
                 <value name="OBJ">
-                  <block type="gameobject_this" id="0@T9tCL@D6;Q{r|QX2OH"></block>
+                  <block type="gameobject_this" id="o(M$Q5bo%9l(V3=Et+l("></block>
                 </value>
-                <value name="DISTZ">
-                  <block type="math_number" id="rzcJR|8g+GOJ5-RmYcAx">
-                    <field name="NUM">0.5</field>
+                <value name="SPEED">
+                  <block type="variables_get_dynamic" id=".(T/uM2Jy^#*MdzVl`B-">
+                    <field name="VAR" id="G%LH2XJP=xRCy|F@M|_s" variabletype="Number">vitesse</field>
                   </block>
                 </value>
               </block>
@@ -47,13 +69,21 @@
               </block>
             </value>
             <statement name="DO1">
-              <block type="gameobject_translate_forward" id="a(gcmT[sv1j%#e9%!8^s">
+              <block type="gameobject_move_forward" id="9KoT$;I!)#P!-%,3Z2fB">
                 <value name="OBJ">
-                  <block type="gameobject_this" id="LRI}Bb`[Gt?cp#:@g2mq"></block>
+                  <block type="gameobject_this" id="0!n0i`^y|oekiif|_J.5"></block>
                 </value>
-                <value name="DISTZ">
-                  <block type="math_number" id="WH#dghgp]`u4fNUsz]+p">
-                    <field name="NUM">-0.5</field>
+                <value name="SPEED">
+                  <block type="math_single" id="@GmhXRS=@QS6|~Xvt`F@">
+                    <field name="OP">NEG</field>
+                    <value name="NUM">
+                      <shadow type="math_number" id="E.zV)EG6}lkI,epPstsJ">
+                        <field name="NUM">9</field>
+                      </shadow>
+                      <block type="variables_get_dynamic" id="n;Q}pbNR=Ek~6Hy@(!wA">
+                        <field name="VAR" id="G%LH2XJP=xRCy|F@M|_s" variabletype="Number">vitesse</field>
+                      </block>
+                    </value>
                   </block>
                 </value>
               </block>
@@ -71,14 +101,22 @@
                   </block>
                 </value>
                 <statement name="DO0">
-                  <block type="gameobject_rotatey" id="g5E!+K;mD{-=88bmqHAp">
+                  <block type="gameobject_turny" id="$NxTyQ0bFb:a=D(-J[sa">
                     <field name="SPACE">LOCAL</field>
                     <value name="OBJ">
-                      <block type="gameobject_this" id="KL8lNpCh}g11wB-LgNp4"></block>
+                      <block type="gameobject_this" id="PXa(M*V$i$C:|P38]8)E"></block>
                     </value>
-                    <value name="DEGY">
-                      <block type="math_number" id="t(lA|5kBqx~qn*8KyZde">
-                        <field name="NUM">-0.03</field>
+                    <value name="ROTSPEEDY">
+                      <block type="math_single" id="cR(I2Nq1P$GE*m74fbU-">
+                        <field name="OP">NEG</field>
+                        <value name="NUM">
+                          <shadow type="math_number" id="E.zV)EG6}lkI,epPstsJ">
+                            <field name="NUM">9</field>
+                          </shadow>
+                          <block type="variables_get_dynamic" id=";C]!{ATZ0RO3xJ2[$mAz">
+                            <field name="VAR" id="}e`ym?}JU-./bb:0)/w_" variabletype="Number">vitesseRotation</field>
+                          </block>
+                        </value>
                       </block>
                     </value>
                   </block>
@@ -93,25 +131,16 @@
                   </block>
                 </value>
                 <statement name="DO1">
-                  <block type="debug_console_log" id="quhxFzZ7M10P}R9o{:BY">
-                    <value name="LOG">
-                      <block type="text" id="l8*(*Jf)ohlnMt:Tm(_`">
-                        <field name="TEXT">A droite !</field>
+                  <block type="gameobject_turny" id="w))M[ZxiOMM)!mu1CMm0">
+                    <field name="SPACE">LOCAL</field>
+                    <value name="OBJ">
+                      <block type="gameobject_this" id="HCEnan+Uu[fwfB;md,=]"></block>
+                    </value>
+                    <value name="ROTSPEEDY">
+                      <block type="variables_get_dynamic" id="w-UvyMK3:O#)2fZ3CI*U">
+                        <field name="VAR" id="}e`ym?}JU-./bb:0)/w_" variabletype="Number">vitesseRotation</field>
                       </block>
                     </value>
-                    <next>
-                      <block type="gameobject_rotatey" id="/=6kI%$(Y+jDy%v1~:%y">
-                        <field name="SPACE">LOCAL</field>
-                        <value name="OBJ">
-                          <block type="gameobject_this" id="Nx8tXlIh}U^~r%A@S8AE"></block>
-                        </value>
-                        <value name="DEGY">
-                          <block type="math_number" id="(RWMVXD}./fmb@j-6W`h">
-                            <field name="NUM">0.03</field>
-                          </block>
-                        </value>
-                      </block>
-                    </next>
                   </block>
                 </statement>
               </block>
@@ -120,7 +149,7 @@
         </statement>
         <next>
           <block type="controls_if" id="Mak,;DO(XnP|2^3!OOeA">
-            <comment pinned="true" h="57" w="249">Si l'objet est tombé ?</comment>
+            <comment pinned="true" h="46" w="174">Si l'objet est tombé ?</comment>
             <value name="IF0">
               <block type="logic_compare" id="Nc_J4,F**TE/NIU=ig5%">
                 <field name="OP">LTE</field>

@@ -96,7 +96,7 @@ export class GameObject extends TransformNode  {
         this.metadata.gameObjectId = value;
         GameObject._gameObjects.delete(oldId);
         GameObject._gameObjects.set(this.uniqueId,this);
-        console.log(GameObject._gameObjects);
+        //console.log(GameObject._gameObjects);
     }
 
     dispose() {

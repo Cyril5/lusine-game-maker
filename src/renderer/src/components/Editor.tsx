@@ -24,6 +24,7 @@ import OriginAxis from "@renderer/editor/OriginAxis";
 import GameLoader from "@renderer/editor/GameLoader";
 import cannon from "cannon";
 import EditorUtils from "@renderer/editor/EditorUtils";
+import EditorCameraManager from "@renderer/editor/EditorCameraManager";
 
 enum Mode {
     LevelEditor = 1,
@@ -35,6 +36,8 @@ export default class Editor extends Component {
 
 
     eMode: Mode = Mode.LevelEditor;
+
+    private _editorCameraManager : EditorCameraManager;
 
     // use state REACT
     state = {
@@ -50,7 +53,7 @@ export default class Editor extends Component {
             message: '',
             onCloseCallback: null,
         },
-        showStartupModal: true,
+        showStartupModal: false,
         gameObjects: null,
         fsm: null,
         stateFiles: null,
@@ -121,9 +124,13 @@ export default class Editor extends Component {
         super(props);
         Editor._instance = this;
 
+
         this.state.objetJeu = props.objetJeu;
 
-
+        Renderer.isReadyObservable.addOnce(()=>{
+            this.showStartupModal(true);
+        });
+        
     }
 
     clearScene(scene: BABYLON.Scene) {
@@ -157,11 +164,13 @@ export default class Editor extends Component {
 
     async setupBaseScene() {
 
+        const renderer = Renderer.getInstance();
+
         window.CANNON = cannon;
 
-        const scene  = Renderer.getInstance().scene;
+        const scene  = renderer.scene;
 
-        const camRenderer = Renderer.getInstance().camera
+        const camRenderer = renderer.camera
         camRenderer.fov = 0.75;
         camRenderer.maxZ = 850;
 
@@ -169,7 +178,9 @@ export default class Editor extends Component {
         this.showStartupModal(false);
 
 
-        const ammo = Renderer.getInstance().ammo;
+        const ammo = renderer.ammo;
+
+        this._editorCameraManager = new EditorCameraManager(renderer.canvas,renderer.scene,renderer.camera);
 
         // Mettre en pause le moteur physique
         scene.physicsEnabled = false;
@@ -193,11 +204,6 @@ export default class Editor extends Component {
         const axis = new OriginAxis(scene);
         BABYLON.Tags.AddTagsTo({ ground}, EditorUtils.EDITOR_TAG);
         return;
-
-        const car = new ProgrammableGameObject("Car_PO", scene);
-        car.fsm.states[0].name = "CarPO Main State";
-        //car.setAbsolutePosition(new BABYLON.Vector3(0,45,0));
-        Editor._instance.selectGameObject(car.Id);
 
     }
 
@@ -226,14 +232,13 @@ export default class Editor extends Component {
         }
         StateEditorUtils.addStateFile("StateA");
 
-        car.fsm.states[0].stateFile = StateEditorUtils.getStateFile("StateA"); //StateA.state
-        console.warn(car.fsm.states);
+        car.finiteStateMachines[0].states[0].stateFile = StateEditorUtils.getStateFile("StateA"); //StateA.state
 
         const car2: ProgrammableGameObject = new ProgrammableGameObject("Car2", scene);
         car2.qualifier = Qualifiers.NEUTRAL_TAG;
 
         StateEditorUtils.addStateFile("AICarMainState");
-        car2.fsm.states[0].stateFile = StateEditorUtils.getStateFile("AICarMainState");
+        car2.finiteStateMachines[0].states[0].stateFile = StateEditorUtils.getStateFile("AICarMainState");
 
         const carCollider = new BoxCollider(car, scene);
 
@@ -480,10 +485,18 @@ export default class Editor extends Component {
             return;
         }
 
+        let gofsm = null;
+        if(objetJeu.finiteStateMachines) {
+            if(objetJeu.finiteStateMachines.length > 0) {
+                gofsm = objetJeu.finiteStateMachines[0];
+            }
+        }
+        
         this.setState({
             objetJeu: objetJeu,
-            fsm: objetJeu.fsm
+            fsm: gofsm
         });
+
         Renderer.getInstance().gizmoManager.positionGizmoEnabled = true;
         Renderer.getInstance().gizmoManager.attachToNode(objetJeu);
     };

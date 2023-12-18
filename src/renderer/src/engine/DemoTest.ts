@@ -23,7 +23,7 @@ export default class DemoTest {
             
         }
 
-        car.position = new Vector3(0,50,0);
+        //car.position = new Vector3(0,50,0);
         
         if(DemoTest.firstrun) {
             
