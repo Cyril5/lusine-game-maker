@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 
-import '../assets/css/startup-modal.scss'; 
-import logo from '../assets/logo.png';
+import '../../assets/css/startup-modal.scss'; 
+import logo from '../../assets/logo.png';
 import ProjectManager from '@renderer/editor/ProjectManager';
 import EditorUtils from '@renderer/editor/EditorUtils';
 
@@ -33,14 +33,6 @@ const StartupModal = (props:any)=> {
     }
   },[props.show])
 
-
-  useEffect(()=>{
-    setTimeout(()=>{
-      //handleOpenDemoProject();
-    },1000)
-  },[])
-
-  
 
   return (
     <>

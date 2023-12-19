@@ -41,7 +41,7 @@ export default class ProjectManager {
                 ProjectManager._projectName = "Mon Projet";
                 Editor.showAlert(ProjectManager._currentProjectDir);
                 StateEditorUtils.loadStateFilesList();
-
+                
                 const projectFile = ProjectManager.getFilePath(ProjectManager._currentProjectDir,'game.lgm');
 
                 if(FileManager.fileExists(projectFile)) {

@@ -1,6 +1,6 @@
 import { Space, Vector3 } from "babylonjs";
 import { GameObject } from "./GameObject"
-import BoxCollider from "./physics/BoxCollider"
+import BoxCollider from "./physics/lgm3D.BoxCollider"
 
 export default class DemoTest {
 
@@ -19,7 +19,7 @@ export default class DemoTest {
             //const box = new BoxCollider(scene);
             //box.gameObject.setParent(car);
             //box.attachToGameObject(car);
-            //car.addRigidbody({mass:1,restitution:0.2,friction:0.5});
+            car.addRigidbody({mass:1,restitution:0.2,friction:0.5});
             
         }
 
@@ -43,5 +43,10 @@ export default class DemoTest {
         if(DemoTest.firstrun) {
             DemoTest.firstrun = false;
         }
+    }
+
+    stop() {
+        const car = GameObject.gameObjects.get(485);
+        car.position = new BABYLON.Vector3(0,10,0); 
     }
 }

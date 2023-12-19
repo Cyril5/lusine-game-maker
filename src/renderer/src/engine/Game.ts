@@ -21,6 +21,8 @@ export class Game {
 
     private _t;
 
+    private _demoTest = new DemoTest();
+
 
     public static getInstance() {
 
@@ -48,7 +50,7 @@ export class Game {
         
         const scene = Renderer.getInstance().scene;
         
-        new DemoTest().run(scene);
+        this._demoTest.run(scene);
         
         InputManager.initKeyboardListeners();
         
@@ -77,14 +79,11 @@ export class Game {
         clearTimeout(this._t);
         
         scene.physicsEnabled = true;
-        GameObject.saveAllTransforms();
         
         //const followCam = scene.setActiveCameraByName("FollowCam");
         // const camera = scene.cameras[0];
         // followCam.position.copyFrom(camera.position);
         // followCam.rotation.copyFrom(camera.rotation);
-
-
 
     }
 
@@ -135,12 +134,22 @@ export class Game {
         InputManager.removeKeyboardListeners();
         this._isRunning = false;
 
+        Renderer.getInstance().scene.physicsEnabled = false;
         GameObject.gameObjects.forEach((value,key)=>{
             //value.setAbsolutePosition(new BABYLON.Vector3(0,45,0));
             //value.resetTransform();
+            if(value instanceof ProgrammableGameObject) {
+                console.warn(value.name);
+                value.rotationQuaternion = BABYLON.Quaternion.FromEulerAngles(0,0,0);
+                const zeroVector = new BABYLON.Vector3.Zero();
+                value.physicsImpostor?.setAngularVelocity(zeroVector);
+                value.physicsImpostor?.setLinearVelocity(zeroVector);
+                value.physicsImpostor?.sleep();
+            }
         })
 
-        Renderer.getInstance().scene.physicsEnabled = false;
+
+        this._demoTest.stop();
         
         this.onGameStoped.notifyObservers();
 

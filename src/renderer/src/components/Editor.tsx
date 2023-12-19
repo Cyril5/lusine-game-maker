@@ -13,18 +13,19 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import StatesMachineEditor from "@renderer/components/StatesMachineEditor/StatesMachineEditor";
 import StateEditor from "@renderer/pages/StateEditor";
 import { MeshBuilder } from "babylonjs";
-import BoxCollider from "@renderer/engine/physics/BoxCollider";
+import BoxCollider from "@renderer/engine/physics/lgm3D.BoxCollider";
 import EditorAlert, { EditorAlertType } from "./EditorAlert";
 import StateEditorUtils from "../editor/StateEditorUtils";
 import FileManager from "@renderer/engine/FileManager";
 import Qualifiers from "@renderer/editor/Qualifiers";
-import StartupModal from "./StartupModal";
+import StartupModal from "./Modals/StartupModal";
 import ProjectManager from "@renderer/editor/ProjectManager";
 import OriginAxis from "@renderer/editor/OriginAxis";
 import GameLoader from "@renderer/editor/GameLoader";
 import cannon from "cannon";
 import EditorUtils from "@renderer/editor/EditorUtils";
 import EditorCameraManager from "@renderer/editor/EditorCameraManager";
+import LoadingEditorModal from "./Modals/LoadingEditorModal";
 
 enum Mode {
     LevelEditor = 1,
@@ -37,7 +38,7 @@ export default class Editor extends Component {
 
     eMode: Mode = Mode.LevelEditor;
 
-    private _editorCameraManager : EditorCameraManager;
+    private _editorCameraManager: EditorCameraManager;
 
     // use state REACT
     state = {
@@ -54,6 +55,7 @@ export default class Editor extends Component {
             onCloseCallback: null,
         },
         showStartupModal: false,
+        showLoadingModal: true,
         gameObjects: null,
         fsm: null,
         stateFiles: null,
@@ -127,10 +129,10 @@ export default class Editor extends Component {
 
         this.state.objetJeu = props.objetJeu;
 
-        Renderer.isReadyObservable.addOnce(()=>{
-            this.showStartupModal(true);
+        Renderer.isReadyObservable.addOnce(() => {
+            this.setState({ showStartupModal: true, showLoadingModal: false });
         });
-        
+
     }
 
     clearScene(scene: BABYLON.Scene) {
@@ -168,7 +170,7 @@ export default class Editor extends Component {
 
         window.CANNON = cannon;
 
-        const scene  = renderer.scene;
+        const scene = renderer.scene;
 
         const camRenderer = renderer.camera
         camRenderer.fov = 0.75;
@@ -180,13 +182,13 @@ export default class Editor extends Component {
 
         const ammo = renderer.ammo;
 
-        this._editorCameraManager = new EditorCameraManager(renderer.canvas,renderer.scene,renderer.camera);
+        this._editorCameraManager = new EditorCameraManager(renderer.canvas, renderer.scene, renderer.camera);
 
         // Mettre en pause le moteur physique
         scene.physicsEnabled = false;
 
         const ground = MeshBuilder.CreateGround("_EDITOR_GRID_", { width: 1000, height: 1000 }, scene);
-        if(!scene.getEngine().isWebGPU) {
+        if (!scene.getEngine().isWebGPU) {
             //GRID
             const groundMaterial = new GridMaterial("_EDITOR_GRIDMAT_", scene);
             groundMaterial.majorUnitFrequency = 100;
@@ -194,15 +196,15 @@ export default class Editor extends Component {
             groundMaterial.gridRatio = 10;
             groundMaterial.opacity = 0.99;
             groundMaterial.useMaxLine = true;
-    
+
             ground.material = groundMaterial;
-            BABYLON.Tags.AddTagsTo({groundMaterial},EditorUtils.EDITOR_TAG);
-        }else{
+            BABYLON.Tags.AddTagsTo({ groundMaterial }, EditorUtils.EDITOR_TAG);
+        } else {
             ground.dispose();
         }
-        
+
         const axis = new OriginAxis(scene);
-        BABYLON.Tags.AddTagsTo({ ground}, EditorUtils.EDITOR_TAG);
+        BABYLON.Tags.AddTagsTo({ ground }, EditorUtils.EDITOR_TAG);
         return;
 
     }
@@ -486,12 +488,12 @@ export default class Editor extends Component {
         }
 
         let gofsm = null;
-        if(objetJeu.finiteStateMachines) {
-            if(objetJeu.finiteStateMachines.length > 0) {
+        if (objetJeu.finiteStateMachines) {
+            if (objetJeu.finiteStateMachines.length > 0) {
                 gofsm = objetJeu.finiteStateMachines[0];
             }
         }
-        
+
         this.setState({
             objetJeu: objetJeu,
             fsm: gofsm
@@ -528,6 +530,7 @@ export default class Editor extends Component {
                     </>
                 )}
 
+                <LoadingEditorModal show={this.state.showLoadingModal} />
                 <StartupModal show={this.state.showStartupModal} />
 
                 <Tabs activeKey={this.state.activeTab} onSelect={this.handleTabChange} >

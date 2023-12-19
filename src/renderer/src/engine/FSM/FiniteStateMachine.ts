@@ -2,7 +2,7 @@ import State from "./State";
 import { ProgrammableGameObject } from "../ProgrammableGameObject";
 import { IStateFile } from "./IStateFile";
 import { Observable } from "babylonjs";
-import BoxCollider from "../physics/BoxCollider";
+import BoxCollider from "../physics/lgm3D.BoxCollider";
 import { Game } from "../Game";
 import { EditorObservable } from "@renderer/editor/EditorObservable";
 
