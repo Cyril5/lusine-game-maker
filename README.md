@@ -8,7 +8,9 @@ Le but est de développer une application comme Scratch mais avec une 3eme dimen
 
 Le nom LUsine GM est temporaire.
 
-Ce projet est le successeur de : (https://github.com/Cyril5/clight-game-maker)
+Ce projet est le successeur de : https://github.com/Cyril5/clight-game-maker
+
+Site officiel : https://cyrilleger9.wixsite.com/lusinegamemaker
 
 Version actuelle : Alpha 0.1.2 (10 Septembre 2023)
 
