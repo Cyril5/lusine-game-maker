@@ -2,8 +2,11 @@ import { Mesh } from "babylonjs";
 import { Game } from "../Game";
 import { GameObject } from "../GameObject";
 import { FiniteStateMachine } from "../FSM/FiniteStateMachine";
+import { ProgrammableGameObject } from "../ProgrammableGameObject";
 
 export default class BoxCollider {
+
+    _colliderShape : BABYLON.PhysicsShape;
 
     static colliders = new Map<number | string, BoxCollider>();
 
@@ -14,7 +17,8 @@ export default class BoxCollider {
 
     detectableQualifiers: Array<string>;
 
-    private _owner: GameObject;
+    private _owner:  GameObject;
+    private _physicsAggregate: BABYLON.PhysicsAggregate;
 
     get shape(): Mesh {
         return this._boxMesh;
@@ -31,14 +35,17 @@ export default class BoxCollider {
     set isTrigger(value: boolean) {
         this._isTrigger = value;
         if (this._isTrigger) {
-            this._boxMesh.physicsImpostor?.dispose();
+            //ammojs
+            //this._boxMesh.physicsImpostor?.dispose();
+            this._colliderShape.isTrigger = true;
         } else {
-            //this._boxMesh.setParent(null);
-            this._boxMesh.physicsImpostor = new BABYLON.PhysicsImpostor(this._boxMesh, BABYLON.PhysicsImpostor.BoxImpostor, {
-                mass: 0,
-                restitution: 0,
-                friction: 0,
-            });
+            //ammojs
+            // this._boxMesh.physicsImpostor = new BABYLON.PhysicsImpostor(this._boxMesh, BABYLON.PhysicsImpostor.BoxImpostor, {
+            //     mass: 0,
+            //     restitution: 0,
+            //     friction: 0,
+            // });
+            this._colliderShape.isTrigger = false;
         }
     }
 
@@ -47,14 +54,24 @@ export default class BoxCollider {
         this._receiverFSM = fsm;
     }
 
-
-
+    
+    
     constructor(scene: BABYLON.Scene) {
-
+        
+        this._gameObject = new GameObject("BoiteCollision", scene);        
         this.detectableQualifiers = new Array<string>();
-
-        this._boxMesh = BABYLON.MeshBuilder.CreateBox("BoxCollider", { height: 3, width: 3, depth: 3 }, scene);
-
+        
+        
+        const shapeSize = BABYLON.Vector3.One();
+        this._boxMesh = BABYLON.MeshBuilder.CreateBox("BoxCollider", { height: shapeSize.y, width: shapeSize.x, depth: shapeSize.z }, scene);
+        this._boxMesh.setParent(this._gameObject);
+        const shapePos = this._boxMesh.position;
+        this._colliderShape = new BABYLON.PhysicsShapeBox(
+            shapePos,
+            BABYLON.Quaternion.Identity(),
+            shapeSize,
+            scene);
+        
         BoxCollider.colliders.set(this._boxMesh.uniqueId, this);
         this._boxMesh.isVisible = true;
         this._boxMesh.visibility = 0.5;
@@ -67,10 +84,11 @@ export default class BoxCollider {
         
         this._boxMesh.name += this._boxMesh.uniqueId;
 
-        this._gameObject = new GameObject("BoiteCollision", scene);
+
+
+
 
         this.isTrigger = false; // créer le physicsImpostor en fonction du choix "isTrigger"
-        this._boxMesh.setParent(this._gameObject);
 
         // scene.getEngine().runRenderLoop(function () {
         //     // si le parent à changé
@@ -83,10 +101,24 @@ export default class BoxCollider {
 
         this._boxMesh.actionManager = new BABYLON.ActionManager(scene);
 
-        console.log(this._gameObject);
-        
         this._gameObject.onParentChange.add((newParent: GameObject) => {
-            alert("parent change");
+            
+            alert(newParent._shapeContainer);
+
+            if(newParent._shapeContainer) {
+                alert("parent change");
+                // this._colliderShape.dispose();
+                // this._colliderShape = new BABYLON.PhysicsShapeBox(
+                //     this._boxMesh.position,
+                //     BABYLON.Quaternion.Identity(),
+                //     shapeSize,
+                //     scene);
+
+                newParent._shapeContainer.addChildFromParent(newParent,this._colliderShape,this._boxMesh); 
+              
+            }  
+            
+            return;
             
             if(newParent) {
                 console.error(newParent.physicsImpostor);
@@ -101,22 +133,22 @@ export default class BoxCollider {
                     newParent.addRigidbody({ mass: 1, restitution: 0.2, friction: 0.5 });
                 }
                 this._gameObject.onAfterWorldMatrixUpdateObservable.add(()=>{
-                    this.updateBoxMeshTransform();
+                    this.updateBoxMeshCollider();
                 });
             }else{
-                this._gameObject.onAfterWorldMatrixUpdateObservable.removeCallback(()=>this.updateBoxMeshTransform());
+                this._gameObject.onAfterWorldMatrixUpdateObservable.removeCallback(()=>this.updateBoxMeshCollider());
             }
         });
 
 
         Game.getInstance().onGameStarted.add(() => {
 
-            console.log("box playing");
+            if(this._owner) {
 
-            // pour que la collision physique fonctionne il faut que le mesh soit enfant de l'objet qui a le rigidbody
-            this.attachToGameObject(this._owner);
-            this._owner.physicsImpostor.forceUpdate();
-
+                //AMMOJS : pour que la collision physique fonctionne il faut que le mesh soit enfant de l'objet qui a le rigidbody
+                // this.attachToGameObject(this._owner);
+                // this._owner.physicsImpostor.forceUpdate();
+            }
             this.detectCollisionTrigger('enter', true);
         });
 
@@ -133,9 +165,14 @@ export default class BoxCollider {
         this._boxMesh.setParent(go);
     }
 
-    updateBoxMeshTransform() {
+    updateBoxMeshCollider() {
+
+        this._colliderShape
+
         //console.log("update transform");
-        this._boxMesh.position = this._gameObject.position;
+        // this._boxMesh.position = this._gameObject.position;
+        // this._boxMesh.scaling = this._gameObject.scaling;
+        // this._boxMesh.rotation = this._gameObject.rotation;
         // On met à jour le rigidbody parent
         // const impostor = this._owner.physicsImpostor;
     
@@ -167,10 +204,9 @@ export default class BoxCollider {
                                 },
                                 () => {
                                     if (otherCollider) {
-                                        //console.log(`collision : ${this._boxMesh.name} & ${otherColliderMesh.name}`);
-                                        if (this._receiverFSM == null) { return };
+                                        console.log(`collision : ${this._boxMesh.name} & ${otherColliderMesh.name}`);
 
-                                        this._receiverFSM.onCollisionEnter.notifyObservers(otherCollider);
+                                        (this._owner as ProgrammableGameObject)?.finiteStateMachines[0].onCollisionEnter.notifyObservers(otherCollider);
                                     }
                                 }
 

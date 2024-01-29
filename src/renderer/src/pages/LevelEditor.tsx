@@ -41,7 +41,7 @@ const LevelEditor = (props) => {
                                 <Button onClick={() => Editor.getInstance().setTransformMode("TRANSLATE")} variant="secondary"><FontAwesomeIcon icon="arrows-up-down-left-right" /></Button>
                                 <Button onClick={() => setTransformMode("ROTATE")} variant="secondary"><FontAwesomeIcon icon="arrows-rotate" /></Button>
                                 <Button onClick={() => Editor.getInstance().setTransformMode("SCALE")} variant="secondary"><FontAwesomeIcon icon="maximize" /></Button>
-                                <Button onClick={() => Editor.getInstance().setTransformMode("BOUND_BOX")} variant="secondary"><FontAwesomeIcon icon="up-right-from-square" /></Button>
+                                <Button onClick={() => Editor.getInstance().setTransformMode("BOUND_BOX")} variant="secondary" disabled={true}><FontAwesomeIcon icon="up-right-from-square" /></Button>
                             </ButtonGroup>
                             <ButtonGroup className="me-2" aria-label="Second group">
                                 <Button disabled variant="secondary"><FontAwesomeIcon icon="earth-europe" /> Monde</Button>

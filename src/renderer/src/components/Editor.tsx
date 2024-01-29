@@ -22,7 +22,6 @@ import StartupModal from "./Modals/StartupModal";
 import ProjectManager from "@renderer/editor/ProjectManager";
 import OriginAxis from "@renderer/editor/OriginAxis";
 import GameLoader from "@renderer/editor/GameLoader";
-import cannon from "cannon";
 import EditorUtils from "@renderer/editor/EditorUtils";
 import EditorCameraManager from "@renderer/editor/EditorCameraManager";
 import LoadingEditorModal from "./Modals/LoadingEditorModal";
@@ -168,7 +167,7 @@ export default class Editor extends Component {
 
         const renderer = Renderer.getInstance();
 
-        window.CANNON = cannon;
+        //window.CANNON = cannon;
 
         const scene = renderer.scene;
 
@@ -180,7 +179,8 @@ export default class Editor extends Component {
         this.showStartupModal(false);
 
 
-        const ammo = renderer.ammo;
+        //const ammo = renderer.ammo;
+        const havok = renderer.hk;
 
         this._editorCameraManager = new EditorCameraManager(renderer.canvas, renderer.scene, renderer.camera);
 

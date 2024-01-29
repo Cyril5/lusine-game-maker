@@ -74,11 +74,10 @@ function AddObjectModal(props: any) {
                                 <Card style={{ width: '18rem' }}>
                                     <Card.Img variant="top" src="holder.js/100px180" />
                                     <Card.Body>
-                                        <Card.Title>First Person Controller</Card.Title>
+                                        <Card.Title>Collisionneur</Card.Title>
                                         <Card.Text>
-                                            Description
+                                            Surface de collision
                                         </Card.Text>
-                                        <Button variant="primary" disabled>Ajouter</Button>
                                     </Card.Body>
                                 </Card>
                             </Col>

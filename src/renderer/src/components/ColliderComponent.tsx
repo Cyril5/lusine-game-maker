@@ -37,6 +37,11 @@ const ColliderComponent = (gameObjectId) => {
 
     return (
         <>
+            Forme <Form.Select aria-label="Default select example">
+                <option value="1">Boite</option>
+                <option value="2">Sphere</option>
+            </Form.Select>
+
             <Form.Check type="switch" id="istrigger-switch" label="Est un déclencheur" />
             Appel l'évenement de <Form.Select aria-label="Default select example">
                 <option value="1">L'objet programmable parent</option>

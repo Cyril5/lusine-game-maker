@@ -1,12 +1,15 @@
-import { Engine, GizmoManager, HemisphericLight, SceneLoader, Space, StandardMaterial, Texture, Vector3 } from "@babylonjs/core";
+import HavokPhysics from "@babylonjs/havok";
+import { Engine, GizmoManager, HemisphericLight, Vector3 } from "@babylonjs/core";
 
 // import { FBXLoader } from "babylon-fbx-loader";
 
 import { Observable } from "babylonjs";
-import Ammo from 'ammojs-typed';
-import { AmmoJSPlugin } from "babylonjs";
+// import Ammo from 'ammojs-typed';
+// import { AmmoJSPlugin } from "babylonjs";
 
 import '@renderer/assets/css/index.scss';
+import cannon from "cannon";
+import EditorUtils from "@renderer/editor/EditorUtils";
 
 
 export class Renderer {
@@ -27,11 +30,11 @@ export class Renderer {
     get scene(): BABYLON.Scene {
         return this._scene;
     }
-
+    
     get camera() : BABYLON.ArcRotateCamera {
         return this._camera;
     }
-
+    
     get canvas():BABYLON.Nullable<HTMLCanvasElement> {
         return this._engine.getRenderingCanvas();
     }
@@ -42,9 +45,10 @@ export class Renderer {
     }
     
     ammo: Ammo;
+    hk?: BABYLON.HavokPlugin;
     
     //onLoaded:()=>void
-    private loadPhysicsEngine = async (): Promise<void> => {
+    private loadAmmoPhysicsEngine = async (): Promise<void> => {
         
         try {
             this.ammo = await Ammo.bind(window)();
@@ -53,6 +57,22 @@ export class Renderer {
             
         } catch (error) {
             console.error(error);
+        }
+    }
+
+    private loadHavokPhysicsEngine = async(): Promise<void>=> {
+        try {
+            window.CANNON = cannon;
+
+                    // initialize plugin
+        const havokInstance = await HavokPhysics();
+        // pass the engine to the plugin
+        const hk = new BABYLON.HavokPlugin(true, havokInstance);
+
+            this._scene.enablePhysics(new BABYLON.Vector3(0, -9.81, 0), hk);
+        } catch (error) {
+            console.error(error);
+            EditorUtils.showMsgDialog({type:"error",title:"Load Physics Engine Error",message:error.message});
         }
     }
     
@@ -204,10 +224,14 @@ export class Renderer {
         //     Renderer.isReadyObservable.notifyObservers();
         // });
 
-        await Renderer.instance.loadPhysicsEngine().then(() => {
+        Renderer.instance.loadHavokPhysicsEngine().then(() => {
 
-            console.log("AmmoJS loaded");
+            //console.log("AmmoJS loaded");
+            console.log("Havok engine loaded");
+
             Renderer.isReadyObservable.notifyObservers();
+
+            Renderer.instance.scene.debugLayer.show();
 
             return Renderer.instance;
         });

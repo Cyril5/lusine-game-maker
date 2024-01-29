@@ -1,10 +1,10 @@
 {
   "name": "lusine-game-maker",
-  "version": "0.2.1",
-  "description": "Mini editeur de jeux 3D",
+  "version": "0.2.2",
+  "description": "Lusine Game Maker ou LGM3D est un environnement de développement de jeux-vidéo ou applications 3D. Basé sur le concept de la Finite State Machine, Unity, PlayMaker; 3DRad Engine, Scratch, Clickteam Fusion 2.5+.",
   "main": "./out/main/index.js",
   "author": "Cyril5",
-  "homepage": "https://www.electronjs.org",
+  "homepage": "https://github.com/Cyril5/lusine-game-maker",
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
@@ -22,6 +22,7 @@
     "build:linux": "electron-vite build && electron-builder --linux --config"
   },
   "dependencies": {
+    "@babylonjs/havok": "^1.3.1",
     "@blockly/plugin-typed-variable-modal": "^7.0.3",
     "@codemirror/lang-javascript": "^6.1.2",
     "@electron-toolkit/preload": "^1.0.3",

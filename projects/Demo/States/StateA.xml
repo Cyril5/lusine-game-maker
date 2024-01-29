@@ -15,13 +15,13 @@
         <field name="VAR" id="}e`ym?}JU-./bb:0)/w_" variabletype="Number">vitesseRotation</field>
         <value name="VALUE">
           <block type="math_number" id="DV0$8PmNdmj4sN$pG|Mo">
-            <field name="NUM">60</field>
+            <field name="NUM">100</field>
           </block>
         </value>
       </block>
     </next>
   </block>
-  <block type="state_onupdatestate" id="=2I,Vk7*J.TR~d/IVv0V" x="41" y="28">
+  <block type="state_onupdatestate" id="=2I,Vk7*J.TR~d/IVv0V" x="38" y="38">
     <statement name="UPDATESTATE">
       <block type="controls_if" id="AN1`+B~~NZ=49mxN2c77">
         <mutation else="1"></mutation>
@@ -162,7 +162,7 @@
                 </value>
                 <value name="B">
                   <block type="math_number" id="`^/E2,;T77M;YGwLZoAg">
-                    <field name="NUM">-200</field>
+                    <field name="NUM">-30</field>
                   </block>
                 </value>
               </block>
@@ -197,26 +197,12 @@
   </block>
   <block type="fsm_oncollisionenter" id="l`y}(=[3AYfI5r3w(56G" deletable="false" editable="false" x="13" y="638">
     <statement name="ONCOLLISIONENTER">
-      <block type="controls_if" id="`S#DYUr^]VehvNVLgR*Y">
-        <value name="IF0">
-          <block type="gameobject_qualifier" id="|9ca+m)/}@ttE?}vBWun">
-            <value name="GAMEOBJECT">
-              <block type="collision_other_gameobject" id="pnEKt3|y0b89RMq)(:z`" editable="false"></block>
-            </value>
-            <value name="QUALIFIER">
-              <block type="qualifier_neutral" id="WWVYjLPXjzGWaku45:lb" deletable="false" movable="false" editable="false"></block>
-            </value>
+      <block type="debug_console_log" id="`-0|BaqZc5}H!|JyyC!.">
+        <value name="LOG">
+          <block type="text" id="v=]Sf}[_qOQPovoi$?;a">
+            <field name="TEXT">Perdu ! vous avez percuté une voiture !</field>
           </block>
         </value>
-        <statement name="DO0">
-          <block type="debug_console_log" id="`-0|BaqZc5}H!|JyyC!.">
-            <value name="LOG">
-              <block type="text" id="v=]Sf}[_qOQPovoi$?;a">
-                <field name="TEXT">Perdu ! vous avez percuté une voiture !</field>
-              </block>
-            </value>
-          </block>
-        </statement>
       </block>
     </statement>
   </block>

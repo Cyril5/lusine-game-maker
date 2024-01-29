@@ -1,10 +1,14 @@
 import { PhysicsImpostor, Vector3 } from "@babylonjs/core";
-import { Mesh, Observable, TransformNode } from "babylonjs";
+import { Mesh, Observable, PhysicsBody, TransformNode } from "babylonjs";
 
 export class GameObject extends TransformNode  {
     
-    private _rigidbody: PhysicsImpostor | null;
-    private _physicsRootMesh : Mesh;
+    //private _rigidbody: PhysicsImpostor | null;
+    private _rigidbody: PhysicsBody | null;
+
+    _shapeContainer : BABYLON.PhysicsShapeContainer;
+    
+    
     private static _gameObjects = new Map<number | string, GameObject>() //unique id or uuid // map uuid,gameObject
 
 
@@ -30,7 +34,7 @@ export class GameObject extends TransformNode  {
         return this.uniqueId;
     }
 
-    get rigidbody(): PhysicsImpostor {
+    get rigidbody(): PhysicsBody {
         return this._rigidbody;
     }
 
@@ -113,9 +117,19 @@ export class GameObject extends TransformNode  {
         this.onParentChange.notifyObservers(newParent);
     }
 
-    addRigidbody(options: { mass: 1, restitution: 0.2, friction: 0.5 }): void {
+    addRigidbody(options: { mass, restitution, friction: 0.5 }): void {
 
-        console.log(this._rigidbody);
+        this._rigidbody = new BABYLON.PhysicsBody(this, BABYLON.PhysicsMotionType.DYNAMIC, false, this._scene);
+        this._shapeContainer = new BABYLON.PhysicsShapeContainer(this._scene);
+
+        this._rigidbody.material = {friction: 0.2, restitution: 0};
+        this._rigidbody.shape = this._shapeContainer; // todo : vérifier si il faut mettre après this._shapeContainer.addChildFromParent si il y a des enfants
+        this._rigidbody.setMassProperties ({
+            mass: 1,
+        });
+
+        return;
+        //ammojs
         //if (!this._physicsImpostor) {
             console.log("add rb to "+this.name);
             this.physicsImpostor = new BABYLON.PhysicsImpostor(this,
@@ -127,7 +141,8 @@ export class GameObject extends TransformNode  {
     removeRigidbody() : void {
         //if(this._rigidbody) { 
             console.log("remove rb to "+this.name);    
-            this.physicsImpostor.dispose();      
+            //this.physicsImpostor.dispose();      
+            this._shapeContainer.dispose();
             this._rigidbody.dispose();
             //this._physicsRootMesh.dispose();
         //}

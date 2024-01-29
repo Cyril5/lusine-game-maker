@@ -1,6 +1,8 @@
-import { Space, Vector3 } from "babylonjs";
 import { GameObject } from "./GameObject"
 import BoxCollider from "./physics/lgm3D.BoxCollider"
+import Editor from "@renderer/components/Editor";
+import { Renderer } from "./Renderer";
+import SphereCollider from "./physics/lgm3D.SphereCollider";
 
 export default class DemoTest {
 
@@ -12,41 +14,38 @@ export default class DemoTest {
         const car = GameObject.gameObjects.get(485);
         
         if(DemoTest.firstrun) {
+
             // const box = new BoxCollider(scene);
-            // box.shape.position = car.position;
-            // box.shape.setParent(car);
+            // box.gameObject.position = car!.position;
+            // car!.addRigidbody({mass:100,restitution:0.9,friction:0.5});
+            // box.gameObject.setParent(car!);
             
-            //const box = new BoxCollider(scene);
-            //box.gameObject.setParent(car);
-            //box.attachToGameObject(car);
-            car.addRigidbody({mass:1,restitution:0.2,friction:0.5});
-            
-        }
+            //car!._shapeContainer.addChild(box._colliderShape);
 
-        //car.position = new Vector3(0,50,0);
-        
-        if(DemoTest.firstrun) {
-            
-            var ground = BABYLON.Mesh.CreateGround("ground1", 100, 100, 2, scene);
-            ground.position.y -= 10;
-            ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0}, scene);
-
-            const road = GameObject.gameObjects.get(29)!.getChildMeshes()[0];
+            const roadMesh = GameObject.gameObjects.get(29)!.getChildMeshes()[0];
             //console.log(road.name);
-            road.position.y -= 20;
-            road.setParent(null);
-            road.physicsImpostor = new BABYLON.PhysicsImpostor(road, BABYLON.PhysicsImpostor.MeshImpostor, { mass: 0}, scene);
-            road.setParent(GameObject.gameObjects.get(29));
-        }
-        
-        
-        if(DemoTest.firstrun) {
+            // road.physicsImpostor = new BABYLON.PhysicsImpostor(road, BABYLON.PhysicsImpostor.MeshImpostor, { mass: 0}, scene);
+            // road.setParent(GameObject.gameObjects.get(29));
+            const aggregate = new BABYLON.PhysicsAggregate(roadMesh, BABYLON.PhysicsShapeType.MESH, { mass: 0 }, scene);
+
+            Editor.getInstance().updateObjectsTreeView();
+            
             DemoTest.firstrun = false;
         }
     }
 
-    stop() {
+    update() {
+
+    }
+
+    stop(scene : BABYLON.Scene) {
         const car = GameObject.gameObjects.get(485);
-        car.position = new BABYLON.Vector3(0,10,0); 
+        car.rigidbody.disablePreStep = false; 
+        car.rigidbody.transformNode.position.set(0,10,0);
+        //car.rotationQuaternion = BABYLON.Quaternion.FromEulerAngles(0,0,0);
+        setTimeout(()=>{
+            car.rigidbody.disablePreStep = true;
+        },5000)
+        
     }
 }

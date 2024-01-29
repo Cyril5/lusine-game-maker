@@ -63,12 +63,16 @@ export class Game {
             if(gameObject instanceof ProgrammableGameObject) {
 
                 const states = gameObject.finiteStateMachines[0].states.length;
-                for (let index = 0; index < states; index++) {
-                    const state = gameObject.finiteStateMachines[0].states[index];
-                    await state.runCode();
+                if(states > 0) {
+                    for (let index = 0; index < states; index++) {
+                        const state = gameObject.finiteStateMachines[0].states[index];
+                        await state.runCode();
+                    }
+                    if(gameObject.finiteStateMachines[0].currentState) {
+                        console.log(gameObject.finiteStateMachines[0].currentState.onEnterState);
+                        gameObject.finiteStateMachines[0].currentState.onEnterState.notifyObservers();
+                    }
                 }
-                console.log(gameObject.finiteStateMachines[0].currentState.onEnterState);
-                gameObject.finiteStateMachines[0].currentState.onEnterState.notifyObservers();
             }
         }
         
@@ -79,7 +83,7 @@ export class Game {
         clearTimeout(this._t);
         
         scene.physicsEnabled = true;
-        
+
         //const followCam = scene.setActiveCameraByName("FollowCam");
         // const camera = scene.cameras[0];
         // followCam.position.copyFrom(camera.position);
@@ -102,7 +106,9 @@ export class Game {
         for (const go of gameObjects) {
             if(go instanceof ProgrammableGameObject) {
                 //console.log(Game.deltaTime);
-                go.finiteStateMachines[0].currentState.onUpdateState.notifyObservers();
+                if(go.finiteStateMachines[0].currentState) {
+                    go.finiteStateMachines[0].currentState.onUpdateState.notifyObservers();
+                }
             }
         }
 
@@ -126,33 +132,34 @@ export class Game {
     public stop() {
         
         console.log('stop game');
-
+        
         State.deleteRuntimeGlobalVars();
         
         const scene = Renderer.getInstance().scene;
-        
+
         InputManager.removeKeyboardListeners();
         this._isRunning = false;
-
+        
         Renderer.getInstance().scene.physicsEnabled = false;
+
         GameObject.gameObjects.forEach((value,key)=>{
-            //value.setAbsolutePosition(new BABYLON.Vector3(0,45,0));
-            //value.resetTransform();
             if(value instanceof ProgrammableGameObject) {
                 console.warn(value.name);
-                value.rotationQuaternion = BABYLON.Quaternion.FromEulerAngles(0,0,0);
+                //value.rotationQuaternion = BABYLON.Quaternion.FromEulerAngles(0,0,0);
                 const zeroVector = new BABYLON.Vector3.Zero();
-                value.physicsImpostor?.setAngularVelocity(zeroVector);
-                value.physicsImpostor?.setLinearVelocity(zeroVector);
-                value.physicsImpostor?.sleep();
+                value.physicsBody!.setAngularVelocity(zeroVector);
+                value.physicsBody!.setLinearVelocity(zeroVector);
+                // value.physicsImpostor?.setAngularVelocity(zeroVector);
+                // value.physicsImpostor?.setLinearVelocity(zeroVector);
+                // value.physicsImpostor?.sleep();
             }
         })
-
-
-        this._demoTest.stop();
+        
+        this._demoTest.stop(scene);
+        
         
         this.onGameStoped.notifyObservers();
-
+        
     }
 
     private constructor() {
