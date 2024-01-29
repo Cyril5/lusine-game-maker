@@ -4,10 +4,10 @@ import { Mesh, Observable, PhysicsBody, TransformNode } from "babylonjs";
 export class GameObject extends TransformNode  {
     
     //private _rigidbody: PhysicsImpostor | null;
-    private _rigidbody: PhysicsBody | null;
+    private _rigidbody: PhysicsBody | null = null;
 
-    _shapeContainer : BABYLON.PhysicsShapeContainer;
-    
+    _shapeContainer : BABYLON.PhysicsShapeContainer | null = null;
+    _shapeContainerChildren : Array<BABYLON.PhysicsShape>; //TODO : Enveler de la liste les physicsShape disposed
     
     private static _gameObjects = new Map<number | string, GameObject>() //unique id or uuid // map uuid,gameObject
 
@@ -63,6 +63,8 @@ export class GameObject extends TransformNode  {
     constructor(name: string, scene: BABYLON.Scene) {
 
         super(name, scene);
+
+        this._shapeContainerChildren = new Array<BABYLON.PhysicsShape>();
 
         //this._physicsRootMesh.setParent(this);
 
@@ -144,6 +146,7 @@ export class GameObject extends TransformNode  {
             //this.physicsImpostor.dispose();      
             this._shapeContainer.dispose();
             this._rigidbody.dispose();
+
             //this._physicsRootMesh.dispose();
         //}
     }

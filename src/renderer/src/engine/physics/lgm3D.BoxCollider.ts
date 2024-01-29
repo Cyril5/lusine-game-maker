@@ -114,8 +114,8 @@ export default class BoxCollider {
                 //     shapeSize,
                 //     scene);
 
-                newParent._shapeContainer.addChildFromParent(newParent,this._colliderShape,this._boxMesh); 
-              
+                newParent._shapeContainer.addChildFromParent(newParent,this._colliderShape,this._boxMesh);
+                newParent._shapeContainerChildren.push(this._colliderShape); 
             }  
             
             return;
@@ -150,13 +150,15 @@ export default class BoxCollider {
                 // this._owner.physicsImpostor.forceUpdate();
             }
             this.detectCollisionTrigger('enter', true);
+
+            this.updateBoxMeshCollider();
         });
 
         // TODO se désinscrire de l'event quand le jeu est stopé 
         Game.getInstance().onGameStoped.remove(() => {
             this.detectCollisionTrigger('enter', true);
 
-            //this._boxMesh.setParent(this._gameObject);
+            this.updateBoxMeshCollider();
         });
     }
 
@@ -166,9 +168,13 @@ export default class BoxCollider {
     }
 
     updateBoxMeshCollider() {
-
-        this._colliderShape
-
+            // On remet à jour le shapeContainer si il y a des modifications sur les dimensions du boxCollider
+            const parentBodyGameObject = (this._gameObject.parent as GameObject);
+            if(parentBodyGameObject) {
+                parentBodyGameObject._shapeContainer.removeChild(this._colliderShape);
+                parentBodyGameObject._shapeContainer.addChildFromParent(parentBodyGameObject,this._colliderShape,this._boxMesh);
+            }
+            
         //console.log("update transform");
         // this._boxMesh.position = this._gameObject.position;
         // this._boxMesh.scaling = this._gameObject.scaling;
