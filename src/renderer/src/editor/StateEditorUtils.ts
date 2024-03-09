@@ -8,17 +8,18 @@ import ProjectManager from "./ProjectManager";
 
 export default class StateEditorUtils {
 
+    
     static _stateFilesFormat = "xml"; //private set public get => json ou xml (load json ne fonctionne pas pour le moment)
     static _stateCodeFilesFormat = "state";
-
+    
     private static _stateFiles: Map<string, IStateFile> = new Map<string, IStateFile>();
-
+    
     static statesFiles() {
         get: {
             return StateEditorUtils._stateFiles;
         }
     }
-
+    
     static getStateFile(name: string): IStateFile | null {
 
         const result = this._stateFiles.get(name);
@@ -28,10 +29,10 @@ export default class StateEditorUtils {
         EditorUtils.showErrorMsg(`StateFile : ${name} not found in list`);
         return null;
     }
-
+    
     //Charger la liste de tous les fichiers d'états
     static loadStateFilesList() {
-
+        
         try{
             const stateFiles = FileManager.getDirectoryFiles(
                 ProjectManager.getStateFilesDirectory(), ['.'+StateEditorUtils._stateFilesFormat],(files)=>{
@@ -41,11 +42,11 @@ export default class StateEditorUtils {
                     }
                 });
     
-        }catch(err){
-            console.error(err);
-            //EditorUtils.showErrorMsg(err);
+            }catch(err){
+                console.error(err);
+                //EditorUtils.showErrorMsg(err);
         }
-
+        
     }
 
     static createStateFile = async (className: string) => {
@@ -56,33 +57,37 @@ export default class StateEditorUtils {
         // fs.writeFile(fileLocation, BaseStateFile, (err) => {
         //     if (err) throw err;
         // });
-
+        
         if (FileManager.fileExists(fileLocation) || FileManager.fileExists(fileCodeLocation)) {
             EditorUtils.showErrorMsg(`Un fichier d'état dans le projet porte déjà le nom : ${className}`);
             return;
         }
-
+        
         const t = async()=>{
             FileManager.writeInFile(fileLocation, BaseStateFile, () => {
                 console.log('Le fichier a été créé ! => ' + fileLocation);
             });
-    
+            
             // Code vide
             FileManager.writeInFile(fileCodeLocation, "", () => {
-    
+                
             });
         }
-
+        
         await t();
         this.addStateFile(className);
 
     }
 
+    static removeStateFile = (name: string) : void=> {
+        StateEditorUtils._stateFiles.delete(name);
+    }
+    
     //Recherche un fichier d'état et l'applique sur un statefile
-    static addStateFile = (name: string) => {
+    static addStateFile = (name: string) : void => {
         const fileLocation = ProjectManager.getFilePath("States", name + '.' + StateEditorUtils._stateFilesFormat);
         const codeFileLocation = ProjectManager.getFilePath("States", name + '.' + StateEditorUtils._stateCodeFilesFormat);
-
+        
         if (!FileManager.fileExists(fileLocation)) {
             EditorUtils.showErrorMsg("Le fichier d'état : " + name + " est introuvable dans : " + fileLocation);
             return;

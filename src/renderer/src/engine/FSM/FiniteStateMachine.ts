@@ -5,27 +5,30 @@ import { Observable } from "babylonjs";
 import BoxCollider from "../physics/lgm3D.BoxCollider";
 import { Game } from "../Game";
 import { EditorObservable } from "@renderer/editor/EditorObservable";
+import Component from "../lgm3D.Component";
 
 
 
 // Machine d'états fini attachable sur des ProgrammableGameObject seulement
-export class FiniteStateMachine {
+export class FiniteStateMachine extends Component {
+
+    public update(dt: number) {
+        throw new Error("Method not implemented.");
+    }
 
     states: Array<State> = [];
 
     name: string = 'Automate Fini Principal';
 
-    //#region "Propriétées"
-    private _gameObject: ProgrammableGameObject;
-    public get gameObject(): ProgrammableGameObject {
-        return this._gameObject;
-    }
+    // private _gameObject: ProgrammableGameObject;
+    // public get gameObject(): ProgrammableGameObject {
+    //     return this._gameObject;
+    // }
 
     private _currState: State | null = null;
     public get currentState(): State | null {
         return this._currState;
     }
-    //#endregion "Propriétées"
 
     //#region "Evenements"
     onStart: FSMObservable<void>;
@@ -41,7 +44,9 @@ export class FiniteStateMachine {
 
     //#endregion "Evenements"
 
-    constructor(gameObject: ProgrammableGameObject) {
+    constructor(gameObject) {
+
+        super(gameObject);
 
         this.onStateAdded = new EditorObservable();
         this.onStart = new FSMObservable();
@@ -50,9 +55,7 @@ export class FiniteStateMachine {
         this.onCollisionStay = new FSMObservable();
         this.onCollisionExit = new FSMObservable();
 
-        this._gameObject = gameObject;
         this.addState("Nouvel Etat");
-
 
         // TEST
         // this.onCollisionEnter.add((collider)=>{

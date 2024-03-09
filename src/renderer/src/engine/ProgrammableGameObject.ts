@@ -1,5 +1,6 @@
 import { FiniteStateMachine } from "./FSM/FiniteStateMachine";
 import { GameObject } from "./GameObject";
+import Rigidbody from "./physics/lgm3D.Rigidbody";
 
 export class ProgrammableGameObject extends GameObject {
 
@@ -20,6 +21,7 @@ export class ProgrammableGameObject extends GameObject {
         this.type = ProgrammableGameObject.TYPE_NAME;
         this._fsms.push(new FiniteStateMachine(this));
         this._scene = scene;
+        this.addComponent(new Rigidbody(this),"Rigidbody");
     }
 
     deserialize(): void {

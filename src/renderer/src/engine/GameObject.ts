@@ -1,16 +1,14 @@
+import {Component} from "./lgm3D.Component";
 import { PhysicsImpostor, Vector3 } from "@babylonjs/core";
-import { Mesh, Observable, PhysicsBody, TransformNode } from "babylonjs";
+import { Mesh, Observable, PhysicsBody } from "babylonjs";
 
-export class GameObject extends TransformNode  {
+export class GameObject extends BABYLON.TransformNode  {
     
-    //private _rigidbody: PhysicsImpostor | null;
-    private _rigidbody: PhysicsBody | null = null;
+    private _components : Map<string,Component>
 
-    _shapeContainer : BABYLON.PhysicsShapeContainer | null = null;
-    _shapeContainerChildren : Array<BABYLON.PhysicsShape>; //TODO : Enveler de la liste les physicsShape disposed
-    
     private static _gameObjects = new Map<number | string, GameObject>() //unique id or uuid // map uuid,gameObject
 
+    _collider : Collider;
 
     qualifier: number = 0;
 
@@ -34,15 +32,18 @@ export class GameObject extends TransformNode  {
         return this.uniqueId;
     }
 
-    get rigidbody(): PhysicsBody {
-        return this._rigidbody;
-    }
+
 
     set type(value) {
         this.metadata.type = value;
     }
     get type(): string {
         return this.metadata.type;
+    }
+
+    private _scene : BABYLON.Scene;
+    get scene():BABYLON.Scene {
+        return this._scene;
     }
 
     static saveAllTransforms() {
@@ -56,6 +57,23 @@ export class GameObject extends TransformNode  {
         return GameObject._gameObjects;
     }
 
+    public addComponent<T extends Component>(component: T, componentName: string): void {
+        this._components.set(componentName, component);
+    }
+
+    public getComponent<T extends Component>(componentName: string): T | null {
+        const component = this._components.get(componentName);
+        if (component) {
+            return component as T;
+        } else {
+            return null;
+        }
+    }
+
+    public removeComponent(componentName:string): void {
+        this._components.delete(componentName);
+    }
+
     private _initLocalPos: Vector3 = new Vector3();
     private _initRotation;
     initScale: Vector3 = Vector3.One();
@@ -64,7 +82,10 @@ export class GameObject extends TransformNode  {
 
         super(name, scene);
 
-        this._shapeContainerChildren = new Array<BABYLON.PhysicsShape>();
+        this._scene = scene;
+
+        this._components = new Map<string,Component>();
+
 
         //this._physicsRootMesh.setParent(this);
 
@@ -96,6 +117,14 @@ export class GameObject extends TransformNode  {
     //     return this._physicsRootMesh.getIndices();
     // }
 
+    // ECS
+    update(deltaTime : number) : void {
+        for (let index = 0; index < this._components.length; index++) {
+            const component = this._components[index];
+            component.update(deltaTime);
+        }
+    }
+
     setUId(value : number) {
         const oldId = this.uniqueId;
         super.uniqueId = value;
@@ -119,26 +148,7 @@ export class GameObject extends TransformNode  {
         this.onParentChange.notifyObservers(newParent);
     }
 
-    addRigidbody(options: { mass, restitution, friction: 0.5 }): void {
 
-        this._rigidbody = new BABYLON.PhysicsBody(this, BABYLON.PhysicsMotionType.DYNAMIC, false, this._scene);
-        this._shapeContainer = new BABYLON.PhysicsShapeContainer(this._scene);
-
-        this._rigidbody.material = {friction: 0.2, restitution: 0};
-        this._rigidbody.shape = this._shapeContainer; // todo : vérifier si il faut mettre après this._shapeContainer.addChildFromParent si il y a des enfants
-        this._rigidbody.setMassProperties ({
-            mass: 1,
-        });
-
-        return;
-        //ammojs
-        //if (!this._physicsImpostor) {
-            console.log("add rb to "+this.name);
-            this.physicsImpostor = new BABYLON.PhysicsImpostor(this,
-                BABYLON.PhysicsImpostor.NoImpostor, options, this._scene); // Ajouter l'imposteur de boîte à la voiture
-            this._rigidbody = this.physicsImpostor;
-        //}        
-    }
     
     removeRigidbody() : void {
         //if(this._rigidbody) { 
@@ -160,10 +170,7 @@ export class GameObject extends TransformNode  {
     }
 
     resetTransform = () => {
-        if (this._rigidbody) {
-            this._rigidbody.sleep();
-            this._rigidbody.setLinearVelocity(Vector3.Zero());
-        }
+
         
         this.position.copyFrom(this.initLocalPos);
         //this.setAbsolutePosition(new BABYLON.Vector3(this.initWoldPos.x,this.initWoldPos.y,this.initWoldPos.z));

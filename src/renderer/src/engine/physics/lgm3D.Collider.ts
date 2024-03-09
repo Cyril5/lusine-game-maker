@@ -1,13 +1,33 @@
+import { Mesh } from "babylonjs";
 import { Game } from "../Game";
 import { GameObject } from "../GameObject";
 import { FiniteStateMachine } from "../FSM/FiniteStateMachine";
 import { ProgrammableGameObject } from "../ProgrammableGameObject";
-import Collider from "./lgm3D.Collider";
-import Rigidbody from "./lgm3D.Rigidbody";
+import Component from "../lgm3D.Component";
 
-export default class BoxCollider extends Collider {
+export default class Collider extends Component {
 
-    _colliderShape: BABYLON.PhysicsShape;
+    public update(dt: number) {
+        throw new Error("Method not implemented.");
+    }
+
+    _colliderShape : BABYLON.PhysicsShape;
+
+    static colliders = new Map<number | string, Collider>();
+
+    protected _boxMesh: Mesh;
+    protected _gameObject: GameObject;
+
+    protected _receiverFSM: FiniteStateMachine | null = null;
+
+    protected detectableQualifiers: Array<string>;
+
+    protected _physicsAggregate: BABYLON.PhysicsAggregate;
+
+    get shape(): Mesh {
+        return this._boxMesh;
+    }
+
 
     _isTrigger: boolean = false;
     get isTrigger(): boolean {
@@ -35,14 +55,15 @@ export default class BoxCollider extends Collider {
         this._receiverFSM = fsm;
     }
 
-
-
+    
+    
     constructor(scene: BABYLON.Scene) {
 
-        super(scene);
-
-        this._gameObject.addComponent(this,"BoxCollider");
-
+        super(new GameObject("BoiteCollision", scene));
+         
+        this.detectableQualifiers = new Array<string>();
+        
+        return;
         const shapeSize = BABYLON.Vector3.One();
         this._boxMesh = BABYLON.MeshBuilder.CreateBox("BoxCollider", { height: shapeSize.y, width: shapeSize.x, depth: shapeSize.z }, scene);
         this._boxMesh.setParent(this._gameObject);
@@ -52,7 +73,8 @@ export default class BoxCollider extends Collider {
             BABYLON.Quaternion.Identity(),
             shapeSize,
             scene);
-
+        
+        BoxCollider.colliders.set(this._boxMesh.uniqueId, this);
         this._boxMesh.isVisible = true;
         this._boxMesh.visibility = 0.5;
 
@@ -61,8 +83,12 @@ export default class BoxCollider extends Collider {
         material.diffuseColor = BABYLON.Color3.Green();
         // Appliquer le matériau au cube
         this._boxMesh.material = material;
-
+        
         this._boxMesh.name += this._boxMesh.uniqueId;
+
+
+
+
 
         this.isTrigger = false; // créer le physicsImpostor en fonction du choix "isTrigger"
 
@@ -71,15 +97,17 @@ export default class BoxCollider extends Collider {
         //     if(this._gameObject.parent != )
         // });
 
+
+
         this._boxMesh.isPickable = false;
 
         this._boxMesh.actionManager = new BABYLON.ActionManager(scene);
 
         this._gameObject.onParentChange.add((newParent: GameObject) => {
-
+            
             alert(newParent._shapeContainer);
 
-            if (newParent._shapeContainer) {
+            if(newParent._shapeContainer) {
                 alert("parent change");
                 // this._colliderShape.dispose();
                 // this._colliderShape = new BABYLON.PhysicsShapeBox(
@@ -88,47 +116,74 @@ export default class BoxCollider extends Collider {
                 //     shapeSize,
                 //     scene);
 
-                newParent._shapeContainer.addChildFromParent(newParent, this._colliderShape, this._boxMesh);
-                newParent._shapeContainerChildren.push(this._colliderShape);
+                newParent._shapeContainer.addChildFromParent(newParent,this._colliderShape,this._boxMesh);
+                newParent._shapeContainerChildren.push(this._colliderShape); 
+            }  
+            
+            return;
+            
+            if(newParent) {
+                console.error(newParent.physicsImpostor);
+                // le parent doit être un objet avec un rigidbody
+                this.attachToGameObject(newParent);
+                this._owner = newParent;
+
+                const impostor = newParent.physicsImpostor;
+    
+                if (impostor) {
+                    newParent.removeRigidbody();
+                    newParent.addRigidbody({ mass: 1, restitution: 0.2, friction: 0.5 });
+                }
+                this._gameObject.onAfterWorldMatrixUpdateObservable.add(()=>{
+                    this.updateBoxMeshCollider();
+                });
+            }else{
+                this._gameObject.onAfterWorldMatrixUpdateObservable.removeCallback(()=>this.updateBoxMeshCollider());
             }
+        });
 
-            Game.getInstance().onGameStarted.add(() => {
 
-                //if (this._owner) {
+        Game.getInstance().onGameStarted.add(() => {
 
-                    //AMMOJS : pour que la collision physique fonctionne il faut que le mesh soit enfant de l'objet qui a le rigidbody
-                    // this.attachToGameObject(this._owner);
-                    // this._owner.physicsImpostor.forceUpdate();
-                //}
-                this.detectCollisionTrigger('enter', true);
+            if(this._owner) {
 
-                this.updateBoxMeshCollider();
-            });
+                //AMMOJS : pour que la collision physique fonctionne il faut que le mesh soit enfant de l'objet qui a le rigidbody
+                // this.attachToGameObject(this._owner);
+                // this._owner.physicsImpostor.forceUpdate();
+            }
+            this.detectCollisionTrigger('enter', true);
 
-            // TODO se désinscrire de l'event quand le jeu est stopé 
-            Game.getInstance().onGameStoped.remove(() => {
-                this.detectCollisionTrigger('enter', true);
+            this.updateBoxMeshCollider();
+        });
 
-                this.updateBoxMeshCollider();
-            });
-        })
+        // TODO se désinscrire de l'event quand le jeu est stopé 
+        Game.getInstance().onGameStoped.remove(() => {
+            this.detectCollisionTrigger('enter', true);
+
+            this.updateBoxMeshCollider();
+        });
+    }
+
+    attachToGameObject(go: GameObject): void {
+        //this._boxMesh.position = go.position;
+        this._boxMesh.setParent(go);
     }
 
     updateBoxMeshCollider() {
-        // On remet à jour le shapeContainer si il y a des modifications sur les dimensions du boxCollider
-        const parentRigidbody = (this._gameObject.parent as GameObject).getComponent<Rigidbody>("Rigidbody");
-        if (parentRigidbody) {
-            parentRigidbody._shapeContainer.removeChild(this._colliderShape);
-            parentRigidbody._shapeContainer.addChildFromParent(parentRigidbody.gameObject, this._colliderShape, this._boxMesh);
-        }
-
+            // On remet à jour le shapeContainer si il y a des modifications sur les dimensions du boxCollider
+            const parentBodyGameObject = (this._gameObject.parent as GameObject);
+            if(parentBodyGameObject) {
+                parentBodyGameObject._shapeContainer.removeChild(this._colliderShape);
+                parentBodyGameObject._shapeContainer.addChildFromParent(parentBodyGameObject,this._colliderShape,this._boxMesh);
+            }
+            
         //console.log("update transform");
         // this._boxMesh.position = this._gameObject.position;
         // this._boxMesh.scaling = this._gameObject.scaling;
         // this._boxMesh.rotation = this._gameObject.rotation;
         // On met à jour le rigidbody parent
         // const impostor = this._owner.physicsImpostor;
-
+    
         // if (impostor) {
         //     this._owner.removeRigidbody();
         //     this._owner.addRigidbody({ mass: 1, restitution: 0.2, friction: 0.5 });
@@ -137,7 +192,9 @@ export default class BoxCollider extends Collider {
         //this._boxMesh._physicsImpostor!.setScalingUpdated();
     }
 
-    detectCollisionTrigger(event: string, trigger: boolean): void {
+
+
+    protected detectCollisionTrigger(event: string, trigger: boolean): void {
 
         for (let [key, otherCollider] of BoxCollider.colliders) {
             const otherColliderMesh = otherCollider.shape;
@@ -168,6 +225,10 @@ export default class BoxCollider extends Collider {
             }
         }
 
+    }
+
+    public toJSON() {
+        const test = JSON.stringify(this);
     }
 
 }

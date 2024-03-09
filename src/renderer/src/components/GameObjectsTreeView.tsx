@@ -109,7 +109,7 @@ const GameObjectsTreeView = (props: any) => {
             {node.droppable && (
               <span onClick={onToggle}><FontAwesomeIcon icon={isOpen ? 'minus' : 'plus'}></FontAwesomeIcon> </span>
             )}
-            <Button variant={node.data.type=='ProgrammableObject' ? 'warning': 'secondary'} className='tree-btn' onClick={()=>Editor.getInstance().selectGameObject(node.id)}>
+            <Button variant={node.selected ? 'warning': 'secondary'} className='tree-btn' onClick={()=>Editor.getInstance().selectGameObject(node.id)}>
               <FontAwesomeIcon icon={node.data.type=='Model3D' ? 'cube' : 'bug'}></FontAwesomeIcon>
               {node.text}
             </Button>

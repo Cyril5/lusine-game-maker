@@ -50,6 +50,18 @@ export default abstract class FileManager {
         });
     }
 
+    static deleteFile(filename : string | null,onSuccess?:()=>void) {
+        FileManager.fs.unlink(filename, function(err) {
+            if(err) {
+                console.error("Erreur lors de la suppression du fichier :", err);
+                throw err;
+            } else {
+                if(onSuccess)
+                    onSuccess();
+            }
+        });
+    }
+
     static getDirectoryFiles = (directory,extensions : string[],success) : Array<string> => {
         return FileManager.fs.readdir(directory, (err, files) => {
             if (err) {

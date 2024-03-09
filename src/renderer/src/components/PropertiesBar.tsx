@@ -6,12 +6,15 @@ import Editor from "./Editor";
 import '@renderer/assets/css/properties-bar.scss';
 import TransformComponent from "./TransformComponent";
 import { GameObject } from "@renderer/engine/GameObject";
-import ColliderComponent from "./ColliderComponent";
-import PhysicComponent from "./PhysicComponent";
+import ColliderComponent from "./Objects/ColliderComponent";
+import PhysicComponent from "./Objects/PhysicComponent";
+import BoxCollider from "@renderer/engine/physics/lgm3D.BoxCollider";
+import Rigidbody from "@renderer/engine/physics/lgm3D.Rigidbody";
+import { ProgrammableGameObject } from "@renderer/engine/ProgrammableGameObject";
 
 const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
 
-    const gameObjectRef = useRef(null);
+    const gameObjectRef = useRef<GameObject>(null);
 
     // useEffect(() => {
     //     // Update the 3D object represented by Babylon.TransformNode based on the props
@@ -33,7 +36,7 @@ const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
         console.log(gameObjectRef.current);
         if (gameObjectRef.current) {
             setName(gameObjectRef.current.name);
-            console.log(gameObjectRef.current.type);
+            console.log(gameObjectRef.current.getComponent<BoxCollider>("BoxCollider"));
         } else {
             handleClose();
         }
@@ -66,7 +69,9 @@ const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
         height: '87vh'
     };
 
+    const fsms = (gameObjectRef.current as ProgrammableGameObject)?.finiteStateMachines;
     return (
+
         <div>
             <Button variant="secondary" onClick={toggleShow} className="me-2 properties-btn">
                 <FontAwesomeIcon icon="wrench" />
@@ -76,79 +81,65 @@ const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
                     <Offcanvas.Title>Propriétées <FontAwesomeIcon icon="wrench" /></Offcanvas.Title>
                 </Offcanvas.Header>
                 <Offcanvas.Body>
-                    <Accordion defaultActiveKey={['0', '1']} alwaysOpen>
-                        <Accordion.Item eventKey="0">
-                            <Accordion.Header>Objet</Accordion.Header>
-                            <Accordion.Body>
-                                <Form.Group className="mb-3">
-                                    <Form.Label>Name</Form.Label>
-                                    <Form.Control onChange={handleSetGameObjectName} value={name} />
-                                </Form.Group>
-                                <p>ID : {id}</p>
-                                <p>Parent : <Button variant="primary" size="sm" onClick={handleSelectParent}>{(gameObjectRef.current?.parent as GameObject)?.Id}</Button> <Button onClick={handleUnparent} variant="danger" size="sm" disabled={!gameObjectRef.current?.parent?.uniqueId}>Déparenter</Button></p>
+                    {gameObjectRef.current && (
+                        <Accordion defaultActiveKey={['0', '1']} alwaysOpen>
+                            <Accordion.Item eventKey="0">
+                                <Accordion.Header>Objet</Accordion.Header>
+                                <Accordion.Body>
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Name</Form.Label>
+                                        <Form.Control onChange={handleSetGameObjectName} value={name} />
+                                    </Form.Group>
+                                    <p>ID : {id}</p>
+                                    {gameObjectRef.current.parent && (
+                                        <p>Parent : <Button variant="primary" size="sm" onClick={handleSelectParent}>{gameObjectRef.current.parent.Id}</Button> <Button onClick={handleUnparent} variant="danger" size="sm" disabled={!gameObjectRef.current.parent.uniqueId}>Déparenter</Button></p>
+                                    )}
 
-                                Qualifieur <Form.Select aria-label="Default select example">
-                                    <option value="1">Aucun</option>
-                                    <option value="2">Joueur</option>
-                                    <option value="3">Bon</option>
-                                </Form.Select>
+                                    Qualifieur <Form.Select aria-label="Default select example">
+                                        <option value="1">Aucun</option>
+                                        <option value="2">Joueur</option>
+                                        <option value="3">Bon</option>
+                                    </Form.Select>
 
-                            </Accordion.Body>
-                        </Accordion.Item>
-                        <Accordion.Item eventKey="1">
-                            <Accordion.Header>Transformations</Accordion.Header>
-                            <Accordion.Body>
-                                <TransformComponent gameObjectId={id} />
-                            </Accordion.Body>
-                        </Accordion.Item>
+                                </Accordion.Body>
+                            </Accordion.Item>
+                            <Accordion.Item eventKey="1">
+                                <Accordion.Header>Transformations</Accordion.Header>
+                                <Accordion.Body>
+                                    <TransformComponent gameObjectId={id} />
+                                </Accordion.Body>
+                            </Accordion.Item>
+                            
+                            {fsms && fsms.length > 0 && (
+                            <Accordion.Item eventKey="2">
+                                <Accordion.Header>Automates Finis</Accordion.Header>
+                                <Accordion.Body>
+                                    <FSMComponent/>
+                                </Accordion.Body>
+                            </Accordion.Item>
+                            )}
 
-                        
-                        <Accordion.Item eventKey="2">
-                            <Accordion.Header>Collision</Accordion.Header>
-                            <Accordion.Body>
-                                <ColliderComponent gameObjectId={id} />
-                            </Accordion.Body>
-                        </Accordion.Item>
 
-                        <Accordion.Item eventKey="3">
-                            <Accordion.Header>Physique</Accordion.Header>
-                            <Accordion.Body>
-                                <PhysicComponent gameObjectId={id} />
-                            </Accordion.Body>
-                        </Accordion.Item>
-
-                        {/* {gameObjectRef.current !== undefined && gameObjectRef.current.type === "PROG_GO" && (
-                            <>
-                                <Accordion.Item eventKey="2">
-                                    <Accordion.Header>Automates Fini</Accordion.Header>
+                            {gameObjectRef.current.getComponent<BoxCollider>("BoxCollider") && (
+                                <Accordion.Item eventKey="3">
+                                    <Accordion.Header>Collision</Accordion.Header>
                                     <Accordion.Body>
-                                        <FSMComponent />
-                                    </Accordion.Body>
-                                </Accordion.Item><Accordion.Item eventKey="3">
-                                    <Accordion.Header>Physique
-                                    </Accordion.Header>
-                                    <Accordion.Body>
-                                        <Dropdown>
-                                            <Dropdown.Toggle variant="warning" id="dropdown-basic">
-                                                Aucune
-                                            </Dropdown.Toggle>
-
-                                            <Dropdown.Menu>
-                                                <Dropdown.Item>
-                                                    Aucune
-                                                </Dropdown.Item>
-                                                <Dropdown.Item onClick={handleAddRigidbody}>
-                                                    Actif
-                                                </Dropdown.Item>
-                                            </Dropdown.Menu>
-                                        </Dropdown>
+                                        <ColliderComponent gameObjectId={id} />
                                     </Accordion.Body>
                                 </Accordion.Item>
-                            </>
-                        )} */}
+                            )}
 
+                            {gameObjectRef.current.getComponent<Rigidbody>("Rigidbody") && (
+                            <Accordion.Item eventKey="4">
+                                <Accordion.Header>Physique</Accordion.Header>
+                                <Accordion.Body>
+                                    <PhysicComponent gameObjectId={id} />
+                                </Accordion.Body>
+                            </Accordion.Item>
+                            )}
 
-                    </Accordion>
+                        </Accordion>
+                    )}
                 </Offcanvas.Body>
             </Offcanvas>
 

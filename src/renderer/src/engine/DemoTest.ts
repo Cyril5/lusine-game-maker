@@ -3,6 +3,7 @@ import BoxCollider from "./physics/lgm3D.BoxCollider"
 import Editor from "@renderer/components/Editor";
 import { Renderer } from "./Renderer";
 import SphereCollider from "./physics/lgm3D.SphereCollider";
+import Rigidbody from "./physics/lgm3D.Rigidbody";
 
 export default class DemoTest {
 
@@ -40,12 +41,15 @@ export default class DemoTest {
 
     stop(scene : BABYLON.Scene) {
         const car = GameObject.gameObjects.get(485);
-        car.rigidbody.disablePreStep = false; 
-        car.rigidbody.transformNode.position.set(0,10,0);
-        //car.rotationQuaternion = BABYLON.Quaternion.FromEulerAngles(0,0,0);
-        setTimeout(()=>{
-            car.rigidbody.disablePreStep = true;
-        },5000)
+        const carRb = car!.getComponent<Rigidbody>("Rigidbody");
+        if(carRb) {
+            carRb.body.disablePreStep = false; 
+            carRb.body.transformNode.position.set(0,10,0);
+            //car.rotationQuaternion = BABYLON.Quaternion.FromEulerAngles(0,0,0);
+            setTimeout(()=>{
+                carRb.body.disablePreStep = true;
+            },5000)
+        }
         
     }
 }

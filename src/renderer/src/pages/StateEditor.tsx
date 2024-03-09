@@ -30,9 +30,9 @@ import CustomPrompt from '@renderer/components/StatesEditor/CustomPrompt';
 const StateEditor = (statefiles = StateEditorUtils.statesFiles(), resizeWorkspace = true, ...props: any) => {
 
 
-    const [currentStateFile, setCurrentStateFile] = useState(props.initStateFile); // IStateFile
-    const [mapStateFiles, setMapStateFiles]: any = useState(null);
-    const [showOutputCodeModal,setShowOutputCodeModal] = useState(false);
+    const [currentStateFile, setCurrentStateFile] = useState<IStateFile>(props.initStateFile); // IStateFile
+    const [mapStateFiles, setMapStateFiles] = useState<Map<string,IStateFile> | null>(null);
+    const [showOutputCodeModal, setShowOutputCodeModal] = useState(false);
 
     const blocklyDivRef = useRef(null);
     const blocklyAreaRef = useRef(null);
@@ -456,6 +456,33 @@ const StateEditor = (statefiles = StateEditorUtils.statesFiles(), resizeWorkspac
         backdropDiv.onclick = onCancel;
     };
 
+    /**
+* Supprime le fichier d'état actuel.
+*/
+    const deleteFile = (): void => {
+
+        const confirm = EditorUtils.showMsgDialog({
+            message: `Voulez vous supprimer le fichier d'état : ${currentStateFile.name} du projet (Emplacement : ${currentStateFile.filename}) ? \n Cette action est non réversible.`,
+            type: 'warning',
+            buttons: ['Oui', 'Non'],
+            defaultId: 1,
+            title: "Confirmation avant suppression",
+        });
+
+        if (confirm === 0) {
+            FileManager.deleteFile(currentStateFile.codeFilename, () => {
+                
+                FileManager.deleteFile(currentStateFile.filename, () => {
+                    StateEditorUtils.removeStateFile(currentStateFile.name);
+                    setMapStateFiles(StateEditorUtils.statesFiles());
+                    EditorUtils.showInfoMsg(`Le fichier d'état ${currentStateFile.filename} a été supprimé du projet`, "Fichier d'état supprimé")
+                    setCurrentStateFile(null);
+                });
+            });
+
+        }
+    }
+
 
     return (
         <>
@@ -475,9 +502,11 @@ const StateEditor = (statefiles = StateEditorUtils.statesFiles(), resizeWorkspac
 
                         <Button variant='warning' size="lg" onClick={saveWorkspace} disabled={!currentStateFile}><FontAwesomeIcon icon="save"></FontAwesomeIcon></Button>
 
+                        <Button variant='danger' size="lg" onClick={deleteFile} disabled={!currentStateFile}><FontAwesomeIcon icon="remove"></FontAwesomeIcon></Button>
+
                         <div id="blocklyArea" ref={blocklyAreaRef}>
                             Si ce message s'affiche : Redimensionner la fenêtre pour afficher l'espace de travail
-                            <br/>ou sélectionnez un fichier d'état dans la liste à droite de l'écran.
+                            <br />ou sélectionnez un fichier d'état dans la liste à droite de l'écran.
                         </div>
 
                         <div id="blocklyDiv" ref={blocklyDivRef} />
@@ -488,7 +517,7 @@ const StateEditor = (statefiles = StateEditorUtils.statesFiles(), resizeWorkspac
                                 <Button key={key} onClick={() => openStateFile(value as IStateFile)}>
                                     {(value as IStateFile).name}
                                 </Button>
-                            ))} 
+                            ))}
                         </div>
                     </Col>
 
@@ -497,10 +526,10 @@ const StateEditor = (statefiles = StateEditorUtils.statesFiles(), resizeWorkspac
 
 
 
-            <Button variant="secondary" className="me-2" onClick={()=>setShowOutputCodeModal(true)}>
+            <Button variant="secondary" className="me-2" onClick={() => setShowOutputCodeModal(true)}>
                 <FontAwesomeIcon icon="code" />
             </Button>
-            <Offcanvas placement="bottom" scroll backdrop={false} onHide={()=>setShowOutputCodeModal(false)} show={showOutputCodeModal} {...props}>
+            <Offcanvas placement="bottom" scroll backdrop={false} onHide={() => setShowOutputCodeModal(false)} show={showOutputCodeModal} {...props}>
                 <Offcanvas.Header closeButton>
                     <Offcanvas.Title>Code sortie<FontAwesomeIcon icon="code" /></Offcanvas.Title>
                 </Offcanvas.Header>

@@ -142,13 +142,21 @@ export class Game {
         
         Renderer.getInstance().scene.physicsEnabled = false;
 
-        GameObject.gameObjects.forEach((value,key)=>{
-            if(value instanceof ProgrammableGameObject) {
-                console.warn(value.name);
+        GameObject.gameObjects.forEach((go : GameObject,key)=>{
+            if(go instanceof ProgrammableGameObject) {
+                console.warn(go.name);
                 //value.rotationQuaternion = BABYLON.Quaternion.FromEulerAngles(0,0,0);
-                const zeroVector = new BABYLON.Vector3.Zero();
-                value.physicsBody!.setAngularVelocity(zeroVector);
-                value.physicsBody!.setLinearVelocity(zeroVector);
+                if(go.rigidbody) {
+                    const zeroVector = BABYLON.Vector3.Zero();
+                    go.rigidbody.setAngularVelocity(zeroVector);
+                    go.rigidbody.setLinearVelocity(zeroVector);
+                    go.rigidbody.disablePreStep = false; 
+                    go.rigidbody.transformNode.position.set(0,0,0);
+                    //car.rotationQuaternion = BABYLON.Quaternion.FromEulerAngles(0,0,0);
+                    setTimeout(()=>{
+                        go.rigidbody.disablePreStep = true;
+                    },3000)
+                }
                 // value.physicsImpostor?.setAngularVelocity(zeroVector);
                 // value.physicsImpostor?.setLinearVelocity(zeroVector);
                 // value.physicsImpostor?.sleep();

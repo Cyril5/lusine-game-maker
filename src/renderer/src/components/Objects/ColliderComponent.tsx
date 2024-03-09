@@ -1,6 +1,6 @@
 import { Component, ReactNode, useEffect, useRef, useState } from "react";
 import { Form } from "react-bootstrap";
-import Editor from "./Editor";
+import Editor from "../Editor";
 
 const ColliderComponent = (gameObjectId) => {
 
@@ -40,6 +40,7 @@ const ColliderComponent = (gameObjectId) => {
             Forme <Form.Select aria-label="Default select example">
                 <option value="1">Boite</option>
                 <option value="2">Sphere</option>
+                <option value="3">Maillage</option>
             </Form.Select>
 
             <Form.Check type="switch" id="istrigger-switch" label="Est un déclencheur" />

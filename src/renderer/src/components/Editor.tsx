@@ -334,13 +334,15 @@ export default class Editor extends Component {
     updateObjectsTreeView = () => {
         // Création des noeuds pour chaques gameObject
         const arr: GameObject[] = [];
+        const selectedId = this.selectedGameObject?.Id;
         for (const [id, gameObject] of GameObject.gameObjects) {
 
             const parent = gameObject.parent?.metadata.gameObjectId | 0;
-            console.log(gameObject.parent?.uniqueId);
+            //console.log(selectedId);
 
             arr.push({
                 "id": id,
+                "selected":selectedId == id,
                 "droppable": true,
                 "parent": parent,
                 "text": gameObject.name + " (ID : " + id + ")",
@@ -348,8 +350,6 @@ export default class Editor extends Component {
                     "type": gameObject.metadata.type
                 }
             });
-
-            console.log(arr);
         }
 
         this.setState({
@@ -463,6 +463,8 @@ export default class Editor extends Component {
         this.updateObjetJeu(this._selectedGameObject as GameObject);
 
         Renderer.getInstance().camera.target.copyFrom(this._selectedGameObject.position);
+
+        this.updateObjectsTreeView();
     }
 
     handleAddObject = () => {

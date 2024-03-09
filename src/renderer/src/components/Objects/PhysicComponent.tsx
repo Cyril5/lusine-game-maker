@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Form } from "react-bootstrap";
-import Editor from "./Editor";
+import Editor from "../Editor";
+import Rigidbody from "@renderer/engine/physics/lgm3D.Rigidbody";
 
 const PhysicComponent = (gameObjectId) => {
 
-    const gameObjectRef = useRef(null);
+    const rigidbodyRef = useRef<Rigidbody>(null);
 
     const [physicsEnable, setPhysicsEnabled] = useState(false);
     const [mass, setMass] = useState(1);
@@ -36,30 +37,30 @@ const PhysicComponent = (gameObjectId) => {
     useEffect(() => {
         const go = Editor.getInstance().selectedGameObject;
         if (go) {
-            gameObjectRef.current = go;
-            setPhysicsEnabled(go.rigidbody != null);
-            if (go.rigidbody) {
-                setFriction(go.rigidbody.getMassProperties().mass);
-                setRestitution(go.rigidbody.material.restitution);
+            rigidbodyRef.current = go.getComponent<Rigidbody>("Rigidbody");
+            //setPhysicsEnabled(go.rigidbody != null);
+            if (rigidbodyRef.current) {
+                setFriction(rigidbodyRef.current.body.getMassProperties().mass);
+                setRestitution(rigidbodyRef.current.body.material.restitution);
             }
         }
     }, [gameObjectId]);
 
 
     const handleEnablePhysics = (e: any) => {
-        const active = e.target.checked;
-        if (active) {
-            gameObjectRef.current.addRigidbody({ mass: 1, restitution: 0.2, friction: 0.5 });
-        } else {
-            gameObjectRef.current.removeRigidbody();
-        }
-        setPhysicsEnabled(active);
+        // const active = e.target.checked;
+        // if (active) {
+        //     rigidbodyRef.current.addRigidbody({ mass: 1, restitution: 0.2, friction: 0.5 });
+        // } else {
+        //     rigidbodyRef.current.removeRigidbody();
+        // }
+        // setPhysicsEnabled(active);
 
     };
 
     const handleSetMass = ((e: any) => {
         const massValue = e.target.value;
-        gameObjectRef.current.rigidbody.setMassProperties({mass:massValue});
+        rigidbodyRef.current.body.setMassProperties({mass:massValue});
         setMass(massValue);
     });
 
@@ -76,7 +77,7 @@ const PhysicComponent = (gameObjectId) => {
 
     return (
         <>
-          {gameObjectRef.current && (
+          {rigidbodyRef.current && (
             <>
               <Form.Check
                 type="switch"
@@ -86,8 +87,7 @@ const PhysicComponent = (gameObjectId) => {
                 label="Activé"
               />
       
-              {gameObjectRef.current.rigidbody && (
-                <>
+
                   <Form.Group className="mb-3">
                     <Form.Label>Masse (kg)</Form.Label>
                     <Form.Control
@@ -121,8 +121,6 @@ const PhysicComponent = (gameObjectId) => {
                     label="Gravité"
                     defaultChecked={true}
                   />
-                </>
-              )}
             </>
           )}
         </>
