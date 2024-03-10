@@ -30,18 +30,5 @@ export default class Rigidbody extends Component {
         });
         //this.addRigidbody({ mass: 1, restitution: 0.2, friction: 0.5 });
     }
-
-    addRigidbody(options: { mass, restitution, friction: 0.5 }): void {
-
-
-        return;
-        //ammojs
-        //if (!this._physicsImpostor) {
-            console.log("add rb to "+this.name);
-            this.physicsImpostor = new BABYLON.PhysicsImpostor(this,
-                BABYLON.PhysicsImpostor.NoImpostor, options, this._scene); // Ajouter l'imposteur de boîte à la voiture
-            this._rigidbody = this.physicsImpostor;
-        //}        
-    }
     
 }

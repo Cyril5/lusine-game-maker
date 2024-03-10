@@ -2,7 +2,7 @@ import { GameObject } from "./GameObject";
 
 export default abstract class Component {
 
-    private _gameObject : GameObject;
+    protected _gameObject : GameObject;
 
     get gameObject(): GameObject {
         return this._gameObject;

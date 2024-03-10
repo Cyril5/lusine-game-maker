@@ -140,6 +140,7 @@ const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
 
                         </Accordion>
                     )}
+                    <Button>Ajouter composant</Button>
                 </Offcanvas.Body>
             </Offcanvas>
 

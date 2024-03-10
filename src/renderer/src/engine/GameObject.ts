@@ -107,15 +107,6 @@ export class GameObject extends BABYLON.TransformNode  {
 
 
     }
-    // getBoundingInfo(): BoundingInfo {
-    //     return this._physicsRootMesh.getBoundingInfo();
-    // }
-    // getVerticesData(kind: string): Nullable<number[] | Float32Array> {
-    //     return this._physicsRootMesh.getVerticesData();
-    // }
-    // getIndices?(): Nullable<IndicesArray> {
-    //     return this._physicsRootMesh.getIndices();
-    // }
 
     // ECS
     update(deltaTime : number) : void {

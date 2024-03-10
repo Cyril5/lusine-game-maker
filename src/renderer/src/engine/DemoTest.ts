@@ -1,9 +1,5 @@
 import { GameObject } from "./GameObject"
-import BoxCollider from "./physics/lgm3D.BoxCollider"
 import Editor from "@renderer/components/Editor";
-import { Renderer } from "./Renderer";
-import SphereCollider from "./physics/lgm3D.SphereCollider";
-import Rigidbody from "./physics/lgm3D.Rigidbody";
 
 export default class DemoTest {
 
@@ -16,7 +12,17 @@ export default class DemoTest {
         
         if(DemoTest.firstrun) {
 
-            // const box = new BoxCollider(scene);
+            // const carCollider = new GameObject("CarCollider",scene);
+            // carCollider.addComponent(new BoxCollider(scene,carCollider),"BoxCollider");
+            // carCollider.scaling = new BABYLON.Vector3(3,3,3);
+            // carCollider.setParent(car);
+            // carCollider.setPositionWithLocalVector(new BABYLON.Vector3(0,0,0));
+
+            // const obstacle =  new GameObject("Obstacle",scene);
+            // obstacle.position = new BABYLON.Vector3(0,5,0);
+            // obstacle.addComponent(new BoxCollider(scene,obstacle),"BoxCollider");
+
+            
             // box.gameObject.position = car!.position;
             // car!.addRigidbody({mass:100,restitution:0.9,friction:0.5});
             // box.gameObject.setParent(car!);
@@ -24,11 +30,10 @@ export default class DemoTest {
             //car!._shapeContainer.addChild(box._colliderShape);
 
             const roadMesh = GameObject.gameObjects.get(29)!.getChildMeshes()[0];
-            //console.log(road.name);
-            // road.physicsImpostor = new BABYLON.PhysicsImpostor(road, BABYLON.PhysicsImpostor.MeshImpostor, { mass: 0}, scene);
-            // road.setParent(GameObject.gameObjects.get(29));
             const aggregate = new BABYLON.PhysicsAggregate(roadMesh, BABYLON.PhysicsShapeType.MESH, { mass: 0 }, scene);
 
+            //car!.addComponent(new Rigidbody(car),"Rigidbody");
+            
             Editor.getInstance().updateObjectsTreeView();
             
             DemoTest.firstrun = false;
@@ -40,16 +45,16 @@ export default class DemoTest {
     }
 
     stop(scene : BABYLON.Scene) {
-        const car = GameObject.gameObjects.get(485);
-        const carRb = car!.getComponent<Rigidbody>("Rigidbody");
-        if(carRb) {
-            carRb.body.disablePreStep = false; 
-            carRb.body.transformNode.position.set(0,10,0);
-            //car.rotationQuaternion = BABYLON.Quaternion.FromEulerAngles(0,0,0);
-            setTimeout(()=>{
-                carRb.body.disablePreStep = true;
-            },5000)
-        }
+        // const car = GameObject.gameObjects.get(485);
+        // const carRb = car!.getComponent<Rigidbody>("Rigidbody");
+        // if(carRb) {
+        //     carRb.body.disablePreStep = false; 
+        //     carRb.body.transformNode.position.set(0,10,0);
+        //     //car.rotationQuaternion = BABYLON.Quaternion.FromEulerAngles(0,0,0);
+        //     setTimeout(()=>{
+        //         carRb.body.disablePreStep = true;
+        //     },5000)
+        // }
         
     }
 }

@@ -367,7 +367,9 @@ export default class Editor extends Component {
     }
 
     addBoxCollider() {
-        const boxCollider = new BoxCollider(Renderer.getInstance().scene);
+        const scene = Renderer.getInstance().scene;
+        const boxCollider = new GameObject("BoxCollider",scene);
+        boxCollider.addComponent(new BoxCollider(scene,boxCollider),"BoxCollider");
         this.updateObjectsTreeView();
     }
 

@@ -50,8 +50,6 @@ export class Game {
         
         const scene = Renderer.getInstance().scene;
         
-        this._demoTest.run(scene);
-        
         InputManager.initKeyboardListeners();
         
         // Interpretation des codes de chaques states de chaques fsm
@@ -61,7 +59,7 @@ export class Game {
         
         for (const gameObject of gameObjects) {
             if(gameObject instanceof ProgrammableGameObject) {
-
+                
                 const states = gameObject.finiteStateMachines[0].states.length;
                 if(states > 0) {
                     for (let index = 0; index < states; index++) {
@@ -77,20 +75,22 @@ export class Game {
         }
         
         //GameObject.saveAllTransforms();
-
+        
         this.onGameStarted.notifyObservers();
         
         clearTimeout(this._t);
         
         scene.physicsEnabled = true;
-
+        
+        this._demoTest.run(scene);
+        
         //const followCam = scene.setActiveCameraByName("FollowCam");
         // const camera = scene.cameras[0];
         // followCam.position.copyFrom(camera.position);
         // followCam.rotation.copyFrom(camera.rotation);
-
+        
     }
-
+    
 
 
     private update(deltaTime: Number) {
@@ -111,21 +111,6 @@ export class Game {
                 }
             }
         }
-
-        // if (InputManager.getKeyDown(KeyCode.Z)) { // Z
-        //     this.playerCar.translate(Axis.Z, this.speed, BABYLON.Space.LOCAL);
-        // }
-        // else if (this.keys[83]) { // S
-        //     this.playerCar.translate(Axis.Z, -this.speed, BABYLON.Space.LOCAL);
-        // }
-
-        // if (this.keys[81]) { // Q
-        //     this.playerCar.rotate(Axis.Y, -0.03, BABYLON.Space.LOCAL);
-        // }
-        // else if (this.keys[68]) { // D
-        //     this.playerCar.rotate(Axis.Y, 0.03, BABYLON.Space.LOCAL);
-        // }
-
     }
 
 

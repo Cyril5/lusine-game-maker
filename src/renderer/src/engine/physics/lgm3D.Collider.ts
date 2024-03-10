@@ -1,9 +1,9 @@
-import { Mesh } from "babylonjs";
 import { Game } from "../Game";
 import { GameObject } from "../GameObject";
 import { FiniteStateMachine } from "../FSM/FiniteStateMachine";
 import { ProgrammableGameObject } from "../ProgrammableGameObject";
 import Component from "../lgm3D.Component";
+import { Renderer } from "../Renderer";
 
 export default class Collider extends Component {
 
@@ -11,18 +11,22 @@ export default class Collider extends Component {
         throw new Error("Method not implemented.");
     }
 
+    private _hkPlugin: BABYLON.HavokPlugin;
+    protected get havokPlugin(): BABYLON.HavokPlugin {
+        return this._hkPlugin;
+    }
+
     _colliderShape : BABYLON.PhysicsShape;
+    protected _physicsBody : BABYLON.PhysicsBody;
 
     static colliders = new Map<number | string, Collider>();
 
-    protected _boxMesh: Mesh;
-    protected _gameObject: GameObject;
-
+    protected _boxMesh: BABYLON.Mesh;
+    
     protected _receiverFSM: FiniteStateMachine | null = null;
 
     protected detectableQualifiers: Array<string>;
 
-    protected _physicsAggregate: BABYLON.PhysicsAggregate;
 
     get shape(): Mesh {
         return this._boxMesh;
@@ -59,7 +63,9 @@ export default class Collider extends Component {
     
     constructor(scene: BABYLON.Scene) {
 
-        super(new GameObject("BoiteCollision", scene));
+        super(null);
+
+        this._hkPlugin = Renderer.getInstance().hk;
          
         this.detectableQualifiers = new Array<string>();
         
@@ -135,10 +141,10 @@ export default class Collider extends Component {
                     newParent.addRigidbody({ mass: 1, restitution: 0.2, friction: 0.5 });
                 }
                 this._gameObject.onAfterWorldMatrixUpdateObservable.add(()=>{
-                    this.updateBoxMeshCollider();
+                    this.updateBodyShape();
                 });
             }else{
-                this._gameObject.onAfterWorldMatrixUpdateObservable.removeCallback(()=>this.updateBoxMeshCollider());
+                this._gameObject.onAfterWorldMatrixUpdateObservable.removeCallback(()=>this.updateBodyShape());
             }
         });
 
@@ -153,14 +159,14 @@ export default class Collider extends Component {
             }
             this.detectCollisionTrigger('enter', true);
 
-            this.updateBoxMeshCollider();
+            this.updateBodyShape();
         });
 
         // TODO se désinscrire de l'event quand le jeu est stopé 
         Game.getInstance().onGameStoped.remove(() => {
             this.detectCollisionTrigger('enter', true);
 
-            this.updateBoxMeshCollider();
+            this.updateBodyShape();
         });
     }
 
@@ -169,7 +175,7 @@ export default class Collider extends Component {
         this._boxMesh.setParent(go);
     }
 
-    updateBoxMeshCollider() {
+    updateBodyShape() {
             // On remet à jour le shapeContainer si il y a des modifications sur les dimensions du boxCollider
             const parentBodyGameObject = (this._gameObject.parent as GameObject);
             if(parentBodyGameObject) {
