@@ -4,12 +4,23 @@ import { FiniteStateMachine } from "../FSM/FiniteStateMachine";
 import { ProgrammableGameObject } from "../ProgrammableGameObject";
 import Collider from "./lgm3D.Collider";
 import Rigidbody from "./lgm3D.Rigidbody";
+import { ColliderMetaData, GameObjectComponentMetaData } from "../structs/ComponentsMetaData";
 
 export default class BoxCollider extends Collider {
 
+    static COLLIDER_MAT : BABYLON.StandardMaterial;
     // le collider n'a plus de physicsBody lorsqu'il est rattaché à un parent qui a Rigidbody
 
     _colliderShape: BABYLON.PhysicsShape;
+
+    public metaData: ColliderMetaData = {
+        shape: undefined,
+        isTrigger: false,
+        physicsBody: {
+            material: undefined
+        },
+        type: ""
+    };
 
     _isTrigger: boolean = false;
     private _scene: BABYLON.Scene;
@@ -42,7 +53,7 @@ export default class BoxCollider extends Collider {
 
 
 
-    constructor(scene: BABYLON.Scene, owner: GameObject) {
+    constructor(scene: BABYLON.Scene,owner:GameObject) {
 
         super(scene);
 
@@ -69,12 +80,14 @@ export default class BoxCollider extends Collider {
 
         this._physicsBody.setMassProperties({ mass: 0 });
 
+        if(!BoxCollider.COLLIDER_MAT) {
 
-        const material = new BABYLON.StandardMaterial("material", scene);
-        material.wireframe = true;
-        material.diffuseColor = BABYLON.Color3.Green();
+            BoxCollider.COLLIDER_MAT = new BABYLON.StandardMaterial("_EDITOR_COLLIDER_MAT_", scene);
+            BoxCollider.COLLIDER_MAT.wireframe = true;
+            BoxCollider.COLLIDER_MAT.diffuseColor = BABYLON.Color3.Green();
+        }
         // Appliquer le matériau au cube
-        this._boxMesh.material = material;
+        this._boxMesh.material = BoxCollider.COLLIDER_MAT;
 
         this._boxMesh.name += this._boxMesh.uniqueId;
 
@@ -105,7 +118,6 @@ export default class BoxCollider extends Collider {
                 }
             }
 
-            console.log(this._physicsBody);
             if (this._physicsBody) {
                 this._physicsBody.setCollisionCallbackEnabled(true);
                 this._physicsBody.getCollisionObservable().add(this.detectionCollision);
@@ -119,6 +131,12 @@ export default class BoxCollider extends Collider {
                 this._physicsBody.getCollisionObservable().removeCallback(this.detectionCollision);
             }
         });
+    }
+
+    public toJson() {
+        this.metaData.type = Collider.name;
+        (this.metaData as ColliderMetaData).isTrigger = this.isTrigger;
+        return this.metaData;
     }
 
     private updateBodyShape() {

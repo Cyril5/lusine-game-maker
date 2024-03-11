@@ -50,6 +50,7 @@
     "bootstrap": "^5.2.3",
     "bootswatch": "^5.2.3",
     "cannon": "^0.6.2",
+    "class-transformer": "^0.5.1",
     "drawflow": "^0.0.59",
     "electron-log": "^4.4.8",
     "electron-prompt": "^1.7.0",

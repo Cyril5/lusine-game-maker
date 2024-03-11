@@ -46,7 +46,8 @@ export class FiniteStateMachine extends Component {
 
     constructor(gameObject) {
 
-        super(gameObject);
+        super();
+        this._gameObject = gameObject;
 
         this.onStateAdded = new EditorObservable();
         this.onStart = new FSMObservable();

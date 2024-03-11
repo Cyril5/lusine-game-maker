@@ -18,10 +18,12 @@ export default class Rigidbody extends Component {
     }
 
     constructor(gameObject:GameObject) {
-        super(gameObject);
+        super();
+        this.metaData = {type:Rigidbody.name};
+        this._gameObject = gameObject;
         this._shapeContainerChildren = new Array<BABYLON.PhysicsShape>();
-        this._rigidbody = new BABYLON.PhysicsBody(this.gameObject, BABYLON.PhysicsMotionType.DYNAMIC, false, this.gameObject.scene);
-        this._shapeContainer = new BABYLON.PhysicsShapeContainer(this.gameObject.scene);
+        this._rigidbody = new BABYLON.PhysicsBody(this._gameObject, BABYLON.PhysicsMotionType.DYNAMIC, false, this._gameObject.scene);
+        this._shapeContainer = new BABYLON.PhysicsShapeContainer(this._gameObject.scene);
     
         this._rigidbody.material = {restitution: 0.2};
         this._rigidbody.shape = this._shapeContainer; // todo : vérifier si il faut mettre après this._shapeContainer.addChildFromParent si il y a des enfants

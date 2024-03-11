@@ -6,7 +6,8 @@ import { Model3D } from "@renderer/engine/Model3D";
 import Editor from "@renderer/components/Editor";
 import { ProgrammableGameObject } from "@renderer/engine/ProgrammableGameObject";
 import StateEditorUtils from "./StateEditorUtils";
-import { IStateFile } from "@renderer/engine/FSM/IStateFile";
+import Collider from "@renderer/engine/physics/lgm3D.Collider";
+import BoxCollider from "@renderer/engine/physics/lgm3D.BoxCollider";
 
 export default abstract class GameLoader {
 
@@ -18,6 +19,11 @@ export default abstract class GameLoader {
 
     public static save(scene: BABYLON.Scene) {
         console.log("saving");
+        
+        scene.transformNodes.filter((tNode) => tNode.metadata).forEach((node)=>{
+            (node as GameObject).save();
+        });
+
         const serializedScene = BABYLON.SceneSerializer.Serialize(scene);
         console.log((serializedScene.cameras as Array<any>).shift()); //enlever le premier élement
 
@@ -27,27 +33,25 @@ export default abstract class GameLoader {
         const materials = serializedScene.materials as any[];
         // const textures = serializedScene.textures as any[];
 
-        [editorNodes, meshes, materials].forEach((arr, index) => {
+
+        [editorNodes, meshes, materials,serializedScene.cameras].forEach((arr, index) => {
             let tags: string;
             for (let i = arr.length - 1; i >= 0; i--) {
                 let element = arr[i];
                 tags = element.tags;
 
-                if (arr[i].name.includes('_EDITOR_')) {
-                    console.log('exclude : ' + arr[i].name);
+                if (element.name.includes('_EDITOR_')) {
+                    console.log('exclude : ' + element.name);
                     arr.splice(i, 1);
                 }
-
             }
         });
-
 
         const strScene = JSON.stringify(serializedScene);
         //console.log(strScene);
         FileManager.writeInFile(ProjectManager.getFilePath('', 'game.lgm'), strScene, () => {
             EditorUtils.showInfoMsg("Projet sauvegardé !");
         });
-        return;
     }
 
     public static load(scene) {
@@ -64,7 +68,7 @@ export default abstract class GameLoader {
                 let nodes: BABYLON.Node[] | null = null;
                 try {
                     BABYLON.SceneLoader.AppendAsync("", projectFile, scene).then(() => {
-                        testMethode(scene);
+                        processNodes(scene);
                     });
                 }
                 catch (error) {
@@ -76,7 +80,7 @@ export default abstract class GameLoader {
         });
 
 
-        const testMethode = (scene) => {
+        const processNodes = (scene) => {
 
             //0 : source, 1 : destinationID
             let goLinks: [number, number][] = []
@@ -87,10 +91,31 @@ export default abstract class GameLoader {
 
             scene.getNodes().forEach((node) => {
 
-                if (node.metadata?.type) {
+                const nodeData = node.metadata;
 
+                if (nodeData?.type) {
+
+                    //component
+                    if(nodeData.components) {
+                        nodeData.components.forEach(component => {
+                            if(component.type == Collider.name) {
+                                const collGo = GameObject.createFromTransformNodeMetaData(node,scene);
+                                collGo.addComponent(new BoxCollider(scene,collGo),"BoxCollider");
+                                converted.set(node.uniqueId, collGo.Id);
+
+                                if (node.parent) {
+                                    goLinks.push([collGo.Id, node.parent.metadata.gameObjectId]);
+                                }
+        
+                                // node.getChildren().forEach((child) => {
+                                //     child.parent = collGo;
+                                // });
+                            }
+                        });
+                    }
+                    
                     if (node.metadata.type === Model3D.name) {
-
+                        
                         const model3d: Model3D = Model3D.createEmptyFromNodeData(node, scene);
                         model3d.setUId(node.metadata.gameObjectId);
                         node.name += " (orig)";
@@ -127,7 +152,9 @@ export default abstract class GameLoader {
 
                             fsmData.states.forEach((stateData,index) => {
                                 const state = fsm.states[index];
-                                state.stateFile = StateEditorUtils.getStateFile(stateData.statefile.name);
+                                if(stateData.statefile.name) {
+                                    state.stateFile = StateEditorUtils.getStateFile(stateData.statefile.name);
+                                }
                             });
                             
                         });

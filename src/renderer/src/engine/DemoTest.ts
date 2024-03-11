@@ -40,11 +40,9 @@ export default class DemoTest {
             
             //car!._shapeContainer.addChild(box._colliderShape);
 
-            const roadMesh = GameObject.gameObjects.get(29)!.getChildMeshes()[0];
-            const aggregate = new BABYLON.PhysicsAggregate(roadMesh, BABYLON.PhysicsShapeType.MESH, { mass: 0 }, scene);
+            // const roadMesh = GameObject.gameObjects.get(29)!.getChildMeshes()[0];
+            // const aggregate = new BABYLON.PhysicsAggregate(roadMesh, BABYLON.PhysicsShapeType.MESH, { mass: 0 }, scene);
 
-            //car!.addComponent(new Rigidbody(car),"Rigidbody");
-            
             Editor.getInstance().updateObjectsTreeView();
             
             DemoTest.init = false;
@@ -56,11 +54,10 @@ export default class DemoTest {
     }
 
     start() {
-        this.carBody.body.disablePreStep = false; 
-        //this.carBody.body.transformNode.position.set(0,10,0);
-        this.scene.onAfterRenderObservable.addOnce(() => {
-            this.carBody.body.disablePreStep = true;
-        });
+        // this.carBody.body.disablePreStep = false; 
+        // this.scene.onAfterRenderObservable.addOnce(() => {
+        //     this.carBody.body.disablePreStep = true;
+        // });
     }
 
     stop(scene : BABYLON.Scene) {
@@ -90,31 +87,22 @@ export default class DemoTest {
 
     private testB() {
 
-        const obstacle = BABYLON.MeshBuilder.CreateBox("box2", { width: 10, height: 3, depth: 10 },this.scene);
-        obstacle.position = new BABYLON.Vector3(0, 1, 25);
-                const obstacleShape = new BABYLON.PhysicsShapeBox(
-            new BABYLON.Vector3(0, 0, 0),
-            BABYLON.Quaternion.Identity(),
-            new BABYLON.Vector3(5, 3, 5),
-            this.scene);
-        new BABYLON.PhysicsAggregate(obstacle, BABYLON.PhysicsShapeType.BOX, {mass: 0});
+        // const obstacle = BABYLON.MeshBuilder.CreateBox("box2", { width: 10, height: 3, depth: 10 },this.scene);
+        // obstacle.position = new BABYLON.Vector3(0, 1, 25);
+        //         const obstacleShape = new BABYLON.PhysicsShapeBox(
+        //     new BABYLON.Vector3(0, 0, 0),
+        //     BABYLON.Quaternion.Identity(),
+        //     new BABYLON.Vector3(5, 3, 5),
+        //     this.scene);
+        // new BABYLON.PhysicsAggregate(obstacle, BABYLON.PhysicsShapeType.BOX, {mass: 0});
 
-        const boxCollider = new GameObject("CarCollider",this.scene);
-        boxCollider.setParent(this.car);
-        boxCollider.addComponent(new BoxCollider(this.scene,boxCollider),"BoxCollider");
-        boxCollider.position = new BABYLON.Vector3(0,0,0);
-        boxCollider.scaling = new BABYLON.Vector3(2.34,4.48,3.9);
-        this.carBody = this.car.getComponent<Rigidbody>("Rigidbody");
+        //const boxCollider = new GameObject("CarCollider",this.scene);
+        //boxCollider.setParent(this.car);
+        //boxCollider.addComponent(new BoxCollider(this.scene,boxCollider),"BoxCollider");
+        //boxCollider.position = new BABYLON.Vector3(0,0,0);
+        //boxCollider.scaling = new BABYLON.Vector3(2.34,4.48,3.9);
+        // this.carBody = this.car.getComponent<Rigidbody>("Rigidbody");
 
-        this.carBody.body.transformNode.position = new Vector3(3,3,0);
-
-        Game.getInstance().onGameUpdate.add(()=>{
-            this.car.position.add(new BABYLON.Vector3(0.1,0,0));
-            // this.scene.onAfterRenderObservable.addOnce(() => {
-                //     this.carBody.body.disablePreStep = true;
-                // });
-            //});
-        
-        });
+        // this.carBody.body.transformNode.position = new Vector3(3,3,0);
     }
 }

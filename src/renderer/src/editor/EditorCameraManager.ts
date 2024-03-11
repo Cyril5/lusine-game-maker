@@ -5,7 +5,7 @@ export default class EditorCameraManager {
     constructor(canvas, scene,rendererCamera : BABYLON.Camera) {
 
         // Créer une caméra orthographique
-        const orthoCamera = new BABYLON.FreeCamera('orthoCamera', new BABYLON.Vector3(0, 0, -10), scene);
+        const orthoCamera = new BABYLON.FreeCamera('_EDITOR_ORTHO_CAM', new BABYLON.Vector3(0, 0, -10), scene);
         orthoCamera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
 
 

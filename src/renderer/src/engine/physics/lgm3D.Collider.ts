@@ -7,6 +7,7 @@ import { Renderer } from "../Renderer";
 
 export default class Collider extends Component {
 
+   
     public update(dt: number) {
         throw new Error("Method not implemented.");
     }
@@ -60,10 +61,9 @@ export default class Collider extends Component {
     }
 
     
-    
     constructor(scene: BABYLON.Scene) {
 
-        super(null);
+        super();
 
         this._hkPlugin = Renderer.getInstance().hk;
          
@@ -231,10 +231,6 @@ export default class Collider extends Component {
             }
         }
 
-    }
-
-    public toJSON() {
-        const test = JSON.stringify(this);
     }
 
 }

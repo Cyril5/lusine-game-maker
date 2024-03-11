@@ -1,14 +1,15 @@
-import {Component} from "./lgm3D.Component";
-import { PhysicsImpostor, Vector3 } from "@babylonjs/core";
-import { Mesh, Observable, PhysicsBody } from "babylonjs";
+import { Component } from "./lgm3D.Component";
+import { Vector3 } from "@babylonjs/core";
+import { Observable } from "babylonjs";
+import { Exclude, Expose, instanceToPlain } from 'class-transformer';
 
-export class GameObject extends BABYLON.TransformNode  {
-    
-    private _components : Map<string,Component>
+export class GameObject extends BABYLON.TransformNode {
+
+    private _components: Map<string, Component>
 
     private static _gameObjects = new Map<number | string, GameObject>() //unique id or uuid // map uuid,gameObject
 
-    _collider : Collider;
+    _collider: Collider;
 
     qualifier: number = 0;
 
@@ -23,7 +24,7 @@ export class GameObject extends BABYLON.TransformNode  {
     /**
      * Observable lorsque le parent change
      */
-    onParentChange : Observable<GameObject>;
+    onParentChange: Observable<GameObject>;
 
     /**
     * Get l'identifiant unique du GameObject.
@@ -41,8 +42,8 @@ export class GameObject extends BABYLON.TransformNode  {
         return this.metadata.type;
     }
 
-    private _scene : BABYLON.Scene;
-    get scene():BABYLON.Scene {
+    private _scene: BABYLON.Scene;
+    get scene(): BABYLON.Scene {
         return this._scene;
     }
 
@@ -57,9 +58,21 @@ export class GameObject extends BABYLON.TransformNode  {
         return GameObject._gameObjects;
     }
 
-    public addComponent<T extends Component>(component: T, componentName : string): void {
+    public addComponent<T extends Component>(component: T, componentName: string): Component {
         this._components.set(componentName, component);
+        component._gameObject = this;
+        return component;
     }
+
+    public static createFromTransformNodeMetaData(node : BABYLON.TransformNode,scene : BABYLON.Scene) : GameObject {
+        const go = new GameObject(node.name,scene);
+        go.setUId(node.metadata.gameObjectId);
+        node.name += " (orig)";
+        go.position.copyFrom(node.position);
+        go.rotation.copyFrom(node.rotation);
+        go.scaling.copyFrom(node.scaling);
+        return go;
+    } 
 
     public getComponent<T extends Component>(componentName: string): T | null {
         const component = this._components.get(componentName);
@@ -70,7 +83,7 @@ export class GameObject extends BABYLON.TransformNode  {
         }
     }
 
-    public removeComponent(componentName:string): void {
+    public removeComponent(componentName: string): void {
         this._components.delete(componentName);
     }
 
@@ -84,7 +97,7 @@ export class GameObject extends BABYLON.TransformNode  {
 
         this._scene = scene;
 
-        this._components = new Map<string,Component>();
+        this._components = new Map<string, Component>();
 
 
         //this._physicsRootMesh.setParent(this);
@@ -95,11 +108,11 @@ export class GameObject extends BABYLON.TransformNode  {
         this.onCreated = new Observable();
         this.onParentChange = new Observable();
 
-        
+
         if (!GameObject._gameObjects.has(this.uniqueId)) {
             GameObject._gameObjects.set(this.uniqueId, this);
             // this.onCreated.notifyObservers();
-            this.metadata = { gameObjectId: this.uniqueId,type: "GameObject",parentId : null}
+            this.metadata = { gameObjectId: this.uniqueId, type: "GameObject", parentId: null }
         } else {
             console.error("L'objet ayant l'id :" + this.uniqueId + "existe déjà");
             return;
@@ -109,19 +122,19 @@ export class GameObject extends BABYLON.TransformNode  {
     }
 
     // ECS
-    update(deltaTime : number) : void {
+    update(deltaTime: number): void {
         for (let index = 0; index < this._components.length; index++) {
             const component = this._components[index];
             component.update(deltaTime);
         }
     }
 
-    setUId(value : number) {
+    setUId(value: number) {
         const oldId = this.uniqueId;
         super.uniqueId = value;
         this.metadata.gameObjectId = value;
         GameObject._gameObjects.delete(oldId);
-        GameObject._gameObjects.set(this.uniqueId,this);
+        GameObject._gameObjects.set(this.uniqueId, this);
         //console.log(GameObject._gameObjects);
     }
 
@@ -134,27 +147,12 @@ export class GameObject extends BABYLON.TransformNode  {
         super.dispose();
     }
 
-    setParent(newParent : GameObject) {
+    setParent(newParent: GameObject) {
         super.setParent(newParent);
         this.onParentChange.notifyObservers(newParent);
     }
 
-
-    
-    removeRigidbody() : void {
-        //if(this._rigidbody) { 
-            console.log("remove rb to "+this.name);    
-            //this.physicsImpostor.dispose();      
-            this._shapeContainer.dispose();
-            this._rigidbody.dispose();
-
-            //this._physicsRootMesh.dispose();
-        //}
-    }
-
-    
-
-    saveTransform() : void {
+    saveTransform(): void {
         this.initLocalPos = this.position.clone();
         this._initRotation = this.rotation.clone();
         //console.log(this._initRotation);
@@ -162,12 +160,12 @@ export class GameObject extends BABYLON.TransformNode  {
 
     resetTransform = () => {
 
-        
+
         this.position.copyFrom(this.initLocalPos);
         //this.setAbsolutePosition(new BABYLON.Vector3(this.initWoldPos.x,this.initWoldPos.y,this.initWoldPos.z));
-        
+
         //this.setPositionWithLocalVector(new BABYLON.Vector3(this.initLocalPos.x,this.initLocalPos.y,this.initLocalPos.z));
-        
+
         //console.log(this._initRotation);
         this.rotation = this._initRotation;
         //console.log(this.rotation);
@@ -216,4 +214,33 @@ export class GameObject extends BABYLON.TransformNode  {
         this.uniqueId = this.metadata.gameObjectId;
         this.type = this.metadata.type;
     }
+
+    public save() : any {
+        this.metadata.type = this.type;
+        this.metadata.gameObjectId = this.Id;
+        this.metadata["components"] = [];
+        this._components.forEach((component,key)=>{
+            this.metadata.components.push(component.toJson());
+        });
+        console.log(JSON.stringify(this.metadata));
+        return this.metadata;
+    }
+}
+
+export class SerialTest {
+    id: number;
+    private _firstName: string;
+    private _lastName: string;
+    _password: string;
+
+    setName(firstName: string, lastName: string) {
+        this._firstName = firstName;
+        this._lastName = lastName;
+    }
+
+    @Expose()
+    get name() {
+        return this._firstName + ' ' + this._lastName;
+    }
+
 }

@@ -65,5 +65,25 @@ export class ProgrammableGameObject extends GameObject {
 
     }
 
+    public save() : any {
+        this.metadata["finiteStateMachines"] = [];
+        this._fsms.forEach((fsm)=>{
+
+            const fsmJSON = {
+                name:fsm.name,
+                states: []
+            };
+            fsm.states.forEach((state)=>{
+                console.log(state.stateFile);
+                fsmJSON.states.push({
+                    statefile: {
+                        name: (state.stateFile.name ? state.stateFile.name : null)
+                    }
+                });
+            });
+            this.metadata.finiteStateMachines.push(fsmJSON);
+        })
+    }
+
 
 }
