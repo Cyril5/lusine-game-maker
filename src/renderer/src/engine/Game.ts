@@ -19,6 +19,10 @@ export class Game {
     private _engine: Engine | undefined;
     private _isRunning: boolean = false;
 
+    get isRunning() : boolean {
+        return this._isRunning;
+    } 
+
     private _t;
 
     private _demoTest = new DemoTest();
@@ -56,6 +60,8 @@ export class Game {
         const gameObjects = GameObject.gameObjects.values();
         
         let runCodeSuccess = 0;
+
+        this._demoTest.init(scene);
         
         for (const gameObject of gameObjects) {
             if(gameObject instanceof ProgrammableGameObject) {
@@ -76,13 +82,13 @@ export class Game {
         
         //GameObject.saveAllTransforms();
         
-        this.onGameStarted.notifyObservers();
         
         clearTimeout(this._t);
         
         scene.physicsEnabled = true;
+        this.onGameStarted.notifyObservers();
         
-        this._demoTest.run(scene);
+        this._demoTest.start(scene);
         
         //const followCam = scene.setActiveCameraByName("FollowCam");
         // const camera = scene.cameras[0];

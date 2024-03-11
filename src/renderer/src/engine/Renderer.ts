@@ -207,7 +207,7 @@ export class Renderer {
         this._scene = scene;
         this._camera = new BABYLON.ArcRotateCamera("Camera", 0, 0, 10, BABYLON.Vector3.Zero(), this._scene);
         this._camera.fieldOfView = 75;
-        this._camera.farPlane = 850;
+        this._camera.farPlane = 1000;
         this._camera.id = Renderer.CAMERA_ID;
         this._camera.name = Renderer.CAMERA_ID;
         this.init();

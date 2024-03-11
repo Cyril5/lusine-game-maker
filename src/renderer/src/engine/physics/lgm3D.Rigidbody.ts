@@ -23,12 +23,11 @@ export default class Rigidbody extends Component {
         this._rigidbody = new BABYLON.PhysicsBody(this.gameObject, BABYLON.PhysicsMotionType.DYNAMIC, false, this.gameObject.scene);
         this._shapeContainer = new BABYLON.PhysicsShapeContainer(this.gameObject.scene);
     
-        this._rigidbody.material = {friction: 0.2, restitution: 0};
+        this._rigidbody.material = {restitution: 0.2};
         this._rigidbody.shape = this._shapeContainer; // todo : vérifier si il faut mettre après this._shapeContainer.addChildFromParent si il y a des enfants
         this._rigidbody.setMassProperties ({
             mass: 1,
         });
-        //this.addRigidbody({ mass: 1, restitution: 0.2, friction: 0.5 });
     }
     
 }

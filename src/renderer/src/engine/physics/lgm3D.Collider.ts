@@ -21,7 +21,7 @@ export default class Collider extends Component {
 
     static colliders = new Map<number | string, Collider>();
 
-    protected _boxMesh: BABYLON.Mesh;
+    _boxMesh: BABYLON.Mesh;
     
     protected _receiverFSM: FiniteStateMachine | null = null;
 

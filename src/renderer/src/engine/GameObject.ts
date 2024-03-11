@@ -57,7 +57,7 @@ export class GameObject extends BABYLON.TransformNode  {
         return GameObject._gameObjects;
     }
 
-    public addComponent<T extends Component>(component: T, componentName: string): void {
+    public addComponent<T extends Component>(component: T, componentName : string): void {
         this._components.set(componentName, component);
     }
 
