@@ -1,7 +1,8 @@
 import { AbstractMesh, Observable, SceneLoader } from "@babylonjs/core";
 import { GameObject } from "./GameObject";
-import { Material, MultiMaterial } from "babylonjs";
+import { Material, MultiMaterial, PBRMaterial, PBRMetallicRoughnessMaterial } from "babylonjs";
 import EditorUtils from "@renderer/editor/EditorUtils";
+import AssetsManager from "@renderer/editor/AssetsManager";
 export class Model3D extends GameObject {
 
 
@@ -50,9 +51,11 @@ export class Model3D extends GameObject {
                     const materialsToDispose : AbstractMaterial[] = [];
                     const materialsSceneNames = []; 
                     arg.scene.materials.forEach((mat : AbstractMaterial)=>{
-                        console.log(mat.name);
-                        materialsSceneNames.push(mat.name);
+                        const last = materialsSceneNames.push(mat.name);
+                        mat = new PBRMetallicRoughnessMaterial(mat.name+" roughness",this.scene);
                     });
+
+                    console.log(AssetsManager.textures);
 
                     // Fusionner tous les maillages individuels en un seul maillage
                     const mergedMesh = BABYLON.Mesh.MergeMeshes(meshes[0].getChildMeshes(), true, true, undefined, false, true);
@@ -81,7 +84,10 @@ export class Model3D extends GameObject {
                                 const materialIndex = arg.scene.materials.findIndex(mat => mat.name === subMat.name);
                                 // ajoute les materiaux actuelles à la site de suppression avant affectation
                                 materialsToDispose.push(subMat!.uniqueId);
+                                //multiMaterial.subMaterials[0].getActiveTextures()[0] = new BABYLON.Texture(AssetsManager.textures.get("Texture_Varie (Base Color)").url);
                                 multiMaterial.subMaterials[index] = arg.scene.materials[materialIndex];
+
+                                //test
                             }
                         }
                         
@@ -166,6 +172,10 @@ export class Model3D extends GameObject {
     
                 });
             }
+        }else{
+            this.scene.materials.forEach((mat)=>{
+                console.log(mat.getActiveTextures());
+            });
         }
    
 

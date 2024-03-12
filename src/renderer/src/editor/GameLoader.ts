@@ -80,7 +80,7 @@ export default abstract class GameLoader {
         });
 
 
-        const processNodes = (scene) => {
+        const processNodes = (scene : BABYLON.Scene) => {
 
             //0 : source, 1 : destinationID
             let goLinks: [number, number][] = []
