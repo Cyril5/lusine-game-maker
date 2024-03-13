@@ -20,6 +20,10 @@ export default class ProjectManager {
         return ProjectManager.getFilePath(ProjectManager._currentProjectDir, 'Models');
     }
 
+    static getTexturesDirectory():string {
+        return ProjectManager.getFilePath(ProjectManager._currentProjectDir,'Textures');
+    }
+
     // TODO : remplacer par un getter
     static getStateFilesDirectory(): string {
         return ProjectManager.getFilePath(ProjectManager._currentProjectDir, 'States');

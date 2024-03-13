@@ -3,15 +3,14 @@ import EditorUtils from "@renderer/editor/EditorUtils";
 // import fs from 'fs';
 export default abstract class FileManager {
 
-    
-    private static fs = require('fs');
+    static _fs = require('fs');
     
     private constructor() {
         
     }
     
     static fileIsEmpty(filename: string,afterCheckCallback) : void {
-        FileManager.fs.stat(filename, (err, stats) => {
+        FileManager._fs.stat(filename, (err, stats) => {
             if (err) {
               console.error(err);
               return true;
@@ -25,11 +24,11 @@ export default abstract class FileManager {
     }
     
     static fileExists(filename: string) : boolean {
-       return FileManager.fs.existsSync(filename);
+       return FileManager._fs.existsSync(filename);
     }
     
     static writeInFile(filename: string, content: string, onSuccess?: () => void) {
-        FileManager.fs.writeFile(filename, content, { flag: 'w+' }, err => {
+        FileManager._fs.writeFile(filename, content, { flag: 'w+' }, err => {
             if (err) {
                 console.error(err);
                 throw new Error(err.message);
@@ -40,8 +39,18 @@ export default abstract class FileManager {
         });
     }
 
+    static readTextFile(filename: string | undefined, onSuccess: (data: any) => void) {
+        FileManager._fs.readFile(filename, 'utf8', (err, data) => {
+            if (err) {
+                console.error(err);
+                throw err;
+            }
+            onSuccess(data);
+        });
+    }
+
     static readFile(filename: string | undefined, onSuccess: (data: any) => void) {
-        FileManager.fs.readFile(filename, 'utf8', (err, data) => {
+        FileManager._fs.readFile(filename, (err, data) => {
             if (err) {
                 console.error(err);
                 throw err;
@@ -51,7 +60,7 @@ export default abstract class FileManager {
     }
 
     static deleteFile(filename : string | null,onSuccess?:()=>void) {
-        FileManager.fs.unlink(filename, function(err) {
+        FileManager._fs.unlink(filename, function(err) {
             if(err) {
                 console.error("Erreur lors de la suppression du fichier :", err);
                 throw err;
@@ -63,7 +72,7 @@ export default abstract class FileManager {
     }
 
     static getDirectoryFiles = (directory,extensions : string[],success) : Array<string> => {
-        return FileManager.fs.readdir(directory, (err, files) => {
+        return FileManager._fs.readdir(directory, (err, files) => {
             if (err) {
                 console.error("Erreur lors de la lecture du répertoire :", err);
                 throw err;
@@ -80,7 +89,7 @@ export default abstract class FileManager {
     }
 
     static createDir(directoryName)  {
-        FileManager.fs.mkdir(directoryName, (err) => {
+        FileManager._fs.mkdir(directoryName, (err) => {
             if (err) {
               console.error('Erreur lors de la création du répertoire :', err);
               throw err;

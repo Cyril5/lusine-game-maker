@@ -220,7 +220,7 @@ const StateEditor = (statefiles = StateEditorUtils.statesFiles(), resizeWorkspac
     const openStateFile = (stateFile: IStateFile): void => {
 
         try {
-            FileManager.readFile(stateFile.filename, (xmlFile) => {
+            FileManager.readTextFile(stateFile.filename, (xmlFile) => {
 
                 // Charger les blocs depuis un fichier JSON
                 //     const xml = `<xml xmlns="https://developers.google.com/blockly/xml">

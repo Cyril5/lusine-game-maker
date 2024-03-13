@@ -146,7 +146,7 @@ export default class State {
 
     if (this.stateFile.outputCode === "" && this.stateFile.needToLoad) {
       // récupérer le code depuis le fichier .state
-      FileManager.readFile(this.stateFile.codeFilename, async (data) => {
+      FileManager.readTextFile(this.stateFile.codeFilename, async (data) => {
         this.stateFile.outputCode = data;
         console.log(this.stateFile.outputCode);
         this.stateFile.needToLoad = false;
