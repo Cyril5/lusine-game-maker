@@ -51,63 +51,48 @@ export class Model3D extends GameObject {
                     const materialsToDispose: AbstractMaterial[] = [];
                     const materialsSceneNames = [];
                     arg.scene.materials.forEach((mat: AbstractMaterial) => {
-                        if(mat.albedoTexture) {
-                            AssetsManager.textures.set(mat.albedoTexture.name, mat.albedoTexture);
-                        }
                         const last = materialsSceneNames.push(mat.name);
                     });
-                    console.log(AssetsManager.textures);
 
-                    const mat = new StandardMaterial("test2",this.scene);
-                    //mat.diffuseColor = BABYLON.Color3.Red();
-                    mat.diffuseTexture = AssetsManager.textures.get("Texture_Strada.png");
-                    this.scene.getMeshByUniqueId(85).material = mat;
-                    
 
-//---------------------------------------------------
+                    //---------------------------------------------------
                     // Fusionner tous les maillages individuels en un seul maillage
-                    //const mergedMesh = BABYLON.Mesh.MergeMeshes(meshes[0].getChildMeshes(), true, true, undefined, false, true);
-                    //enlever le mesh root "__root__"
-                    // if (extension === "glb") {
-                    //     meshes[0].dispose();
-                    // }
+                    const mergedMesh = BABYLON.Mesh.MergeMeshes(meshes[0].getChildMeshes(), true, true, undefined, false, true);
+                    if (extension === "glb") {
+                        //enlever le mesh root "__root__"
+                        meshes[0].dispose();
+                    }
 
-                    //const multiMaterial = mergedMesh.material as MultiMaterial;
+                    const multiMaterial = mergedMesh.material as MultiMaterial;
 
                     // si le material existe déjà dans le projet remplacer par celui ci
 
-                    //multiMaterial.subMaterials.forEach((subMat, index) => {
+                    multiMaterial.subMaterials.forEach((subMat, index) => {
+
+                        if (materialsSceneNames.includes(subMat.name)) {
+                            const replaceMat = EditorUtils.showMsgDialog({
+                                message: `Le matériel nommé ${subMat.name} existe déjà dans le projet. Voulez vous l'utilisez pour ce modèle ?`,
+                                type: 'warning',
+                                buttons: ['Oui', 'Non faire une copie'],
+                                defaultId: 0,
+                                title: "",
+                            });
+
+                            if (replaceMat == 0) {
+                                // findIndex pour trouver l'indice du matériau à partir du nom
+                                const materialIndex = arg.scene.materials.findIndex(mat => mat.name === subMat.name);
+                                // ajoute les materiaux actuelles à la site de suppression avant affectation
+                                materialsToDispose.push(subMat!.uniqueId);
+
+                                multiMaterial.subMaterials[index] = arg.scene.materials[materialIndex];
+
+                            }
+                        }
 
 
+                    });
 
-                        //multiMaterial.subMaterials[0] = new StandardMaterial(subMat.name+" standard", this.scene);
-
-                        // if (materialsSceneNames.includes(subMat.name)) {
-                        //     const replaceMat = EditorUtils.showMsgDialog({
-                        //         message: `Le matériel nommé ${subMat.name} existe déjà dans le projet. Voulez vous l'utilisez pour ce modèle ?`,
-                        //         type: 'warning',
-                        //         buttons: ['Oui', 'Non faire une copie'],
-                        //         defaultId: 0,
-                        //         title: "",
-                        //     });
-
-                            // if (replaceMat == 0) {
-                            //     // findIndex pour trouver l'indice du matériau à partir du nom
-                            //     const materialIndex = arg.scene.materials.findIndex(mat => mat.name === subMat.name);
-                            //     // ajoute les materiaux actuelles à la site de suppression avant affectation
-                            //     materialsToDispose.push(subMat!.uniqueId);
-
-                            //     //multiMaterial.subMaterials[index] = arg.scene.materials[materialIndex];
-                                
-                            //     multiMaterial.subMaterials[0].diffuseTexture = arg.scene.materials[1].albedoTexture;
-                            //     //test
-                            // }
-                        //}
-
-
-                    //});
-
-                    //mergedMesh.setParent(this);
+                    mergedMesh.setParent(this);
 
                     materialsToDispose.forEach((mat) => {
                         arg.scene.getMaterialByUniqueID(mat)!.dispose();
