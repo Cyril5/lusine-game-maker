@@ -180,7 +180,7 @@
                 </value>
                 <value name="POSY">
                   <block type="math_number" id="{)j:V-zAfx`36T?Mpj;F">
-                    <field name="NUM">100</field>
+                    <field name="NUM">5</field>
                   </block>
                 </value>
                 <value name="POSZ">

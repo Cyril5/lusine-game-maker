@@ -33,6 +33,11 @@ export default class Collider extends Component {
         return this._boxMesh;
     }
 
+    // TEST 
+    get rigidBody() : BABYLON.PhysicsBody {
+        return this._physicsBody;
+    }
+
 
     _isTrigger: boolean = false;
     get isTrigger(): boolean {
@@ -177,11 +182,11 @@ export default class Collider extends Component {
 
     updateBodyShape() {
             // On remet à jour le shapeContainer si il y a des modifications sur les dimensions du boxCollider
-            const parentBodyGameObject = (this._gameObject.parent as GameObject);
-            if(parentBodyGameObject) {
-                parentBodyGameObject._shapeContainer.removeChild(this._colliderShape);
-                parentBodyGameObject._shapeContainer.addChildFromParent(parentBodyGameObject,this._colliderShape,this._boxMesh);
-            }
+            // const parentBodyGameObject = (this._gameObject.parent as GameObject);
+            // if(parentBodyGameObject) {
+            //     parentBodyGameObject._shapeContainer.removeChild(this._colliderShape);
+            //     parentBodyGameObject._shapeContainer.addChildFromParent(parentBodyGameObject,this._colliderShape,this._boxMesh);
+            // }
             
         //console.log("update transform");
         // this._boxMesh.position = this._gameObject.position;

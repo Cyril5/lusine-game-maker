@@ -95,6 +95,8 @@ export class GameObject extends BABYLON.TransformNode {
 
         super(name, scene);
 
+        this.metadata = {};
+
         this._scene = scene;
 
         this._components = new Map<string, Component>();
@@ -112,11 +114,13 @@ export class GameObject extends BABYLON.TransformNode {
         if (!GameObject._gameObjects.has(this.uniqueId)) {
             GameObject._gameObjects.set(this.uniqueId, this);
             // this.onCreated.notifyObservers();
-            this.metadata = { gameObjectId: this.uniqueId, type: "GameObject", parentId: null }
         } else {
-            console.error("L'objet ayant l'id :" + this.uniqueId + "existe déjà");
+            const newId = scene.getUniqueId();
+            console.warn("L'objet ayant l'id :" + this.uniqueId + " existe déjà. Nouvel id : "+newId);
+            this.setUId(newId,false);
             return;
         }
+        this.metadata = { gameObjectId: this.uniqueId, type: "GameObject", parentId: null }
 
 
     }
@@ -129,11 +133,13 @@ export class GameObject extends BABYLON.TransformNode {
         }
     }
 
-    setUId(value: number) {
+    setUId(value: number,deleteOldId = true) {
         const oldId = this.uniqueId;
         super.uniqueId = value;
-        this.metadata.gameObjectId = value;
-        GameObject._gameObjects.delete(oldId);
+        this.metadata["gameObjectId"] = value;
+        if(deleteOldId) {
+            GameObject._gameObjects.delete(oldId);
+        }
         GameObject._gameObjects.set(this.uniqueId, this);
         //console.log(GameObject._gameObjects);
     }

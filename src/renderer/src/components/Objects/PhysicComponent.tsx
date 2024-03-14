@@ -41,10 +41,11 @@ const PhysicComponent = (gameObjectId) => {
       rigidbodyRef.current = go.getComponent<Rigidbody>("Rigidbody");
       //setPhysicsEnabled(go.rigidbody != null);
       if (rigidbodyRef.current?.body) {
-        setPhysicsMotionType(rigidbodyRef.current.body.getMotionType());
+        setMotionTypeTitle(rigidbodyRef.current.body.getMotionType());
         setFriction(rigidbodyRef.current.body.getMassProperties().mass);
         setRestitution(rigidbodyRef.current.body.material.restitution);
       } else {
+        setMotionTypeTitle("Aucun");
       }
     }
   }, [gameObjectId]);

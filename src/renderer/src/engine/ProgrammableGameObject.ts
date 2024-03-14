@@ -35,16 +35,21 @@ export class ProgrammableGameObject extends GameObject {
     set position(newPosition: BABYLON.Vector3) {
         if (Game.getInstance().isRunning) {
             if (this._rigidbody.body) {
-                this._rigidbody.body.setTargetTransform(newPosition, Quaternion.Identity());
+                this._rigidbody.body.disablePreStep = false;
+                super.position = newPosition;
+                this._scene.onAfterRenderObservable.addOnce(() => {
+                    // Turn disablePreStep on again for maximum performance
+                    this._rigidbody.body!.disablePreStep = true;
+                })
             }
         }
         super.position = newPosition;
     }
 
-    translate(axis: BABYLON.Vector3, distance: number, space: BABYLON.Space): void {
-        super.translate(axis, distance, space);
-        if(this._rigidbody.body) {
-            this._rigidbody.body.setTargetTransform(this._rigidbody.body.transformNode.absolutePosition, this._rigidbody.body.transformNode.rotationQuaternion);
+    move(axis: BABYLON.Vector3, distance: number, space: BABYLON.Space): void {
+        const target = super.translate(axis, distance, space);
+        if (this._rigidbody.body) {
+            this._rigidbody.body.setTargetTransform(target.absolutePosition, this._rigidbody.body.transformNode.rotationQuaternion);
         }
 
     }
@@ -65,15 +70,15 @@ export class ProgrammableGameObject extends GameObject {
 
     }
 
-    public save() : any {
+    public save(): any {
         this.metadata["finiteStateMachines"] = [];
-        this._fsms.forEach((fsm)=>{
+        this._fsms.forEach((fsm) => {
 
             const fsmJSON = {
-                name:fsm.name,
+                name: fsm.name,
                 states: []
             };
-            fsm.states.forEach((state)=>{
+            fsm.states.forEach((state) => {
                 console.log(state.stateFile);
                 fsmJSON.states.push({
                     statefile: {

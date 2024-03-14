@@ -5,8 +5,9 @@ import Component from "../lgm3D.Component";
 export default class Rigidbody extends Component {
 
     options = {
+        angularDamping:100,
+        linearDamping: 10,
         mass: 1,
-        restitution: 0.2
     }
 
     private _rigidbody: PhysicsBody;
@@ -36,8 +37,10 @@ export default class Rigidbody extends Component {
         if (motionType) {
             if (!this._rigidbody) {
                 this._rigidbody = new BABYLON.PhysicsBody(this._gameObject, BABYLON.PhysicsMotionType.DYNAMIC, false, this._gameObject.scene);
-                this._rigidbody.material = { restitution: this.options.restitution };
+                //this._rigidbody.material = { restitution: this.options.restitution };
                 this._rigidbody.shape = this._shapeContainer; // todo : vérifier si il faut mettre après this._shapeContainer.addChildFromParent si il y a des enfants
+                this._rigidbody.setLinearDamping(this.options.linearDamping);
+                this._rigidbody.setAngularDamping(this.options.angularDamping);
                 this._rigidbody.setMassProperties({
                     mass: this.options.mass,
                 });

@@ -19,19 +19,47 @@ export default class DemoTest {
         this.scene = scene;
         
         this.car = GameObject.gameObjects.get(485);
+        this.carBody = this.car.getComponent<Rigidbody>("Rigidbody");
 
         //this.testA();
         this.testB();
-    
 
-            // carCollider.addComponent(new BoxCollider(scene,carCollider),"BoxCollider");
-            // carCollider.scaling = new BABYLON.Vector3(3,3,3);
-            // carCollider.setParent(car);
-            // carCollider.setPositionWithLocalVector(new BABYLON.Vector3(0,0,0));
+            const carCollider = GameObject.gameObjects.get(69);
 
-            // const obstacle =  new GameObject("Obstacle",scene);
-            // obstacle.position = new BABYLON.Vector3(0,5,0);
-            // obstacle.addComponent(new BoxCollider(scene,obstacle),"BoxCollider");
+            carCollider!.setParent(null);
+            carCollider!.position = new BABYLON.Vector3(10,10,10);
+            carCollider!.getComponent<BoxCollider>("BoxCollider")!.destroy();
+
+            const player = new GameObject("Player",scene);
+            const collision = new GameObject("Collider",scene);
+            collision.position.copyFrom(player.position);
+            collision.setParent(player);
+            const boxRB = player.addComponent(new Rigidbody(player),"Rigidbody");
+            console.log(player._components);
+            const collider = collision.addComponent(new BoxCollider(scene,collision),"BoxCollider");
+            
+            //const boxShape = new BABYLON.PhysicsShapeBox(collider._boxMesh.position,collider._boxMesh.rotationQuaternion,new BABYLON.Vector3(2,2,2),scene);
+            
+            boxRB._shapeContainer.addChildFromParent(collider._boxMesh,collider._colliderShape,player);
+            boxRB.shape = boxRB._shapeContainer;
+            
+            //player.position = new BABYLON.Vector3(4,2,3);
+            this.car.position = new BABYLON.Vector3(4,this.car.position.y,-5);
+
+            Game.getInstance().onGameUpdate.add(()=>{
+                 player.translate(new BABYLON.Vector3(0,0,1),Game.deltaTime * 15);
+                 boxRB.body.setTargetTransform(player.absolutePosition,player.rotationQuaternion);
+            });
+            
+            
+            
+            
+            const obstacle =  new GameObject("Obstacle",scene);
+            obstacle.position = new BABYLON.Vector3(1.72,2.38,21.15);
+            obstacle.scaling = new BABYLON.Vector3(5,5,5);
+            obstacle.addComponent(new BoxCollider(scene,obstacle),"BoxCollider");
+
+            
 
             
             // box.gameObject.position = car!.position;
@@ -40,8 +68,9 @@ export default class DemoTest {
             
             //car!._shapeContainer.addChild(box._colliderShape);
 
-            // const roadMesh = GameObject.gameObjects.get(29)!.getChildMeshes()[0];
-            // const aggregate = new BABYLON.PhysicsAggregate(roadMesh, BABYLON.PhysicsShapeType.MESH, { mass: 0 }, scene);
+            const road = GameObject.gameObjects.get(29)!.dispose();
+            //const roadMesh = GameObject.gameObjects.get(29)!.getChildMeshes()[0];
+            //const aggregate = new BABYLON.PhysicsAggregate(roadMesh, BABYLON.PhysicsShapeType.MESH, { mass: 0 }, scene);
 
             Editor.getInstance().updateObjectsTreeView();
             
@@ -49,15 +78,12 @@ export default class DemoTest {
         
     }
 
-    update() {
-
-    }
-
     start() {
         // this.carBody.body.disablePreStep = false; 
         // this.scene.onAfterRenderObservable.addOnce(() => {
         //     this.carBody.body.disablePreStep = true;
         // });
+
     }
 
     stop(scene : BABYLON.Scene) {

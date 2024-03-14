@@ -8,7 +8,7 @@ import { ColliderMetaData, GameObjectComponentMetaData } from "../structs/Compon
 
 export default class BoxCollider extends Collider {
 
-    static COLLIDER_MAT : BABYLON.StandardMaterial;
+    static COLLIDER_MAT: BABYLON.StandardMaterial;
     // le collider n'a plus de physicsBody lorsqu'il est rattaché à un parent qui a Rigidbody
 
     _colliderShape: BABYLON.PhysicsShape;
@@ -53,14 +53,14 @@ export default class BoxCollider extends Collider {
 
 
 
-    constructor(scene: BABYLON.Scene,owner:GameObject) {
+    constructor(scene: BABYLON.Scene, owner: GameObject) {
 
         super(scene);
 
         this._gameObject = owner;
         this._scene = scene;
 
-        const shapeSize = new BABYLON.Vector3(1,1,1);
+        const shapeSize = new BABYLON.Vector3(1, 1, 1);
         this._boxMesh = BABYLON.MeshBuilder.CreateBox("BoxCollider", { height: shapeSize.y, width: shapeSize.x, depth: shapeSize.z }, scene);
         this._boxMesh.parent = this._gameObject;
         const shapePos = this._boxMesh.position;
@@ -74,13 +74,13 @@ export default class BoxCollider extends Collider {
         this._boxMesh.isVisible = true;
         this._boxMesh.visibility = 0.5;
 
-        this._physicsBody = new BABYLON.PhysicsBody(this._gameObject, BABYLON.PhysicsMotionType.STATIC,false,scene);
-        //this._colliderShape.material = { friction: 0.2, restitution: 0.3 };
-        this.updateBodyShape();
+        this._physicsBody = new BABYLON.PhysicsBody(this._gameObject, BABYLON.PhysicsMotionType.STATIC, false, scene);
+
+        //this.updateBodyShape();
 
         this._physicsBody.setMassProperties({ mass: 0 });
 
-        if(!BoxCollider.COLLIDER_MAT) {
+        if (!BoxCollider.COLLIDER_MAT) {
 
             BoxCollider.COLLIDER_MAT = new BABYLON.StandardMaterial("_EDITOR_COLLIDER_MAT_", scene);
             BoxCollider.COLLIDER_MAT.wireframe = true;
@@ -94,43 +94,58 @@ export default class BoxCollider extends Collider {
         this.isTrigger = false;
 
         this._boxMesh.isPickable = false;
-        
+
         // Cet évenement est appelé après l'activation du moteur physique
         // TODO : enlever cet event quand le collider est supprimé
-        Game.getInstance().onGameStarted.add(() => {
-            // Mise à jour de l'échelle
-            this.updateBodyShape();
+        Game.getInstance().onGameStarted.add(this.onGameStartedEvent());
 
-            // On remet à jour le shapeContainer si il y a des modifications sur les dimensions du boxCollider
-            const parent = this._gameObject.parent as GameObject;
-            if (parent) {
-                const parentRigidbody = parent.getComponent<Rigidbody>("Rigidbody");
-                if (parentRigidbody) {
-                    if (this._physicsBody) {
-                        console.log("dispose body");
+        Game.getInstance().onGameStoped.add(this.onGameStopedEvent());
+    }
+    
+    private onGameStopedEvent() {
+        
+        if (this._physicsBody) {
+            this._physicsBody.setCollisionCallbackEnabled(false);
+            this._physicsBody.getCollisionObservable().removeCallback(this.detectionCollision);
+        }
+    }
+
+    private onGameStartedEvent() {
+
+        // Mise à jour de l'échelle
+        this.updateBodyShape();
+
+        // On remet à jour le shapeContainer si il y a des modifications sur les dimensions du boxCollider
+        const parent = this._gameObject.parent;
+        console.log(parent);
+        if (parent) {
+            const parentRigidbody = parent.getComponent<Rigidbody>("Rigidbody");
+            if (parentRigidbody) { // BUG : il faut d'abord ajouter le composant rigidbody sur le parent avec les collider enfants
+                if (this._physicsBody) {
                         this._physicsBody.dispose();
+                        //this._colliderShape.dispose();
                         this._physicsBody = null;
-                    }
-                    //parentRigidbody._shapeContainer.removeChild(this._colliderShape);
-                    parentRigidbody._shapeContainer.addChildFromParent(parentRigidbody.gameObject, this._colliderShape, this._boxMesh);
-                } else {
-                    this._physicsBody.shape = this._colliderShape;
                 }
+                //parentRigidbody._shapeContainer.removeChild(this._colliderShape);
+                //parentRigidbody._shapeContainer.addChildFromParent(this._boxMesh, this._colliderShape, parentRigidbody.gameObject);
+            } else {
+                this._physicsBody.shape = this._colliderShape;
             }
+        }
 
-            if (this._physicsBody) {
-                this._physicsBody.setCollisionCallbackEnabled(true);
-                this._physicsBody.getCollisionObservable().add(this.detectionCollision);
-                this._physicsBody.disablePreStep = false;
-            }
-        });
+        if (this._physicsBody) {
+            this._physicsBody.setCollisionCallbackEnabled(true);
+            this._physicsBody.getCollisionObservable().add(this.detectionCollision);
+        }
+    }
 
-        Game.getInstance().onGameStoped.add(() => {
-            if (this._physicsBody) {
-                this._physicsBody.setCollisionCallbackEnabled(false);
-                this._physicsBody.getCollisionObservable().removeCallback(this.detectionCollision);
-            }
-        });
+    destroy() {
+        Game.getInstance().onGameStarted.removeCallback(this.onGameStartedEvent);
+        this._physicsBody?.setCollisionCallbackEnabled(false);
+        this._physicsBody?.getCollisionObservable().removeCallback(this.detectionCollision);
+        this._physicsBody?.dispose();
+        this._colliderShape.dispose();
+        this._boxMesh.dispose();
     }
 
     public toJson() {
@@ -150,7 +165,7 @@ export default class BoxCollider extends Collider {
             this._scene);
 
         this._colliderShape = collShapeUpdated;
-        if(this._physicsBody) {
+        if (this._physicsBody) {
             this._physicsBody.shape = this._colliderShape;
         }
     }

@@ -8,19 +8,19 @@ this.onUpdateState.add(() => {
   if (this.gameObject.qualifier == (-1)) {
   } else {
     if (InputManager.getKeyDown(KeyCode.Z)) {
-      this.gameObject.translate(BABYLON.Axis.Z,vitesse * Game.deltaTime, BABYLON.Space.LOCAL);
+      this.gameObject.move(BABYLON.Axis.Z,vitesse * Game.deltaTime, BABYLON.Space.LOCAL);
     } else if (InputManager.getKeyDown(KeyCode.S)) {
-      this.gameObject.translate(BABYLON.Axis.Z,(-vitesse) * Game.deltaTime, BABYLON.Space.LOCAL);
+      this.gameObject.move(BABYLON.Axis.Z,(-vitesse) * Game.deltaTime, BABYLON.Space.LOCAL);
     }
     if (InputManager.getKeyDown(KeyCode.Q)) {
-      this.gameObject.rotate(BABYLON.Axis.Y, BABYLON.Tools.ToRadians((-vitesseRotation) * Game.deltaTime), BABYLON.Space.LOCAL);
+      this.gameObject.rotate(BABYLON.Axis.Y, BABYLON.Tools.ToRadians((-vitesseRotation)), BABYLON.Space.LOCAL);
     } else if (InputManager.getKeyDown(KeyCode.D)) {
-      this.gameObject.rotate(BABYLON.Axis.Y, BABYLON.Tools.ToRadians(vitesseRotation * Game.deltaTime), BABYLON.Space.LOCAL);
+      this.gameObject.rotate(BABYLON.Axis.Y, BABYLON.Tools.ToRadians(vitesseRotation), BABYLON.Space.LOCAL);
     }
   }
   // Si l'objet est tombé ?
   if (this.gameObject.position.y <= -30) {
-    this.gameObject.position = new BABYLON.Vector3(0,100,0);
+    this.gameObject.position = new BABYLON.Vector3(0,5,0);
   }
 });
 
