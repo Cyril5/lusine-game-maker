@@ -76,7 +76,7 @@ export default class BoxCollider extends Collider {
 
         this._physicsBody = new BABYLON.PhysicsBody(this._gameObject, BABYLON.PhysicsMotionType.STATIC, false, scene);
 
-        //this.updateBodyShape();
+        this.updateBodyShape();
 
         this._physicsBody.setMassProperties({ mass: 0 });
 
@@ -113,25 +113,25 @@ export default class BoxCollider extends Collider {
     private onGameStartedEvent() {
 
         // Mise à jour de l'échelle
-        this.updateBodyShape();
+        //this.updateBodyShape();
 
         // On remet à jour le shapeContainer si il y a des modifications sur les dimensions du boxCollider
         const parent = this._gameObject.parent;
         console.log(parent);
-        if (parent) {
-            const parentRigidbody = parent.getComponent<Rigidbody>("Rigidbody");
-            if (parentRigidbody) { // BUG : il faut d'abord ajouter le composant rigidbody sur le parent avec les collider enfants
-                if (this._physicsBody) {
-                        this._physicsBody.dispose();
-                        //this._colliderShape.dispose();
-                        this._physicsBody = null;
-                }
-                //parentRigidbody._shapeContainer.removeChild(this._colliderShape);
-                //parentRigidbody._shapeContainer.addChildFromParent(this._boxMesh, this._colliderShape, parentRigidbody.gameObject);
-            } else {
-                this._physicsBody.shape = this._colliderShape;
-            }
-        }
+        // if (parent) {
+        //     const parentRigidbody = parent.getComponent<Rigidbody>("Rigidbody");
+        //     if (parentRigidbody) { // BUG : il faut d'abord ajouter le composant rigidbody sur le parent avec les collider enfants
+        //         if (this._physicsBody) {
+        //                 this._physicsBody.dispose();
+        //                 //this._colliderShape.dispose();
+        //                 this._physicsBody = null;
+        //         }
+        //         //parentRigidbody._shapeContainer.removeChild(this._colliderShape);
+        //         //parentRigidbody._shapeContainer.addChildFromParent(this._boxMesh, this._colliderShape, parentRigidbody.gameObject);
+        //     } else {
+        //         this._physicsBody.shape = this._colliderShape;
+        //     }
+        // }
 
         if (this._physicsBody) {
             this._physicsBody.setCollisionCallbackEnabled(true);
@@ -139,13 +139,17 @@ export default class BoxCollider extends Collider {
         }
     }
 
-    destroy() {
+    /**
+   * Supprime le composant BoxCollider de l'objet.
+   */
+    destroy() : void {
         Game.getInstance().onGameStarted.removeCallback(this.onGameStartedEvent);
         this._physicsBody?.setCollisionCallbackEnabled(false);
         this._physicsBody?.getCollisionObservable().removeCallback(this.detectionCollision);
         this._physicsBody?.dispose();
         this._colliderShape.dispose();
         this._boxMesh.dispose();
+        this._gameObject._components.delete(this);
     }
 
     public toJson() {
@@ -154,20 +158,22 @@ export default class BoxCollider extends Collider {
         return this.metaData;
     }
 
-    private updateBodyShape() {
+    updateBodyShape(updateSize = true) : BABYLON.PhysicsShapeBox {
 
         console.log(this._boxMesh.getBoundingInfo().boundingBox.extendSize);
         const collShapeUpdated = new BABYLON.PhysicsShapeBox(
             this._boxMesh.position,
             this._boxMesh.rotationQuaternion,
-            //new BABYLON.Vector3(2,2,2),
-            this._gameObject.parent ? this._boxMesh.getBoundingInfo().boundingBox.extendSize * this._gameObject.scaling : this._gameObject.scaling,
-            this._scene);
+            //this._gameObject.parent ? this._boxMesh.getBoundingInfo().boundingBox.extendSize * this._gameObject.scaling : this._gameObject.scaling,
+            updateSize ? this._gameObject.scaling : this._colliderShape.getBoundingBox().extendSizeWorld * this._gameObject.scaling,
+            this._scene
+        );
 
         this._colliderShape = collShapeUpdated;
         if (this._physicsBody) {
             this._physicsBody.shape = this._colliderShape;
         }
+        return collShapeUpdated;
     }
 
     detectionCollision(collisionEvent: BABYLON.IPhysicsCollisionEvent): void {

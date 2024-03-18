@@ -4,6 +4,65 @@
   height: 80vh;
 }
 
+#loadingScreen {
+  position: absolute;
+  left: 0;
+  top	: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: white;
+  font-size: 25px;
+  text-align: center;
+  background-color: rgba(30, 27, 36, 100%);
+  z-index: 1054;
+  opacity: 1;
+  transition: opacity 2s ease; /* Transition sur l'opacité */
+  .hide {
+    display: none;
+    opacity: 0; /* Assure que la div est invisible lorsqu'elle est cachée */
+  }
+
+  .havok {
+    position: absolute;
+    right: 100px;
+    bottom: 50px;
+    display: flex;
+    height: 45px;
+    p{
+      font-size: 0.8rem;
+      margin-right: 10px;
+    }
+    img {
+      margin-top: 5px;
+      height: 100%;
+    }
+  }
+  
+  @keyframes rotateYAnimation {
+    from {
+      transform: rotateY(0deg);
+    }
+    to {
+      transform: rotateY(360deg);
+    }
+  }
+}
+
+.div3d {
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d; /* Indique que les enfants doivent être positionnés dans un espace 3D */
+  animation: rotateYAnimation 2s linear infinite;
+  img {
+    width: 50%;
+    padding-bottom: 25px;
+  }
+}
+
+
 #inspector-host {
   position: absolute;
 }

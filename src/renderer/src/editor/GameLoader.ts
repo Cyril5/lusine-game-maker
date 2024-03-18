@@ -18,11 +18,21 @@ import { text } from "stream/consumers";
 export default abstract class GameLoader {
 
     private _scene: BABYLON.Scene;
-
+    
     constructor(scene) {
         this._scene = scene;
     }
 
+    // private static onProgressSceneLoader(event : BABYLON.ISceneLoaderProgressEvent) {
+    //     let loadedPercent = 0;
+    //     if (event.lengthComputable) {
+    //         loadedPercent = (event.loaded * 100 / event.total).toFixed();
+    //     } else {
+    //         var dlCount = event.loaded / (1024 * 1024);
+    //         loadedPercent = Math.floor(dlCount * 100.0) / 100.0;
+    //     }
+    // };
+    
     public static save(scene: BABYLON.Scene) {
         console.log("saving");
 
@@ -198,7 +208,7 @@ export default abstract class GameLoader {
                         pgo.setUId(node.metadata.gameObjectId);
                         node.name += " (orig)";
                         pgo.position.copyFrom(node.position);
-                        pgo.rotation.copyFrom(node.rotation);
+                        pgo.rotation = node.rotation.clone();
                         pgo.scaling.copyFrom(node.scaling);
 
                         //FSM

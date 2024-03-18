@@ -3,8 +3,9 @@ import { Scene, Mesh } from "@babylonjs/core";
 import SceneComponent from "./SceneComponent"; // uses above component in same directory
 import { Renderer } from "../engine/Renderer";
 import '@babylonjs/inspector';
-// import 'babylonjs-loaders';
 import '@babylonjs/loaders/OBJ/objFileLoader';
+import lgmLogo from '../assets/logo-block.png';
+import havokLogo from '../assets/Havok_logo_yellow.png';
 
 // import SceneComponent from 'babylonjs-hook'; // if you install 'babylonjs-hook' NPM.
 
@@ -36,7 +37,21 @@ export default class RendererComponent extends Component {
   render() {
     return (
       <>
-      <div id="fps-meter" ref={this.fpsRef}>0 FPS</div>
+        <div id="fps-meter" ref={this.fpsRef}>0 FPS</div>
+        
+        <div id="loadingScreen">
+          <div className="conteneur">
+            <div className="div3d">
+              <img src={lgmLogo} alt="LGM3DLogo" />
+            </div>
+            Chargement ...
+            <div className="havok">
+              <p>Powered by</p>
+              <img src={havokLogo} alt="Havok logo" />
+            </div>
+          </div>
+        </div>
+        
         <SceneComponent antialias onSceneReady={this.onSceneReady} onRender={this.onRender} id="canvas-render" />
       </>
     );

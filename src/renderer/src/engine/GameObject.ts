@@ -1,31 +1,32 @@
-import { Component } from "./lgm3D.Component";
+import Component from "./lgm3D.Component";
 import { Vector3 } from "@babylonjs/core";
 import { Observable } from "babylonjs";
 import { Exclude, Expose, instanceToPlain } from 'class-transformer';
 
 export class GameObject extends BABYLON.TransformNode {
 
+    
     private _components: Map<string, Component>
-
+    
     private static _gameObjects = new Map<number | string, GameObject>() //unique id or uuid // map uuid,gameObject
-
+    
     _collider: Collider;
 
     qualifier: number = 0;
-
+    
     /**
     * Observable lorsque l'objet est détruit.
     */
     onDelete: Observable<void>;
     /**
-    * Observable lorsque l'objet est créé.
+     * Observable lorsque l'objet est créé.
     */
-    onCreated: Observable<void>;
-    /**
+   onCreated: Observable<void>;
+   /**
      * Observable lorsque le parent change
      */
     onParentChange: Observable<GameObject>;
-
+    
     /**
     * Get l'identifiant unique du GameObject.
     */
@@ -33,8 +34,8 @@ export class GameObject extends BABYLON.TransformNode {
         return this.uniqueId;
     }
 
-
-
+    
+    
     set type(value) {
         this.metadata.type = value;
     }
@@ -46,9 +47,9 @@ export class GameObject extends BABYLON.TransformNode {
     get scene(): BABYLON.Scene {
         return this._scene;
     }
-
+    
     static saveAllTransforms() {
-
+        
         GameObject._gameObjects.forEach((go, key) => {
             go.saveTransform();
         });
@@ -57,13 +58,14 @@ export class GameObject extends BABYLON.TransformNode {
     public static get gameObjects() {
         return GameObject._gameObjects;
     }
-
+    
     public addComponent<T extends Component>(component: T, componentName: string): Component {
         this._components.set(componentName, component);
+        component.name = componentName;
         component._gameObject = this;
         return component;
     }
-
+    
     public static createFromTransformNodeMetaData(node : BABYLON.TransformNode,scene : BABYLON.Scene) : GameObject {
         const go = new GameObject(node.name,scene);
         go.setUId(node.metadata.gameObjectId);
@@ -82,6 +84,11 @@ export class GameObject extends BABYLON.TransformNode {
             return null;
         }
     }
+
+
+    // public getComponentsInChildren<T extends Component>(componentName) : T[] {
+
+    // }
 
     public removeComponent(componentName: string): void {
         this._components.delete(componentName);
@@ -122,7 +129,7 @@ export class GameObject extends BABYLON.TransformNode {
         }
         this.metadata = { gameObjectId: this.uniqueId, type: "GameObject", parentId: null }
 
-
+        
     }
 
     // ECS
@@ -143,8 +150,13 @@ export class GameObject extends BABYLON.TransformNode {
         GameObject._gameObjects.set(this.uniqueId, this);
         //console.log(GameObject._gameObjects);
     }
-
-    dispose() {
+    
+    /**
+   * Supprime le GameObject de la scene.
+   * @remarks
+   * Veuillez à supprimer tous les composants de l'objet avant de supprimer le gameObject
+   */
+    dispose() : void {
         this.onDelete.notifyObservers();
         GameObject._gameObjects.delete(this.uniqueId);
         // this.onCreated.clear();
@@ -230,6 +242,10 @@ export class GameObject extends BABYLON.TransformNode {
         });
         console.log(JSON.stringify(this.metadata));
         return this.metadata;
+    }
+
+    static nodeIsGameObject(node: BABYLON.TransformNode) {
+        return node instanceof GameObject;
     }
 }
 

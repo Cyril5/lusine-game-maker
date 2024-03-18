@@ -18,7 +18,7 @@ export default class Collider extends Component {
     }
 
     _colliderShape : BABYLON.PhysicsShape;
-    protected _physicsBody : BABYLON.PhysicsBody;
+    _physicsBody : BABYLON.PhysicsBody;
 
     static colliders = new Map<number | string, Collider>();
 

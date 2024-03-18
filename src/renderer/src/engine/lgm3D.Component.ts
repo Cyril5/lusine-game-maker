@@ -4,6 +4,7 @@ import { GameObjectComponentMetaData } from "./structs/ComponentsMetaData";
 
 export default abstract class Component {
 
+    name : string;
     _gameObject : GameObject; // set seulement pour la classe GameObject
 
     public metaData : GameObjectComponentMetaData = {
@@ -14,7 +15,12 @@ export default abstract class Component {
         return this._gameObject;
     }
 
-    public abstract update(dt : number);
+
+    public destroy() : void {
+        this._gameObject.removeComponent(this.componentName);
+    }
+
+    public abstract update(dt : number) : void;
     public toJson() : any {
         return this.metaData;
     }

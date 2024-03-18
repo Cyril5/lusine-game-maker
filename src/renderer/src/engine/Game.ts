@@ -6,6 +6,7 @@ import InputManager, { KeyCode } from "./InputManager";
 import State from "./FSM/State";
 import { Observable, Vector3 } from "babylonjs";
 import DemoTest from "./DemoTest";
+import Rigidbody from "./physics/lgm3D.Rigidbody";
 
 export class Game {
 
@@ -64,6 +65,11 @@ export class Game {
         this._demoTest.init(scene);
         
         for (const gameObject of gameObjects) {
+            
+            //Mis à jour des shapes des rigidbody
+            const rb = gameObject.getComponent<Rigidbody>("Rigidbody2");
+            rb?.test();
+            
             if(gameObject instanceof ProgrammableGameObject) {
                 
                 const states = gameObject.finiteStateMachines[0].states.length;
@@ -86,6 +92,7 @@ export class Game {
         clearTimeout(this._t);
         
         scene.physicsEnabled = true;
+        
         this.onGameStarted.notifyObservers();
         
         this._demoTest.start(scene);

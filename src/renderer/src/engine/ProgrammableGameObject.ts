@@ -12,7 +12,7 @@ export class ProgrammableGameObject extends GameObject {
     private _fsms: Array<FiniteStateMachine>;
     private _scene: BABYLON.Scene;
 
-    private _rigidbody: Rigidbody;
+    _rigidbody: Rigidbody;
 
     public get finiteStateMachines(): Array<FiniteStateMachine> {
         return this._fsms;
@@ -24,8 +24,8 @@ export class ProgrammableGameObject extends GameObject {
         this.type = ProgrammableGameObject.TYPE_NAME;
         this._fsms.push(new FiniteStateMachine(this));
         this._scene = scene;
-        this._rigidbody = new Rigidbody(this);
-        this.addComponent(this._rigidbody, "Rigidbody");
+        //this._rigidbody = new Rigidbody(this as GameObject);
+        //this.addComponent(this._rigidbody, "Rigidbody");
     }
 
     get position() {
@@ -34,13 +34,17 @@ export class ProgrammableGameObject extends GameObject {
 
     set position(newPosition: BABYLON.Vector3) {
         if (Game.getInstance().isRunning) {
+            if(!this._rigidbody) {
+                return;
+            }
+
             if (this._rigidbody.body) {
-                this._rigidbody.body.disablePreStep = false;
+                //this._rigidbody.body.disablePreStep = false;
                 super.position = newPosition;
-                this._scene.onAfterRenderObservable.addOnce(() => {
-                    // Turn disablePreStep on again for maximum performance
-                    this._rigidbody.body!.disablePreStep = true;
-                })
+                // this._scene.onAfterRenderObservable.addOnce(() => {
+                //     // Turn disablePreStep on again for maximum performance
+                //     this._rigidbody.body!.disablePreStep = true;
+                // })
             }
         }
         super.position = newPosition;
@@ -48,10 +52,7 @@ export class ProgrammableGameObject extends GameObject {
 
     move(axis: BABYLON.Vector3, distance: number, space: BABYLON.Space): void {
         const target = super.translate(axis, distance, space);
-        if (this._rigidbody.body) {
-            this._rigidbody.body.setTargetTransform(target.absolutePosition, this._rigidbody.body.transformNode.rotationQuaternion);
-        }
-
+        this.getComponent<Rigidbody>("Rigidbody2")!.body!.setTargetTransform(this.absolutePosition, this.rotationQuaternion);
     }
 
     rotate(axis: BABYLON.Vector3, amount: number, space?: BABYLON.Space | undefined): void {
