@@ -1,0 +1,123 @@
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable type="Number" id="qGp2^N*ar::l}f(P#fB@">turnSpeed</variable>
+  </variables>
+  <block type="state_onenterstate" id="$%`P8_I%J~DX;x%zlMub" x="13" y="-162">
+    <statement name="ENTERSTATE">
+      <block type="variables_set_dynamic" id="32:0tZGjR=#g!=e%g@g^">
+        <field name="VAR" id="qGp2^N*ar::l}f(P#fB@" variabletype="Number">turnSpeed</field>
+        <value name="VALUE">
+          <block type="math_number" id="ZN}y|$xvguISj@.W}3Q5">
+            <field name="NUM">50</field>
+          </block>
+        </value>
+      </block>
+    </statement>
+  </block>
+  <block type="state_onupdatestate" id="=2I,Vk7*J.TR~d/IVv0V" x="13" y="-62">
+    <statement name="UPDATESTATE">
+      <block type="controls_if" id="0j-u~UbGNd$3#!~|rEK_">
+        <mutation elseif="1"></mutation>
+        <value name="IF0">
+          <block type="inputs_if_keydown" id="8G6?mTl{94AAUYhXc4[z">
+            <value name="KEYCODE">
+              <block type="keycode" id="d|8[+GGbY*,Mkv488oXV">
+                <field name="KEYCODES">Z</field>
+              </block>
+            </value>
+          </block>
+        </value>
+        <statement name="DO0">
+          <block type="gameobject_move_forward" id="cq4P]mb%(}C!9Txo7i5b">
+            <value name="OBJ">
+              <block type="gameobject_this" id="kYbBwkDs]oXX0IrQdQNo"></block>
+            </value>
+            <value name="SPEED">
+              <block type="math_number" id="}E1rr;qOispnpW,j:X58">
+                <field name="NUM">5</field>
+              </block>
+            </value>
+          </block>
+        </statement>
+        <value name="IF1">
+          <block type="inputs_if_keydown" id="_KjY}pJ5t!/?%MNt?z9R">
+            <value name="KEYCODE">
+              <block type="keycode" id="N{T;6a2emwqc%kFN7AXl">
+                <field name="KEYCODES">S</field>
+              </block>
+            </value>
+          </block>
+        </value>
+        <statement name="DO1">
+          <block type="gameobject_move_forward" id="QGT*{-cW|P,OGqT5XN}G">
+            <value name="OBJ">
+              <block type="gameobject_this" id="gIO.[WdyxyW{vGYDX-~?"></block>
+            </value>
+            <value name="SPEED">
+              <block type="math_number" id="k+0%=ZrIp0xV1y5F7UhR">
+                <field name="NUM">-5</field>
+              </block>
+            </value>
+          </block>
+        </statement>
+        <next>
+          <block type="controls_if" id="xaK!vpms6PGn#-(|VwZa">
+            <mutation elseif="1"></mutation>
+            <value name="IF0">
+              <block type="inputs_if_keydown" id="d_[Ywa#`XL8+9C*y.i%@">
+                <value name="KEYCODE">
+                  <block type="keycode" id=")e2H.;I{fX*)bySDGfGi">
+                    <field name="KEYCODES">D</field>
+                  </block>
+                </value>
+              </block>
+            </value>
+            <statement name="DO0">
+              <block type="gameobject_turny" id="glngx[0`yul+CI:L$9W!">
+                <field name="SPACE">LOCAL</field>
+                <value name="OBJ">
+                  <block type="gameobject_this" id="N|.d?;gw6SE28epmh3KT"></block>
+                </value>
+                <value name="ROTSPEEDY">
+                  <block type="variables_get_dynamic" id="6;nyk5UEBTPFzX,:-39j">
+                    <field name="VAR" id="qGp2^N*ar::l}f(P#fB@" variabletype="Number">turnSpeed</field>
+                  </block>
+                </value>
+              </block>
+            </statement>
+            <value name="IF1">
+              <block type="inputs_if_keydown" id="zvgO7`l]]r1z$%@MVPc0">
+                <value name="KEYCODE">
+                  <block type="keycode" id="N*h7;8yaA|J?v5Z[qvsu">
+                    <field name="KEYCODES">Q</field>
+                  </block>
+                </value>
+              </block>
+            </value>
+            <statement name="DO1">
+              <block type="gameobject_turny" id="Grjr9.7=)jo2S6_k!;xw">
+                <field name="SPACE">LOCAL</field>
+                <value name="OBJ">
+                  <block type="gameobject_this" id=")H@Zk;ocwpzN(1_=xmIW"></block>
+                </value>
+                <value name="ROTSPEEDY">
+                  <block type="math_single" id="^]uL?GOC@#R/7~AK|(bF">
+                    <field name="OP">NEG</field>
+                    <value name="NUM">
+                      <shadow type="math_number" id="yh_ty,^*.RJ#*H3#|y=,">
+                        <field name="NUM">9</field>
+                      </shadow>
+                      <block type="variables_get_dynamic" id=",*-i2IX7Wd,!BEumAnxL">
+                        <field name="VAR" id="qGp2^N*ar::l}f(P#fB@" variabletype="Number">turnSpeed</field>
+                      </block>
+                    </value>
+                  </block>
+                </value>
+              </block>
+            </statement>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>

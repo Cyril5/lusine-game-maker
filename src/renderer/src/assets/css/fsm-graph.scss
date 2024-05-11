@@ -6,6 +6,13 @@
     position: absolute;
 }
 
+.fsm-variable {
+  display: flex;
+  border: 1px solid;
+  align-items: center;
+  justify-content: center;
+}
+
 .no-fsm-msg {
   display: flex;
   flex-direction: column;

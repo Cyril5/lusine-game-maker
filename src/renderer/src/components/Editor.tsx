@@ -339,7 +339,6 @@ export default class Editor extends Component {
 
             const parent = gameObject.parent?.metadata.gameObjectId | 0;
             //console.log(selectedId);
-
             arr.push({
                 "id": id,
                 "selected":selectedId == id,
@@ -347,7 +346,8 @@ export default class Editor extends Component {
                 "parent": parent,
                 "text": gameObject.name + " (ID : " + id + ")",
                 "data": {
-                    "type": gameObject.metadata.type
+                    "type": gameObject.metadata.type,
+                    "chidrenCount": gameObject.getChildren().length
                 }
             });
         }

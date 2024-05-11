@@ -1,8 +1,4 @@
-#canvas-render {
-  touch-action: none;
-  width: 100%;
-  height: 80vh;
-}
+
 
 #loadingScreen {
   position: absolute;
@@ -69,6 +65,7 @@
 
 #fps-meter {
   color: red;
+  position: absolute;
 }
 
 .tree-btn {
@@ -115,6 +112,33 @@
 .modal-3d-models {
   display: flex;
   flex-direction: row;
+}
+
+#canvas-render {
+  width: 100%;
+  height: 80vh;
+  //flex-grow: 1;
+  touch-action: none;
+}
+
+#inspector-host {
+  height: 80vh;
+
+  .value {
+    padding-right: 25px;
+  }
+}
+
+.level-editor-panels {
+  //display: flex;
+
+  .resizable {
+    height: 80vh;
+    min-width: 50px;
+    overflow: scroll;
+    //flex-grow: 1;
+  }
+
 }
 
 body {

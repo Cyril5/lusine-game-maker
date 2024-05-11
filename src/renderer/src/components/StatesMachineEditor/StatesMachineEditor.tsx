@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState } from 'react';
 
-import { Alert, Breadcrumb, Button, ButtonGroup, Card, Col, Container, Dropdown, Form, Row } from 'react-bootstrap';
+import { Accordion, Alert, Breadcrumb, Button, ButtonGroup, Card, Col, Container, Dropdown, Form, Row } from 'react-bootstrap';
 import '../../assets/css/fsm-graph.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Editor from '@renderer/components/Editor';
@@ -38,6 +38,10 @@ const StatesMachineEditor = ({ fsm = null, stateFiles = StateEditorUtils.statesF
     }
 
     const handleCreateState = () => {
+
+        //Ajout du node dans le fsmGraph
+
+
         //Ajouter un nouvel état au FSM
         fsmGraphRef.current.addNode(fsm.addState());
     }
@@ -77,7 +81,6 @@ const StatesMachineEditor = ({ fsm = null, stateFiles = StateEditorUtils.statesF
                         <Breadcrumb.Item href="#">{fsm.name}</Breadcrumb.Item>
                     </Breadcrumb>
 
-                    <Button onClick={handleCreateState}>Ajouter un état</Button>
                     <Container>
                         <Row>
                             <Col>
@@ -92,6 +95,32 @@ const StatesMachineEditor = ({ fsm = null, stateFiles = StateEditorUtils.statesF
                                     <p>Nom AF : <Form.Control type="text" defaultValue={fsm.name} /></p>
 
                                     <p>Démarrer au début du jeu : Oui</p>
+
+
+                                    <Accordion defaultActiveKey={['0']} alwaysOpen>
+                                        <Accordion.Item eventKey="0">
+                                            <Accordion.Header>Variables</Accordion.Header>
+                                            <Accordion.Body>
+                                                <Button>Ajouter</Button>
+
+                                                <div className="fsm-variable">
+                                                    <Form.Control type="text" readOnly/> 
+                                                    <p>Boolean</p>
+                                                    <Dropdown>
+                                                    <Dropdown.Toggle variant="dark" id="dropdown-basic">
+                                                        Vrai
+                                                    </Dropdown.Toggle>
+
+                                                    <Dropdown.Menu>
+                                                            <Dropdown.Item>Vrai</Dropdown.Item>
+                                                            <Dropdown.Item>Faux</Dropdown.Item>
+                                                    </Dropdown.Menu>
+                                                </Dropdown>
+                                                <Button variant='danger'>Delete</Button>
+                                                </div>
+                                            </Accordion.Body>
+                                        </Accordion.Item>
+                                    </Accordion>
 
                                     {selectedState && (
                                         <>

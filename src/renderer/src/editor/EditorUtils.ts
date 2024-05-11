@@ -45,9 +45,10 @@ export default class EditorUtils {
     return new Promise((resolve) => {
       dialog.showOpenDialog(
         {
-          properties: ['openFile', 'openDirectory'],
+          properties: ['openDirectory'],
         }
       ).then((result) => {
+        console.log(result);
         resolve(result); // Resolving the promise with the selected file/directory paths
       });
     });

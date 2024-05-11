@@ -4,57 +4,77 @@ import { Accordion, Button, Form, Offcanvas } from "react-bootstrap";
 import Editor from "./Editor";
 import GameObjectsTreeView from "./GameObjectsTreeView";
 import AddObjectModal from "./AddObjectModal";
+import { ResizableBox } from 'react-resizable';
 
-const GameObjectsTreeBar = (props : any) => {
+const GameObjectsTreeBar = (props: any) => {
 
-    const [divWidth, setDivWidth] = useState(250);
-    const {gameObjects} = props;
+  const { gameObjects } = props;
 
-    const handleMouseDown = (e) : void => {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-    };
-  
-    const handleMouseMove = (e) : void => {
-      const newWidth = divWidth + (e.movementX || 0);
-      setDivWidth(newWidth);
-    };
-  
-    const handleMouseUp = () : void => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
+  const [isResizing, setIsResizing] = useState(false);
+  const [width, setWidth] = useState(200); // Largeur initiale
 
-  const handleRefreshObjectsList = (event): void=> {
+  const handleRefreshObjectsList = (event): void => {
     Editor.getInstance().updateObjectsTreeView();
   }
 
-    return (
+  useEffect(() => {
+    const handleMouseUp = () => {
+      setIsResizing(false);
+    };
+
+    const handleMouseMove = (event) => {
+      if (isResizing) {
+        //setWidth(event.clientX);
+      }
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizing]);
+
+
+  const handleMouseDown = (event) => {
+    //setIsResizing(true);
+  };
+
+  return (
+
+    <>
+      <div
+        className="resizable"
+        style={{ width: `${width}px`, border: '1px solid #000', position: 'relative' }}
+      >
         <div
-            className="tree-bar"
-            onMouseDown={handleMouseDown}
-          >
-            {/* <Button variant="secondary" onClick={toggleShow} className="objects-tree-btn">
-                <FontAwesomeIcon icon="cube" />
-            </Button> */}
-            {/* <Offcanvas className="properties-bar" placement="start" scroll backdrop={false} show={show} onHide={handleClose} {...props}>
-                <Offcanvas.Header closeButton>
-                <Offcanvas.Title>Objets <FontAwesomeIcon icon="cube" /></Offcanvas.Title>
-                </Offcanvas.Header>
-                <Offcanvas.Body>
-                </Offcanvas.Body>
-              </Offcanvas> */}
+          className="resizer"
+          style={{
+            width: '10px',
+            height: '100%',
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            cursor: 'col-resize',
+          }}
+          onMouseDown={handleMouseDown}
+        ></div>
+        <h5><FontAwesomeIcon icon={'cubes'} /> Objets</h5>
+        <Button variant="success" size="sm"><FontAwesomeIcon icon={'refresh'} onClick={handleRefreshObjectsList} /></Button>
+
+        <GameObjectsTreeView gameObjects={gameObjects} />
+        <AddObjectModal show={false} />
+      </div>
 
 
-              
-              <h5><FontAwesomeIcon icon={'cubes'}/> Objets</h5>
-              <Button variant="success" size="sm"><FontAwesomeIcon icon={'refresh'} onClick={handleRefreshObjectsList}/></Button>
 
-            <GameObjectsTreeView gameObjects={gameObjects}/>
-            <AddObjectModal show={false} />
+      {/* <div className="tree-bar">
 
-        </div>
-    );
+        </div> */}
+    </>
+  );
 };
 
 export default GameObjectsTreeBar;

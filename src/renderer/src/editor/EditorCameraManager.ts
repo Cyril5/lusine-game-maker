@@ -2,29 +2,98 @@ import Editor from "@renderer/components/Editor";
 
 export default class EditorCameraManager {
 
-    constructor(canvas, scene,rendererCamera : BABYLON.Camera) {
+    private _scene;
+    private _orthoCamera;
+    constructor(canvas, scene, rendererCamera: BABYLON.Camera) {
+
+        this._scene = scene;
 
         // Créer une caméra orthographique
-        const orthoCamera = new BABYLON.FreeCamera('_EDITOR_ORTHO_CAM', new BABYLON.Vector3(0, 0, -10), scene);
-        orthoCamera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
+        this._orthoCamera = new BABYLON.FreeCamera('_EDITOR_ORTHO_CAM', new BABYLON.Vector3(0, 0, -10), scene);
+        this._orthoCamera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
+
+        let zoomFactor = 1;
+        const maxZoomScale = 3;
+        const minZoomSale = 0.1;
+
+        scene.onPointerObservable.add((pointerInfo) => {
+            if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERWHEEL) {
+                const delta = Math.sign(pointerInfo.event.deltaY);
+                zoomFactor += delta * 0.1; // Ajuste le facteur de zoom
+                this._orthoCamera.orthoLeft = -5 * zoomFactor; // Ajuste la taille de la vue orthographique en fonction du zoom
+                this._orthoCamera.orthoRight = 5 * zoomFactor;
+                this._orthoCamera.orthoTop = 5 * zoomFactor;
+                this._orthoCamera.orthoBottom = -5 * zoomFactor;
+            }
+        });
+
 
 
         canvas.addEventListener("keydown", (event) => {
-            if (event.code === 'Numpad8') {
-                
-                // Calculer le zoom en fonction de la taille de l'objet
-                scene.activeCamera = orthoCamera;
-                
-                console.log(Editor.getInstance().selectedGameObject!.getChildren()[0].getBoundingInfo());
-                const boundingBox = Editor.getInstance().selectedGameObject!.getChildren()[0].getBoundingInfo().boundingBox;
-                const size = boundingBox.maximum.subtract(boundingBox.minimum);
-                const objectSize = Math.max(size.x, size.y, size.z);
 
-                // Ajuster le zoom en fonction de la taille de l'objet
-                orthoCamera.zoomLevel = objectSize;
-            }else if(event.code === 'Numpad5') {
-                scene.activeCamera = rendererCamera;
+            const orthoCamKeys = ['Numpad2','Digit2', 'Numpad4','Digit4', 'Numpad5','Digit5', 'Numpad6','Digit6', 'Numpad8','Digit8'];
+
+            if (orthoCamKeys.includes(event.code)) {
+                this.activeOrthoCamera();
             }
+
+            switch (event.code) {
+                case 'Numpad4' || 'Digit4':
+                    this._orthoCamera.position.x = 10;
+                    this._orthoCamera.position.y = 0;
+                    this._orthoCamera.position.z = 0;
+                    this._orthoCamera.rotation.x = 0;
+                    this._orthoCamera.rotation.y = -Math.PI / 2;
+                    break;
+
+                case 'Numpad6' || 'Digit6':
+                    this._orthoCamera.position.x = -10;
+                    this._orthoCamera.position.y = 0;
+                    this._orthoCamera.position.z = 0;
+                    this._orthoCamera.rotation.x = 0;
+                    this._orthoCamera.rotation.y = Math.PI / 2;
+                    break;
+                case 'Numpad2' || 'Digit2':
+                    // front view
+                    this._orthoCamera.position.x = 0;
+                    this._orthoCamera.position.y = 0;
+                    this._orthoCamera.position.z = 10;
+                    this._orthoCamera.rotation.x = 0;
+                    this._orthoCamera.rotation.y = Math.PI;
+                    break;
+                case 'Numpad7' || 'Digit7':
+                    scene.activeCamera = rendererCamera;
+                    break;
+                case 'Numpad5' || 'Digit5':
+                    //top view
+                    this._orthoCamera.position.x = 0;
+                    this._orthoCamera.position.y = 10;
+                    this._orthoCamera.position.z = 0;
+                    this._orthoCamera.rotation.x = Math.PI / 2;
+                    this._orthoCamera.rotation.y = 0;
+                    break;
+                case 'Numpad8' || 'Digit8':
+                        // front view
+                        this._orthoCamera.position.x = 0;
+                        this._orthoCamera.position.y = 0;
+                        this._orthoCamera.position.z = -10;
+                        this._orthoCamera.rotation.x = 0;
+                        this._orthoCamera.rotation.y = 0;
+                break;
+            }
+
         });
+    }
+
+    private activeOrthoCamera() {
+        this._orthoCamera.orthoLeft = -5;
+        this._orthoCamera.orthoRight = 5;
+        this._orthoCamera.orthoTop = 5;
+        this._orthoCamera.orthoBottom = -5;
+
+        this._scene.activeCamera = this._orthoCamera;
+
+        const selection = Editor.getInstance().selectedGameObject;
+        this._orthoCamera.setTarget(selection ? selection.position : BABYLON.Vector3.ZeroReadOnly);
     }
 }

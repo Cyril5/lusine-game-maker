@@ -2,20 +2,22 @@ import Component from "./lgm3D.Component";
 import { Vector3 } from "@babylonjs/core";
 import { Observable } from "babylonjs";
 import { Exclude, Expose, instanceToPlain } from 'class-transformer';
+import Rigidbody from "./physics/lgm3D.Rigidbody";
 
 export class GameObject extends BABYLON.TransformNode {
 
+    
     
     private _components: Map<string, Component>
     
     private static _gameObjects = new Map<number | string, GameObject>() //unique id or uuid // map uuid,gameObject
     
     _collider: Collider;
-
+    
     qualifier: number = 0;
     
     /**
-    * Observable lorsque l'objet est détruit.
+     * Observable lorsque l'objet est détruit.
     */
     onDelete: Observable<void>;
     /**
@@ -24,16 +26,16 @@ export class GameObject extends BABYLON.TransformNode {
    onCreated: Observable<void>;
    /**
      * Observable lorsque le parent change
-     */
-    onParentChange: Observable<GameObject>;
-    
-    /**
-    * Get l'identifiant unique du GameObject.
-    */
-    get Id(): number {
-        return this.uniqueId;
+   */
+  onParentChange: Observable<GameObject>;
+  
+  /**
+   * Get l'identifiant unique du GameObject.
+  */
+ get Id(): number {
+     return this.uniqueId;
     }
-
+    
     
     
     set type(value) {
@@ -42,7 +44,7 @@ export class GameObject extends BABYLON.TransformNode {
     get type(): string {
         return this.metadata.type;
     }
-
+    
     private _scene: BABYLON.Scene;
     get scene(): BABYLON.Scene {
         return this._scene;
@@ -54,7 +56,7 @@ export class GameObject extends BABYLON.TransformNode {
             go.saveTransform();
         });
     }
-
+    
     public static get gameObjects() {
         return GameObject._gameObjects;
     }
@@ -74,8 +76,28 @@ export class GameObject extends BABYLON.TransformNode {
         go.rotation.copyFrom(node.rotation);
         go.scaling.copyFrom(node.scaling);
         return go;
-    } 
+    }
 
+    public static duplicate(go: GameObject) : GameObject {
+        const tn = go.clone(go.name+"__",null);
+        const go2 = new GameObject(go.name+"_clone",go.scene);
+        console.log(GameObject.gameObjects);
+        
+        //TODO : convertir tn en GameObject (remplacer avec go2)
+        //TODO : Copier le component Rigidbody
+        const rbSource = go.getComponent<Rigidbody>("Rigidbody");
+        if(rbSource) {
+            const rb = go2.addComponent(new Rigidbody(go),"Rigidbody");
+            (rb as Rigidbody).copy(rbSource);
+        }
+
+        return go2;
+    }
+    
+    public static getById(id) : GameObject {
+        return GameObject.gameObjects.get(id);
+    }
+    
     public getComponent<T extends Component>(componentName: string): T | null {
         const component = this._components.get(componentName);
         if (component) {

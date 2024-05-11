@@ -10,6 +10,8 @@ import Rigidbody from "./physics/lgm3D.Rigidbody";
 
 export class Game {
 
+    //historyCommand : ICommand;
+
     onGameStarted : Observable<void>;
     onGameUpdate : Observable<void>;
     onGameStoped : Observable<void>;
@@ -67,7 +69,7 @@ export class Game {
         for (const gameObject of gameObjects) {
             
             //Mis à jour des shapes des rigidbody
-            const rb = gameObject.getComponent<Rigidbody>("Rigidbody2");
+            const rb = gameObject.getComponent<Rigidbody>("Rigidbody");
             rb?.test();
             
             if(gameObject instanceof ProgrammableGameObject) {
@@ -142,28 +144,25 @@ export class Game {
 
         GameObject.gameObjects.forEach((go : GameObject,key)=>{
             if(go instanceof ProgrammableGameObject) {
-                console.warn(go.name);
-                //value.rotationQuaternion = BABYLON.Quaternion.FromEulerAngles(0,0,0);
-                if(go.rigidbody) {
-                    const zeroVector = BABYLON.Vector3.Zero();
-                    go.rigidbody.setAngularVelocity(zeroVector);
-                    go.rigidbody.setLinearVelocity(zeroVector);
-                    go.rigidbody.disablePreStep = false; 
-                    go.rigidbody.transformNode.position.set(0,0,0);
-                    //car.rotationQuaternion = BABYLON.Quaternion.FromEulerAngles(0,0,0);
-                    setTimeout(()=>{
-                        go.rigidbody.disablePreStep = true;
-                    },3000)
-                }
-                // value.physicsImpostor?.setAngularVelocity(zeroVector);
-                // value.physicsImpostor?.setLinearVelocity(zeroVector);
-                // value.physicsImpostor?.sleep();
+                // if(go.rigidbody) {
+                //     const zeroVector = BABYLON.Vector3.Zero();
+                //     go.rigidbody.setAngularVelocity(zeroVector);
+                //     go.rigidbody.setLinearVelocity(zeroVector);
+                //     go.rigidbody.disablePreStep = false; 
+                //     go.rigidbody.transformNode.position.set(0,0,0);
+                //     //car.rotationQuaternion = BABYLON.Quaternion.FromEulerAngles(0,0,0);
+                //     setTimeout(()=>{
+                //         go.rigidbody.disablePreStep = true;
+                //     },3000)
+                // }
+                go.position.set(0,0,0);
+                
             }
         })
         
         this._demoTest.stop(scene);
         
-        
+        this.onGameUpdate.clear();
         this.onGameStoped.notifyObservers();
         
     }

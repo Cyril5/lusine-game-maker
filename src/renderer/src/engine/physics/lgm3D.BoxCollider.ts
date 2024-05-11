@@ -53,28 +53,26 @@ export default class BoxCollider extends Collider {
 
 
 
-    constructor(scene: BABYLON.Scene, owner: GameObject) {
+    constructor(owner: GameObject) {
 
-        super(scene);
+        super(owner.scene);
 
         this._gameObject = owner;
-        this._scene = scene;
+        this._scene = owner.scene;
 
         const shapeSize = new BABYLON.Vector3(1, 1, 1);
-        this._boxMesh = BABYLON.MeshBuilder.CreateBox("BoxCollider", { height: shapeSize.y, width: shapeSize.x, depth: shapeSize.z }, scene);
+        this._boxMesh = BABYLON.MeshBuilder.CreateBox("BoxCollider", { height: shapeSize.y, width: shapeSize.x, depth: shapeSize.z }, owner.scene);
         this._boxMesh.parent = this._gameObject;
         const shapePos = this._boxMesh.position;
         this._colliderShape = new BABYLON.PhysicsShapeBox(
             shapePos,
             BABYLON.Quaternion.Identity(),
             shapeSize,
-            scene);
+            this._scene);
 
 
         this._boxMesh.isVisible = true;
         this._boxMesh.visibility = 0.5;
-
-        this._physicsBody = new BABYLON.PhysicsBody(this._gameObject, BABYLON.PhysicsMotionType.STATIC, false, scene);
 
         this.updateBodyShape();
 
@@ -82,7 +80,7 @@ export default class BoxCollider extends Collider {
 
         if (!BoxCollider.COLLIDER_MAT) {
 
-            BoxCollider.COLLIDER_MAT = new BABYLON.StandardMaterial("_EDITOR_COLLIDER_MAT_", scene);
+            BoxCollider.COLLIDER_MAT = new BABYLON.StandardMaterial("_EDITOR_COLLIDER_MAT_", this._scene);
             BoxCollider.COLLIDER_MAT.wireframe = true;
             BoxCollider.COLLIDER_MAT.diffuseColor = BABYLON.Color3.Green();
         }
@@ -159,6 +157,9 @@ export default class BoxCollider extends Collider {
     }
 
     updateBodyShape(updateSize = true) : BABYLON.PhysicsShapeBox {
+
+        this._physicsBody = new BABYLON.PhysicsBody(this._gameObject, BABYLON.PhysicsMotionType.STATIC, false, this._gameObject.scene);
+
 
         console.log(this._boxMesh.getBoundingInfo().boundingBox.extendSize);
         const collShapeUpdated = new BABYLON.PhysicsShapeBox(

@@ -40,6 +40,7 @@ export default class ProjectManager {
     static openProject() {
         EditorUtils.openDirectoryDialog().then((result) => {
             const selectedDir = result.filePaths[0];
+            console.log(result);
             if (selectedDir) {
                 ProjectManager._currentProjectDir = selectedDir;
                 ProjectManager._projectName = "Mon Projet";

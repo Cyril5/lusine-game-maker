@@ -39,7 +39,7 @@ const Models3DModal = (props: any) => {
             // Filtrer les fichiers avec les extensions .obj, .fbx et .glb
             const filteredFiles = files.filter(file => {
                 const ext = EditorUtils.path.extname(file).toLowerCase();
-                return ext == '.glb';
+                return ext == '.glb' || ext == '.gltf';
                 //return ext === '.obj' || ext === '.fbx' || ext === '.glb';
             });
 
@@ -128,7 +128,7 @@ const Models3DModal = (props: any) => {
 
                     <Button variant="primary" onClick={openFileDialog}>
                         Importer <FontAwesomeIcon icon="file-import" />
-                        <input type="file" ref={fileInputRef} accept={".glb"} onChange={handleFileChange} style={{ display: "none" }} />
+                        <input type="file" ref={fileInputRef} accept={".glb, .gltf"} onChange={handleFileChange} style={{ display: "none" }} />
                     </Button>
 
                     <Stack direction='horizontal'>

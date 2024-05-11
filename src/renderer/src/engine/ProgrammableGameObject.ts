@@ -24,8 +24,8 @@ export class ProgrammableGameObject extends GameObject {
         this.type = ProgrammableGameObject.TYPE_NAME;
         this._fsms.push(new FiniteStateMachine(this));
         this._scene = scene;
-        //this._rigidbody = new Rigidbody(this as GameObject);
-        //this.addComponent(this._rigidbody, "Rigidbody");
+        this._rigidbody = new Rigidbody(this as GameObject);
+        this.addComponent(this._rigidbody, "Rigidbody");
     }
 
     get position() {
@@ -33,37 +33,30 @@ export class ProgrammableGameObject extends GameObject {
     }
 
     set position(newPosition: BABYLON.Vector3) {
+        super.position = newPosition;
+
         if (Game.getInstance().isRunning) {
             if(!this._rigidbody) {
                 return;
             }
-
-            if (this._rigidbody.body) {
-                //this._rigidbody.body.disablePreStep = false;
-                super.position = newPosition;
-                // this._scene.onAfterRenderObservable.addOnce(() => {
-                //     // Turn disablePreStep on again for maximum performance
-                //     this._rigidbody.body!.disablePreStep = true;
-                // })
-            }
+            this._rigidbody!.body!.setTargetTransform(this.absolutePosition,this.rotationQuaternion);
         }
-        super.position = newPosition;
     }
 
     move(axis: BABYLON.Vector3, distance: number, space: BABYLON.Space): void {
         const target = super.translate(axis, distance, space);
-        this.getComponent<Rigidbody>("Rigidbody2")!.body!.setTargetTransform(this.absolutePosition, this.rotationQuaternion);
+        //this.getComponent<Rigidbody>("Rigidbody2")!.body!.setTargetTransform(this.absolutePosition, this.rotationQuaternion);
+        this._rigidbody!.body!.setTargetTransform(this.absolutePosition, this.rotationQuaternion);
     }
 
     rotate(axis: BABYLON.Vector3, amount: number, space?: BABYLON.Space | undefined): void {
         // amount de base est en radians
+        super.rotate(axis, amount, space);
         if (Game.getInstance().isRunning) {
             if (this._rigidbody.body) {
-                console.log(BABYLON.Tools.ToDegrees(amount));
-                this._rigidbody.body.setAngularVelocity(new Vector3(0, 1, 0));
-            } else {
-                super.rotate(axis, amount, space);
-            }
+                //console.log(BABYLON.Tools.ToDegrees(amount));
+                this._rigidbody!.body!.setTargetTransform(this.absolutePosition,this.rotationQuaternion);
+            } 
         }
     }
 

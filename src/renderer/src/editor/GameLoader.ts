@@ -9,7 +9,7 @@ import StateEditorUtils from "./StateEditorUtils";
 import Collider from "@renderer/engine/physics/lgm3D.Collider";
 import BoxCollider from "@renderer/engine/physics/lgm3D.BoxCollider";
 import AssetsManager from "./AssetsManager";
-import { StandardMaterial } from "babylonjs";
+import { Observable, StandardMaterial } from "babylonjs";
 import Utils from "@renderer/engine/lgm3D.Utils";
 import { text } from "stream/consumers";
 
@@ -18,9 +18,11 @@ import { text } from "stream/consumers";
 export default abstract class GameLoader {
 
     private _scene: BABYLON.Scene;
+    static onLevelLoaded : Observable<BABYLON.Scene> = new Observable();
     
     constructor(scene) {
         this._scene = scene;
+        this.onLevelLoaded = new Observable();
     }
 
     // private static onProgressSceneLoader(event : BABYLON.ISceneLoaderProgressEvent) {
@@ -78,8 +80,8 @@ export default abstract class GameLoader {
         FileManager.fileIsEmpty(projectFile, (isEmpty) => {
 
             if (isEmpty) {
-                //editor.setupBaseScene();
-                EditorUtils.showErrorMsg("Projet invalide !");
+                editor.setupBaseScene();
+                //EditorUtils.showErrorMsg("Projet invalide !");
                 return;
             } else {
                 editor.clearScene(scene);
@@ -259,6 +261,7 @@ export default abstract class GameLoader {
             //console.log(GameObject.gameObjects);
             editor.setupBaseScene();
             editor.updateObjectsTreeView();
+            GameLoader.onLevelLoaded.notifyObservers(scene);
         }
     }
 

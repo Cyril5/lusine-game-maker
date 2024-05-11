@@ -40,10 +40,12 @@ const PhysicComponent = (gameObjectId) => {
     if (go) {
       rigidbodyRef.current = go.getComponent<Rigidbody>("Rigidbody");
       //setPhysicsEnabled(go.rigidbody != null);
-      if (rigidbodyRef.current?.body) {
-        setMotionTypeTitle(rigidbodyRef.current.body.getMotionType());
-        setFriction(rigidbodyRef.current.body.getMassProperties().mass);
-        setRestitution(rigidbodyRef.current.body.material.restitution);
+      if (rigidbodyRef.current) {
+        setMotionTypeTitle(rigidbodyRef.current.options.type);
+        // setFriction(rigidbodyRef.current.body.getMassProperties().mass);
+        // if(rigidbodyRef.current._shapeContainer.material) {
+        //   setRestitution(rigidbodyRef.current._shapeContainer.material.restitution);
+        // }
       } else {
         setMotionTypeTitle("Aucun");
       }
@@ -56,15 +58,15 @@ const PhysicComponent = (gameObjectId) => {
     switch (motionType) {
       case "DYNAMIC":
         setMotionTypeTitle("Dynamique");
-        rigidbodyRef.current!.setPhysicsType(BABYLON.PhysicsMotionType.DYNAMIC);
+        rigidbodyRef.current!.options.type = BABYLON.PhysicsMotionType.DYNAMIC;
         break;
       case "KINEMATIC":
         setMotionTypeTitle("Cinématique");
-        rigidbodyRef.current!.setPhysicsType(BABYLON.PhysicsMotionType.ANIMATED);
+        rigidbodyRef.current!.options.type = BABYLON.PhysicsMotionType.ANIMATED;
         break;
       default:
         setMotionTypeTitle("Aucun");
-        rigidbodyRef.current!.setPhysicsType(null);
+        rigidbodyRef.current!.options.type = -1;
         break;
     }
     // const active = e.target.checked;
@@ -98,6 +100,11 @@ const PhysicComponent = (gameObjectId) => {
     <>
         {rigidbodyRef.current && (
           <>
+          Activée ?
+          <DropdownButton id="dropdown-active-physics" title={'Oui'}>
+            <Dropdown.Item>Oui</Dropdown.Item>
+            <Dropdown.Item>Non</Dropdown.Item>
+          </DropdownButton>
           Type mouvement
           <DropdownButton id="dropdown-rigidbody-type" title={motionTypeTitle}>
             <Dropdown.Item onClick={() => handleMotionType(null)}>Aucun</Dropdown.Item>

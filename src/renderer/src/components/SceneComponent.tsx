@@ -5,7 +5,7 @@ import EditorUtils from "@renderer/editor/EditorUtils";
 
 export default ({ antialias, engineOptions, adaptToDeviceRatio, sceneOptions, onRender, onSceneReady, ...rest }) => {
   const reactCanvas = useRef(null);
-  const engineRef = useRef(null);
+  const engineRef = useRef<BABYLON.Engine | BABYLON.WebGPUEngine>(null);
 
   let scene : Scene;
 
@@ -14,11 +14,15 @@ export default ({ antialias, engineOptions, adaptToDeviceRatio, sceneOptions, on
   const initEngine = async (canvas)=> {
     switch (rendererEngineType) {
       case 1:
-        engineRef.current = new BABYLON.WebGPUEngine(canvas);
-        await engineRef.current.initAsync();
-        console.log("WebGPU engine ready");
-        break;
-    
+        const webGPUSupported = await BABYLON.WebGPUEngine.IsSupportedAsync;
+        if (webGPUSupported) {
+          engineRef.current = new BABYLON.WebGPUEngine(canvas);
+          
+          await engineRef.current.initAsync();
+          console.log("WebGPU engine ready");
+          break;
+        }
+
       default:
         engineRef.current = new Engine(canvas, antialias, engineOptions, adaptToDeviceRatio);
         break;
@@ -57,7 +61,11 @@ export default ({ antialias, engineOptions, adaptToDeviceRatio, sceneOptions, on
 
     if (!canvas) return;
 
-    initEngine(canvas);
+    try{
+      initEngine(canvas);
+    }catch(e) {
+      alert(e);
+    }
     //const engine = new Engine(canvas, antialias, engineOptions, adaptToDeviceRatio);
 
     // const scene = new Scene(engine, sceneOptions);

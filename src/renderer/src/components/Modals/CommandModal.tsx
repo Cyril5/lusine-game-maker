@@ -3,8 +3,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Card, Col, Container, Row } from 'react-bootstrap';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
-import { ClassAPITest } from '../engine/ClassAPITest';
-import { GameObject } from '../engine/GameObject';
+import { ClassAPITest } from '../../engine/ClassAPITest';
+import { GameObject } from '../../engine/GameObject';
 
 function CommandModal(props: any) {
 

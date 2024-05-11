@@ -58,7 +58,7 @@ export class Model3D extends GameObject {
                     //---------------------------------------------------
                     // Fusionner tous les maillages individuels en un seul maillage
                     const mergedMesh = BABYLON.Mesh.MergeMeshes(meshes[0].getChildMeshes(), true, true, undefined, false, true);
-                    if (extension === "glb") {
+                    if (extension === "glb" || extension === "gltf") {
                         //enlever le mesh root "__root__"
                         meshes[0].dispose();
                     }
