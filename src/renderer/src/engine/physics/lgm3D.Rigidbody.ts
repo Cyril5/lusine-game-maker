@@ -4,6 +4,7 @@ import Component from "../lgm3D.Component";
 import BoxCollider from "./lgm3D.BoxCollider";
 import EditorUtils from "@renderer/editor/EditorUtils";
 import { Material, StandardMaterial } from "babylonjs";
+import Collider from "./lgm3D.Collider";
 
 export default class Rigidbody extends Component {
 
@@ -15,7 +16,7 @@ export default class Rigidbody extends Component {
         mass: 1,
     }
 
-    private _body: PhysicsBody;
+    private _body: BABYLON.PhysicsBody | null = null;
     _shapeContainer: BABYLON.PhysicsShapeContainer | null = null;
     _shapeContainerChildren: Array<BABYLON.PhysicsShape>; //TODO : Enveler de la liste les physicsShape disposed
 
@@ -25,8 +26,6 @@ export default class Rigidbody extends Component {
     }
 
     public copy(rbSource: Rigidbody) {
-        this._body = new BABYLON.PhysicsBody(this._gameObject, BABYLON.PhysicsMotionType.DYNAMIC, false, this._gameObject.scene);
-        this._body.clone(rbSource._gameObject);
         this.options = rbSource.options;
     }
 
@@ -68,10 +67,10 @@ export default class Rigidbody extends Component {
 
     public setPhysicsType(motionType: BABYLON.PhysicsMotionType | -1) {
         if (motionType > -1) {
-            this._body = new BABYLON.PhysicsBody(this._gameObject, this.options.type, false, this._gameObject.scene);
+            this._body = new BABYLON.PhysicsBody(this._gameObject as BABYLON.TransformNode, this.options.type, false, this._gameObject.scene);
             
             this._body.shape = this._shapeContainer;
-            this._shapeContainer.material = { restitution: this.options.restitution };
+            this._shapeContainer!.material = { restitution: this.options.restitution };
             
             this._body.setMassProperties({
                 mass: this.options.mass,
@@ -103,8 +102,8 @@ export default class Rigidbody extends Component {
             }
             const go = node as GameObject;
             console.log(go.name);
-            const collider: BoxCollider = go.getComponent<BoxCollider>("BoxCollider");
-            const rigidbody: Rigidbody = go.getComponent<Rigidbody>("Rigidbody");
+            const collider: Collider | null = go.getComponent<BoxCollider>("BoxCollider");
+            const rigidbody: Rigidbody | null = go.getComponent<Rigidbody>("Rigidbody");
             if (!collider) {
                 return;
             }
@@ -113,7 +112,7 @@ export default class Rigidbody extends Component {
                 return;
             }
 
-            this._shapeContainer!.addChildFromParent(this._gameObject, collider._colliderShape, collider._boxMesh);
+            this._shapeContainer!.addChildFromParent(this._gameObject as BABYLON.TransformNode, collider._colliderShape, collider._boxMesh);
 
             if (this._shapeContainer!.getNumChildren() > 1)
                 this._shapeContainer?.removeChild(0);

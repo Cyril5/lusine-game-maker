@@ -38,7 +38,7 @@ export default class DemoTest {
             var groundAggregate = new BABYLON.PhysicsAggregate(ground, BABYLON.PhysicsShapeType.BOX, { mass: 0 }, scene);
 
             //TEST COPY
-            //const car2 = GameObject.duplicate(this.car);
+            const car2 = GameObject.duplicate(this.car);
 
             Editor.getInstance().updateObjectsTreeView();
 
@@ -86,18 +86,18 @@ export default class DemoTest {
         followCam.radius = 15;
         followCam.rotationOffset = 180;
         followCam.heightOffset = 5;
-        this.scene.setActiveCameraById("FollowCam");
+        //this.scene.setActiveCameraById("FollowCam");
 
         const groundMesh = this.scene.getMeshByUniqueId(50);
 
-        groundMesh!.physicsBody.disablePreStep = false; 
-        this.scene.onAfterRenderObservable.addOnce(() => {
-            groundMesh!.physicsBody.disablePreStep = true; 
-        });
+        // groundMesh!.physicsBody.disablePreStep = false; 
+        // this.scene.onAfterRenderObservable.addOnce(() => {
+        //     groundMesh!.physicsBody.disablePreStep = true; 
+        // });
 
-        groundMesh.scaling = new BABYLON.Vector3(0.5,3,0.5);
-        groundMesh.physicsBody?.shape!.dispose();
-        groundMesh.physicsBody!.shape = new PhysicsShapeMesh(groundMesh,this.scene);
+        // groundMesh.scaling = new BABYLON.Vector3(0.5,3,0.5);
+        // groundMesh.physicsBody?.shape!.dispose();
+        // groundMesh.physicsBody!.shape = new PhysicsShapeMesh(groundMesh,this.scene);
         
     }
 
