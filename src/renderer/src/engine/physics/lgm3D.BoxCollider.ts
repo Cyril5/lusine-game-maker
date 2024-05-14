@@ -55,14 +55,14 @@ export default class BoxCollider extends Collider {
 
     constructor(owner: GameObject) {
 
-        super(owner.scene);
+        super();
 
         this._gameObject = owner;
-        this._scene = owner.scene;
-
+        this._scene = this._gameObject.scene;
+        
         const shapeSize = new BABYLON.Vector3(1, 1, 1);
-        this._boxMesh = BABYLON.MeshBuilder.CreateBox("BoxCollider", { height: shapeSize.y, width: shapeSize.x, depth: shapeSize.z }, owner.scene);
-        this._boxMesh.parent = this._gameObject;
+        this._boxMesh = BABYLON.MeshBuilder.CreateBox("BoxCollider", { height: shapeSize.y, width: shapeSize.x, depth: shapeSize.z }, this._scene);
+        this._boxMesh.parent = this._gameObject.transform;
         const shapePos = this._boxMesh.position;
         this._colliderShape = new BABYLON.PhysicsShapeBox(
             shapePos,
@@ -114,7 +114,7 @@ export default class BoxCollider extends Collider {
         //this.updateBodyShape();
 
         // On remet à jour le shapeContainer si il y a des modifications sur les dimensions du boxCollider
-        const parent = this._gameObject.parent;
+        const parent = this._gameObject.transform.parent;
         console.log(parent);
         // if (parent) {
         //     const parentRigidbody = parent.getComponent<Rigidbody>("Rigidbody");
@@ -158,7 +158,7 @@ export default class BoxCollider extends Collider {
 
     updateBodyShape(updateSize = true) : BABYLON.PhysicsShapeBox {
 
-        this._physicsBody = new BABYLON.PhysicsBody(this._gameObject, BABYLON.PhysicsMotionType.STATIC, false, this._gameObject.scene);
+        this._physicsBody = new BABYLON.PhysicsBody(this._gameObject.transform, BABYLON.PhysicsMotionType.STATIC, false, this._gameObject.scene);
 
 
         console.log(this._boxMesh.getBoundingInfo().boundingBox.extendSize);
@@ -166,7 +166,7 @@ export default class BoxCollider extends Collider {
             this._boxMesh.position,
             this._boxMesh.rotationQuaternion,
             //this._gameObject.parent ? this._boxMesh.getBoundingInfo().boundingBox.extendSize * this._gameObject.scaling : this._gameObject.scaling,
-            updateSize ? this._gameObject.scaling : this._colliderShape.getBoundingBox().extendSizeWorld * this._gameObject.scaling,
+            updateSize ? this._gameObject.scale : this._colliderShape.getBoundingBox().extendSizeWorld * this._gameObject.scale,
             this._scene
         );
 
@@ -205,7 +205,7 @@ export default class BoxCollider extends Collider {
                                     if (otherCollider) {
                                         console.log(`collision : ${this._boxMesh.name} & ${otherColliderMesh.name}`);
 
-                                        (this._owner as ProgrammableGameObject)?.finiteStateMachines[0].onCollisionEnter.notifyObservers(otherCollider);
+                                        (this._gameObject as ProgrammableGameObject)?.finiteStateMachines[0].onCollisionEnter.notifyObservers(otherCollider);
                                     }
                                 }
 

@@ -97,7 +97,7 @@ export class Game {
         
         this.onGameStarted.notifyObservers();
         
-        this._demoTest.start(scene);
+        this._demoTest.start();
         
         //const followCam = scene.setActiveCameraByName("FollowCam");
         // const camera = scene.cameras[0];

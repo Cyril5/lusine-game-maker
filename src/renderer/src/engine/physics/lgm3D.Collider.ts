@@ -66,7 +66,7 @@ export default class Collider extends Component {
     }
 
     
-    constructor(scene: BABYLON.Scene) {
+    constructor() {
 
         super();
 

@@ -3,15 +3,14 @@ import FileManager from "@renderer/engine/FileManager";
 import EditorUtils from "./EditorUtils";
 import { GameObject } from "@renderer/engine/GameObject";
 import { Model3D } from "@renderer/engine/Model3D";
-import Editor from "@renderer/components/Editor";
 import { ProgrammableGameObject } from "@renderer/engine/ProgrammableGameObject";
 import StateEditorUtils from "./StateEditorUtils";
 import Collider from "@renderer/engine/physics/lgm3D.Collider";
 import BoxCollider from "@renderer/engine/physics/lgm3D.BoxCollider";
 import AssetsManager from "./AssetsManager";
-import { Observable, StandardMaterial } from "babylonjs";
+import { Observable} from "babylonjs";
 import Utils from "@renderer/engine/lgm3D.Utils";
-import { text } from "stream/consumers";
+import LGM3DEditor from "./LGM3DEditor";
 
 //import logo from "../assets/logo.png";
 
@@ -39,7 +38,8 @@ export default abstract class GameLoader {
         console.log("saving");
 
         scene.transformNodes.filter((tNode) => tNode.metadata).forEach((node) => {
-            (node as GameObject).save();
+            GameObject.getById(node.uniqueId).save();
+            //(node as GameObject).save();
         });
 
         const serializedScene = BABYLON.SceneSerializer.Serialize(scene);
@@ -75,7 +75,7 @@ export default abstract class GameLoader {
     public static load(scene) {
 
         const projectFile = ProjectManager.getFilePath('', 'game.lgm');
-        const editor = Editor.getInstance();
+        const editor = LGM3DEditor.getInstance();
 
         FileManager.fileIsEmpty(projectFile, (isEmpty) => {
 
@@ -97,7 +97,7 @@ export default abstract class GameLoader {
                 }
             }
             
-            editor.showStartupModal(false);
+            editor.states.setShowStartupModal(false);
         });
         
         const loadTextures = (materials) => {
@@ -157,7 +157,7 @@ export default abstract class GameLoader {
             let converted: Map<number, number> = new Map<number, number>();
 
 
-            scene.getNodes().forEach((node) => {
+            scene.getNodes().forEach((node : BABYLON.Node) => {
 
                 const nodeData = node.metadata;
 
@@ -187,8 +187,8 @@ export default abstract class GameLoader {
                         const model3d: Model3D = Model3D.createEmptyFromNodeData(node, scene);
                         model3d.setUId(node.metadata.gameObjectId);
                         node.name += " (orig)";
-                        model3d.position.copyFrom(node.position);
-                        model3d.rotation.copyFrom(node.rotation);
+                        model3d.transform.position.copyFrom(node.position);
+                        model3d.transform.rotation.copyFrom(node.rotation);
                         // model3d.scaling = node.scaling;
                         converted.set(node.uniqueId, model3d.Id);
 
@@ -200,7 +200,7 @@ export default abstract class GameLoader {
                         }
 
                         node.getChildren().forEach((child) => {
-                            child.parent = model3d;
+                            child.parent = model3d.transform;
                         });
 
                         //node.dispose();
@@ -209,9 +209,9 @@ export default abstract class GameLoader {
                         const pgo = new ProgrammableGameObject(node.name, scene);
                         pgo.setUId(node.metadata.gameObjectId);
                         node.name += " (orig)";
-                        pgo.position.copyFrom(node.position);
-                        pgo.rotation = node.rotation.clone();
-                        pgo.scaling.copyFrom(node.scaling);
+                        pgo.transform.position.copyFrom(node.position);
+                        pgo.transform.rotation = node.rotation.clone();
+                        pgo.transform.scaling.copyFrom(node.scaling);
 
                         //FSM
                         node.metadata.finiteStateMachines.forEach((fsmData, index) => {

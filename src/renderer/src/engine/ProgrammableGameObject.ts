@@ -1,4 +1,3 @@
-import { Quaternion, Vector3 } from "@babylonjs/core";
 import { FiniteStateMachine } from "./FSM/FiniteStateMachine";
 import { Game } from "./Game";
 import { GameObject } from "./GameObject";
@@ -28,10 +27,9 @@ export class ProgrammableGameObject extends GameObject {
         this.addComponent(this._rigidbody, "Rigidbody");
     }
 
-    get position() {
+    get position() : BABYLON.Vector3 {
         return super.position;
     }
-
     set position(newPosition: BABYLON.Vector3) {
         super.position = newPosition;
 
@@ -39,23 +37,23 @@ export class ProgrammableGameObject extends GameObject {
             if(!this._rigidbody) {
                 return;
             }
-            this._rigidbody!.body!.setTargetTransform(this.absolutePosition,this.rotationQuaternion);
+            this._rigidbody!.body!.setTargetTransform(this.transform.absolutePosition,this.transform.rotationQuaternion);
         }
     }
 
     move(axis: BABYLON.Vector3, distance: number, space: BABYLON.Space): void {
-        const target = super.translate(axis, distance, space);
+        const target = this.transform.translate(axis, distance, space);
         //this.getComponent<Rigidbody>("Rigidbody2")!.body!.setTargetTransform(this.absolutePosition, this.rotationQuaternion);
-        this._rigidbody!.body!.setTargetTransform(this.absolutePosition, this.rotationQuaternion);
+        this._rigidbody!.body!.setTargetTransform(this.transform.absolutePosition, this.transform.rotationQuaternion);
     }
 
     rotate(axis: BABYLON.Vector3, amount: number, space?: BABYLON.Space | undefined): void {
         // amount de base est en radians
-        super.rotate(axis, amount, space);
+        this.transform.rotate(axis, amount, space);
         if (Game.getInstance().isRunning) {
             if (this._rigidbody.body) {
                 //console.log(BABYLON.Tools.ToDegrees(amount));
-                this._rigidbody!.body!.setTargetTransform(this.absolutePosition,this.rotationQuaternion);
+                this._rigidbody!.body!.setTargetTransform(this.transform.absolutePosition,this.transform.rotationQuaternion);
             } 
         }
     }

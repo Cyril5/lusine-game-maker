@@ -1,12 +1,11 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { readFile } from 'fs';
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Card, Col, Container, Form, ProgressBar, Row, Stack } from 'react-bootstrap';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
-import Editor from './Editor';
 import ProjectManager from '@renderer/editor/ProjectManager';
 import EditorUtils from '@renderer/editor/EditorUtils';
+import LGM3DEditor from '@renderer/editor/LGM3DEditor';
 
 // import modelsDirectory from '../public/projects/MonProjet/models?url';
 
@@ -110,7 +109,7 @@ const Models3DModal = (props: any) => {
             convertMeterToCm: false
         };
         handleClose();
-        Editor.getInstance().addModel3DObject(file, options);
+        LGM3DEditor.getInstance().addModel3DObject(file, options);
     }
 
     const getModelText = (filename) => {

@@ -1,10 +1,9 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { DndProvider, MultiBackend, Tree, getBackendOptions } from '@minoru/react-dnd-treeview';
 import { GameObject } from '@renderer/engine/GameObject';
-import React, { useEffect, useState } from 'react';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { useEffect, useState } from 'react';
 import { Button } from 'react-bootstrap';
-import Editor from './Editor';
+import LGM3DEditor from '@renderer/editor/LGM3DEditor';
 
 // const initialData = [
 //   {
@@ -62,14 +61,17 @@ import Editor from './Editor';
 
 
 const GameObjectsTreeView = (props: any) => {
-  const [treeData, setTreeData] = useState(props.gameObject);
+
+  const {gameobjectslist} = props; // équivalent à props.gameobjectslist
+
+  const [treeData, setTreeData] = useState(gameobjectslist);
 
   useEffect(() => {
-    if(props.gameObjects) {
-        setTreeData(props.gameObjects);
+    if(gameobjectslist) {
+        setTreeData(gameobjectslist);
     }
 
-  }, [props.gameObjects])
+  }, [gameobjectslist])
 
   const handleDrop = (newTreeData,{ dragSourceId, dropTargetId, dragSource, dropTarget }) => {
     // alert(`${dragSourceId}`);
@@ -109,7 +111,7 @@ const GameObjectsTreeView = (props: any) => {
             {node.droppable && (
               <span onClick={onToggle}><FontAwesomeIcon icon={isOpen ? 'minus' : 'plus'}></FontAwesomeIcon> </span>
             )}
-            <Button variant={node.selected ? 'warning': 'secondary'} className='tree-btn' onClick={()=>Editor.getInstance().selectGameObject(node.id)}>
+            <Button variant={node.selected ? 'warning': 'secondary'} className='tree-btn' onClick={()=>LGM3DEditor.getInstance().selectGameObject(node.id)}>
               <FontAwesomeIcon icon={node.data.type=='Model3D' ? 'cube' : 'bug'}></FontAwesomeIcon>
               {node.text}
             </Button>

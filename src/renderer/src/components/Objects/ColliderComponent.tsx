@@ -1,6 +1,6 @@
+import LGM3DEditor from "@renderer/editor/LGM3DEditor";
 import { Component, ReactNode, useEffect, useRef, useState } from "react";
 import { Form } from "react-bootstrap";
-import Editor from "../Editor";
 
 const ColliderComponent = (gameObjectId) => {
 
@@ -14,7 +14,7 @@ const ColliderComponent = (gameObjectId) => {
         //     });
         // });
 
-        // const rotGizmo = Editor.getInstance().getGizmo('ROT');
+        // const rotGizmo = LGM3DEditor.getInstance().getGizmo('ROT');
         // rotGizmo!.xGizmo.dragBehavior.onDragObservable.add(()=>{
         //     handleSetRotation();
         // });
@@ -29,7 +29,7 @@ const ColliderComponent = (gameObjectId) => {
     }, [])
 
     useEffect(() => {
-        const go = Editor.getInstance().selectedGameObject;
+        const go = LGM3DEditor.getInstance().selectedGameObject;
         if (go) {
             gameObjectRef.current = go;
         }

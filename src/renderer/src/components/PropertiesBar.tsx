@@ -2,15 +2,16 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Accordion, Button, Dropdown, Form, Offcanvas } from "react-bootstrap";
 import FSMComponent from "./FSMComponent";
-import Editor from "./Editor";
+import Editor from "./EditorOld";
 import '@renderer/assets/css/properties-bar.scss';
-import TransformComponent from "./TransformComponent";
+import TransformComponent from "./Objects/TransformComponent";
 import { GameObject } from "@renderer/engine/GameObject";
 import ColliderComponent from "./Objects/ColliderComponent";
 import PhysicComponent from "./Objects/PhysicComponent";
 import BoxCollider from "@renderer/engine/physics/lgm3D.BoxCollider";
 import Rigidbody from "@renderer/engine/physics/lgm3D.Rigidbody";
 import { ProgrammableGameObject } from "@renderer/engine/ProgrammableGameObject";
+import LGM3DEditor from "@renderer/editor/LGM3DEditor";
 
 const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
 
@@ -32,7 +33,7 @@ const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
 
     // Si c'est un autre gameObject on met à jour la vue
     useEffect(() => {
-        gameObjectRef.current = Editor.getInstance().selectedGameObject;
+        gameObjectRef.current = LGM3DEditor.getInstance().selectedGameObject;
         console.log(gameObjectRef.current);
         if (gameObjectRef.current) {
             setName(gameObjectRef.current.name);
@@ -45,23 +46,23 @@ const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
 
     const handleSetGameObjectName = ((e: any) => {
         const newGameObjectName = e.target.value;
-        Editor.getInstance().selectedGameObject!.name = newGameObjectName;
+        LGM3DEditor.getInstance().selectedGameObject!.name = newGameObjectName;
         setName(newGameObjectName);
-        Editor.getInstance().updateObjectsTreeView();
+        LGM3DEditor.getInstance().updateObjectsTreeView();
     });
 
     // Déparenter l'objet sélectionné
     const handleUnparent = () => {
-        Editor.getInstance().selectedGameObject!.setParent(null);
-        Editor.getInstance().updateObjectsTreeView();
+        LGM3DEditor.getInstance().selectedGameObject!.setParent(null);
+        LGM3DEditor.getInstance().updateObjectsTreeView();
     }
 
     const handleSelectParent = () => {
-        Editor.getInstance().selectGameObject(gameObjectRef.current.parent.uniqueId);
+        LGM3DEditor.getInstance().selectGameObject(gameObjectRef.current.parent.uniqueId);
     }
 
     const handleAddRigidbody = () => {
-        Editor.getInstance().selectedGameObject!.addRigidbody({ mass: 1, restitution: 0.2, friction: 0.5 });
+        LGM3DEditor.getInstance().selectedGameObject!.addRigidbody({ mass: 1, restitution: 0.2, friction: 0.5 });
     }
 
     const style = {

@@ -67,7 +67,7 @@ export default class Rigidbody extends Component {
 
     public setPhysicsType(motionType: BABYLON.PhysicsMotionType | -1) {
         if (motionType > -1) {
-            this._body = new BABYLON.PhysicsBody(this._gameObject as BABYLON.TransformNode, this.options.type, false, this._gameObject.scene);
+            this._body = new BABYLON.PhysicsBody(this._gameObject.transform, this.options.type, false, this._gameObject.scene);
             
             this._body.shape = this._shapeContainer;
             this._shapeContainer!.material = { restitution: this.options.restitution };
@@ -96,12 +96,13 @@ export default class Rigidbody extends Component {
         // const shape = new BABYLON.PhysicsShapeBox(box.position,box.rotationQuaternion,new BABYLON.Vector3(2,2,2),this._gameObject.scene);
 
 
-        this._gameObject.getChildTransformNodes().forEach((node) => {
-            if (!GameObject.nodeIsGameObject(node)) {
+        this._gameObject.transform.getChildTransformNodes().forEach((node) => {
+            
+            const go = GameObject.getById(node.uniqueId);
+
+            if(!go)
                 return;
-            }
-            const go = node as GameObject;
-            console.log(go.name);
+
             const collider: Collider | null = go.getComponent<BoxCollider>("BoxCollider");
             const rigidbody: Rigidbody | null = go.getComponent<Rigidbody>("Rigidbody");
             if (!collider) {
@@ -112,7 +113,7 @@ export default class Rigidbody extends Component {
                 return;
             }
 
-            this._shapeContainer!.addChildFromParent(this._gameObject as BABYLON.TransformNode, collider._colliderShape, collider._boxMesh);
+            this._shapeContainer!.addChildFromParent(this._gameObject.transform, collider._colliderShape, collider._boxMesh);
 
             if (this._shapeContainer!.getNumChildren() > 1)
                 this._shapeContainer?.removeChild(0);

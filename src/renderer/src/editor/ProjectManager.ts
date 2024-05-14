@@ -1,7 +1,7 @@
 import FileManager from "@renderer/engine/FileManager";
 import EditorUtils from "./EditorUtils"
-import Editor from "@renderer/components/Editor";
 import StateEditorUtils from "./StateEditorUtils";
+import LGM3DEditor from "./LGM3DEditor";
 
 export default class ProjectManager {
 
@@ -33,27 +33,30 @@ export default class ProjectManager {
         ProjectManager._projectName = "Demo";
         ProjectManager._currentProjectDir = EditorUtils.path.resolve(EditorUtils.path.resolve(EditorUtils.appPath, 'projects'), 'Demo');
         StateEditorUtils.loadStateFilesList();
-        Editor.getInstance().setupBaseScene();
+        LGM3DEditor.getInstance().setupBaseScene();
     }
 
 
     static openProject() {
+
+        const editor = LGM3DEditor.getInstance();
+
         EditorUtils.openDirectoryDialog().then((result) => {
             const selectedDir = result.filePaths[0];
             console.log(result);
             if (selectedDir) {
                 ProjectManager._currentProjectDir = selectedDir;
                 ProjectManager._projectName = "Mon Projet";
-                Editor.showAlert(ProjectManager._currentProjectDir);
+                LGM3DEditor.showAlert(ProjectManager._currentProjectDir);
                 StateEditorUtils.loadStateFilesList();
                 
                 const projectFile = ProjectManager.getFilePath(ProjectManager._currentProjectDir,'game.lgm');
 
                 if(FileManager.fileExists(projectFile)) {
-                    Editor.getInstance().load();
+                    editor.load();
                 }else{
                     FileManager.writeInFile(projectFile,'',()=>{
-                        Editor.getInstance().load();
+                        editor.load();
                     });
                 }
 
@@ -126,9 +129,9 @@ export default class ProjectManager {
                         FileManager.writeInFile(ProjectManager.getFilePath(ProjectManager._currentProjectDir,'game.lgm'),'');
                         //Charger le projet
                         StateEditorUtils.loadStateFilesList();
-                        Editor.getInstance().setupBaseScene();
+                        LGM3DEditor.getInstance().setupBaseScene();
                         EditorUtils.showInfoMsg(`Projet : ${ProjectManager._projectName} crée !`);
-                        Editor.getInstance().showStartupModal(true);
+                        LGM3DEditor.getInstance().showStartupModal(true);
 
                     } catch (error: any) {
                         EditorUtils.showErrorMsg(error.message, "Error");

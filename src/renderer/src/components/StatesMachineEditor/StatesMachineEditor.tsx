@@ -3,15 +3,16 @@ import { useRef, useEffect, useState } from 'react';
 import { Accordion, Alert, Breadcrumb, Button, ButtonGroup, Card, Col, Container, Dropdown, Form, Row } from 'react-bootstrap';
 import '../../assets/css/fsm-graph.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import Editor from '@renderer/components/Editor';
+import Editor from '@renderer/components/EditorOld';
 import StateEditorUtils from '@renderer/editor/StateEditorUtils';
 import { IStateFile } from '@renderer/engine/FSM/IStateFile';
 
 import FSMGraph from '@renderer/components/StatesMachineEditor/FSMGraph';
 import State from '@renderer/engine/FSM/State';
+import LGM3DEditor from '@renderer/editor/LGM3DEditor';
 
 
-const StatesMachineEditor = ({ fsm = null, stateFiles = StateEditorUtils.statesFiles(), ...props }) => {
+const StatesMachineEditor = ({ fsm = null, stateFiles = StateEditorUtils.getStatesFiles(), ...props }) => {
 
     const [objectName, setObjectName] = useState('');
     const [fsmName, setFSMName] = useState('');
@@ -26,7 +27,7 @@ const StatesMachineEditor = ({ fsm = null, stateFiles = StateEditorUtils.statesF
     useEffect(() => {
 
         if (fsm) {
-            setObjectName(Editor.getInstance().selectedGameObject?.name);
+            setObjectName(LGM3DEditor.getInstance().selectedGameObject?.name);
             setFSMName(fsm.name);
         }
     }, [fsm]);

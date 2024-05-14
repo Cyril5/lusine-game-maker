@@ -1,6 +1,6 @@
-import { Component, ReactNode, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Form } from "react-bootstrap";
-import Editor from "./Editor";
+import LGM3DEditor from "@renderer/editor/LGM3DEditor";
 
 const TransformComponent = (gameObjectId) => {
 
@@ -9,9 +9,11 @@ const TransformComponent = (gameObjectId) => {
     const [goTransformRot, setGOTransformRot] = useState(new BABYLON.Vector3());
     const [goTransformScale, setGOTransformScale] = useState(new BABYLON.Vector3());
 
+    const editor = LGM3DEditor.getInstance();
+
     useEffect(()=>{
         // Evenement Quand on bouge l'objet avec le gizmo  
-        const posGizmo = Editor.getInstance().getGizmo('POS');
+        const posGizmo = editor.getGizmo('POS');
 
         // ['x', 'y', 'z'].forEach(axis => {
         //     posGizmo![axis + 'Gizmo'].dragBehavior.onDragObservable.add(() => {
@@ -19,7 +21,7 @@ const TransformComponent = (gameObjectId) => {
         //     });
         // });
 
-        // const rotGizmo = Editor.getInstance().getGizmo('ROT');
+        // const rotGizmo = editor.getGizmo('ROT');
         // rotGizmo!.xGizmo.dragBehavior.onDragObservable.add(()=>{
         //     handleSetRotation();
         // });
@@ -34,7 +36,7 @@ const TransformComponent = (gameObjectId) => {
     },[])
 
     useEffect(() => {
-        const go = Editor.getInstance().selectedGameObject;
+        const go = editor.selectedGameObject;
         if (go) {
             gameObjectRef.current = go;
             // met à jour la position dans le composant

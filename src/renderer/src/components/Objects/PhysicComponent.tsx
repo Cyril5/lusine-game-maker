@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Dropdown, DropdownButton, Form } from "react-bootstrap";
-import Editor from "../Editor";
 import Rigidbody from "@renderer/engine/physics/lgm3D.Rigidbody";
+import LGM3DEditor from "@renderer/editor/LGM3DEditor";
 
 const PhysicComponent = (gameObjectId) => {
 
@@ -21,7 +21,7 @@ const PhysicComponent = (gameObjectId) => {
     //     });
     // });
 
-    // const rotGizmo = Editor.getInstance().getGizmo('ROT');
+    // const rotGizmo = LGM3DEditor.getInstance().getGizmo('ROT');
     // rotGizmo!.xGizmo.dragBehavior.onDragObservable.add(()=>{
     //     handleSetRotation();
     // });
@@ -36,7 +36,7 @@ const PhysicComponent = (gameObjectId) => {
   }, [])
 
   useEffect(() => {
-    const go = Editor.getInstance().selectedGameObject;
+    const go = LGM3DEditor.getInstance().selectedGameObject;
     if (go) {
       rigidbodyRef.current = go.getComponent<Rigidbody>("Rigidbody");
       //setPhysicsEnabled(go.rigidbody != null);

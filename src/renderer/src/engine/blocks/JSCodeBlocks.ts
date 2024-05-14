@@ -309,7 +309,7 @@ export class JSCodeBlocks {
             const value_rotspeedy = generator.valueToCode(block, 'ROTSPEEDY',generator.ORDER_ATOMIC);
             const dropdown_space = block.getFieldValue('SPACE');
             // TODO: Assemble javascript into code variable.
-            const code = `${value_obj}.rotate(BABYLON.Axis.Y, BABYLON.Tools.ToRadians(${value_rotspeedy}) * Game.deltaTime, BABYLON.Space.${dropdown_space});\n`;
+            const code = `${value_obj}.rotate(BABYLON.Axis.Y, BABYLON.Tools.ToRadians(${value_rotspeedy} * Game.deltaTime), BABYLON.Space.${dropdown_space});\n`;
             //return `${value_obj}.rotate(BABYLON.Axis.Y, BABYLON.Tools.ToRadians(${value_degy}), BABYLON.Space.${dropdown_space});\n`;
             return code;
           };

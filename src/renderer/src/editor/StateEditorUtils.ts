@@ -1,10 +1,11 @@
 import { IStateFile } from "@renderer/engine/FSM/IStateFile";
 import { Game } from "@renderer/engine/Game";
-import Editor from "../components/Editor";
+import Editor from "../components/EditorOld";
 import BaseStateFile from '@renderer/assets/BaseStateFile.xml?raw';
 import FileManager from "@renderer/engine/FileManager";
 import EditorUtils from "./EditorUtils";
 import ProjectManager from "./ProjectManager";
+import LGM3DEditor from "./LGM3DEditor";
 
 export default class StateEditorUtils {
 
@@ -14,10 +15,8 @@ export default class StateEditorUtils {
     
     private static _stateFiles: Map<string, IStateFile> = new Map<string, IStateFile>();
     
-    static statesFiles() {
-        get: {
-            return StateEditorUtils._stateFiles;
-        }
+    static getStatesFiles() {
+        return StateEditorUtils._stateFiles;
     }
     
     static getStateFile(name: string): IStateFile | null {
@@ -108,8 +107,9 @@ export default class StateEditorUtils {
         if (StateEditorUtils._stateFiles.size == 1) {
 
             // Si c'est le premier du projet alors l'ouvrir dans l'éditeur d'état
-            Editor.getInstance().setState({ initStateFile: StateEditorUtils._stateFiles.get(name) }, () => {
-            });
+            LGM3DEditor.getInstance().states.setInitStateFile(StateEditorUtils._stateFiles.get(name));
+            // LGM3DEditor.getInstance().setState({ initStateFile: StateEditorUtils._stateFiles.get(name) }, () => {
+            // });
         }
     }
 

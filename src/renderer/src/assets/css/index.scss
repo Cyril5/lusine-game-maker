@@ -105,6 +105,36 @@
   flex-direction: row;
 }
 
+.offcanvas {
+  //max-height: 80vh;
+}
+
+.objects-tree-modal {
+  height: 88.5%;
+  min-width: 100px;
+  border: 1px solid rgba(96, 40, 126, 0.474);
+}
+
+.offcanvas-header {
+  position: relative;
+
+  .resize-handle-n {
+    width: 100%;
+    height: 3px;
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+  .resize-handle-e {
+    width: 3px;
+    height: 100vh;
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
+}
+
+
 .selected-model {
   border: 2px solid yellow;
 }
@@ -129,17 +159,6 @@
   }
 }
 
-.level-editor-panels {
-  //display: flex;
-
-  .resizable {
-    height: 80vh;
-    min-width: 50px;
-    overflow: scroll;
-    //flex-grow: 1;
-  }
-
-}
 
 body {
 // background-color: #242424;

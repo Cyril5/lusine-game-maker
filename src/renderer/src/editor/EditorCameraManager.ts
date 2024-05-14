@@ -1,4 +1,5 @@
-import Editor from "@renderer/components/Editor";
+import LGM3DEditor from "./LGM3DEditor";
+
 
 export default class EditorCameraManager {
 
@@ -93,7 +94,7 @@ export default class EditorCameraManager {
 
         this._scene.activeCamera = this._orthoCamera;
 
-        const selection = Editor.getInstance().selectedGameObject;
+        const selection = LGM3DEditor.getInstance().selectedGameObject;
         this._orthoCamera.setTarget(selection ? selection.position : BABYLON.Vector3.ZeroReadOnly);
     }
 }

@@ -16,7 +16,7 @@ import * as Fr from 'blockly/msg/fr';
 import { Button, Col, Container, Dropdown, Offcanvas, Row } from 'react-bootstrap';
 import StateFilesTreeView from '@renderer/components/StateFilesTreeView';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import Editor from '@renderer/components/Editor';
+import Editor from '@renderer/components/EditorOld';
 import { EditorAlertType } from '@renderer/components/EditorAlert';
 import FileManager from '@renderer/engine/FileManager';
 import { IStateFile } from '@renderer/engine/FSM/IStateFile';
@@ -27,7 +27,7 @@ import CustomPrompt from '@renderer/components/StatesEditor/CustomPrompt';
 
 //const serializer: Blockly.serialization.blocks.BlockSerializer = new Blockly.serialization.blocks.BlockSerializer();
 
-const StateEditor = (statefiles = StateEditorUtils.statesFiles(), resizeWorkspace = true, ...props: any) => {
+const StateEditor = (statefiles = StateEditorUtils.getStatesFiles(), resizeWorkspace = true, ...props: any) => {
 
 
     const [currentStateFile, setCurrentStateFile] = useState<IStateFile>(props.initStateFile); // IStateFile
@@ -71,7 +71,7 @@ const StateEditor = (statefiles = StateEditorUtils.statesFiles(), resizeWorkspac
 
     useEffect(() => {
         // console.log(StateEditorUtils.statesFiles());
-        setMapStateFiles(StateEditorUtils.statesFiles());
+        setMapStateFiles(StateEditorUtils.getStatesFiles());
     }, [statefiles]);
 
 
@@ -474,7 +474,7 @@ const StateEditor = (statefiles = StateEditorUtils.statesFiles(), resizeWorkspac
                 
                 FileManager.deleteFile(currentStateFile.filename, () => {
                     StateEditorUtils.removeStateFile(currentStateFile.name);
-                    setMapStateFiles(StateEditorUtils.statesFiles());
+                    setMapStateFiles(StateEditorUtils.getStatesFiles());
                     EditorUtils.showInfoMsg(`Le fichier d'état ${currentStateFile.filename} a été supprimé du projet`, "Fichier d'état supprimé")
                     setCurrentStateFile(null);
                 });

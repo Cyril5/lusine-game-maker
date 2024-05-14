@@ -1,26 +1,28 @@
-import Editor from "../components/Editor";
 import RendererComponent from "../components/RendererComponent";
 
 import { Button, ButtonGroup, ButtonToolbar, Col, Container, Row } from 'react-bootstrap';
 import PropertiesBar from '../components/PropertiesBar';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import GameObjectsTreeBar from '@renderer/components/GameObjectsTreeBar';
+import GameObjectsTreeModal from '@renderer/components/Modals/GameObjectsTreeModal';
 import ConsoleModal from "@renderer/components/Modals/ConsoleModal";
+import AssetsModal from "@renderer/components/Modals/AssetsModal";
 import { useEffect, useRef, useState } from "react";
+import LGM3DEditor from "@renderer/editor/LGM3DEditor";
+import { GameObject } from "@renderer/engine/GameObject";
 
-import GoldenLayoutComponent from '../components/GoldenLayoutComponent';
 
 const LevelEditor = (props) => {
 
+    const editor = LGM3DEditor.getInstance();
 
-    // Cela permet de simplifier la syntaxe lorsque vous voulez accéder à une propriété d'un objet. Au lieu d'écrire props.objJeu à plusieurs endroits, vous pouvez simplement écrire objJeu.
-    const { gameObjects } = props;
+    // Cela permet de simplifier la syntaxe lorsque vous voulez accéder à une propriété d'un objet. Au lieu d'écrire props.gameObjects à plusieurs endroits, vous pouvez simplement écrire gameObjects.
+    const { gameobjectslist } = props;
 
-    const [objetJeu, setObjetJeu] = useState(null);
+    const [objetJeu, setObjetJeu] = useState<GameObject | null>(null);
 
     const setTransformMode = (transformMode: string) => {
-        Editor.getInstance().setTransformMode(transformMode);
+        editor.setTransformMode(transformMode);
     }
 
     useEffect(() => {
@@ -34,10 +36,9 @@ const LevelEditor = (props) => {
 
     }, [props.objJeu])
 
+
     return (
         <>
-
-                
             <Container fluid>
                 <Row>
                     <Col>
@@ -45,15 +46,15 @@ const LevelEditor = (props) => {
                     <Col>
                         <ButtonToolbar aria-label="Toolbar with button groups">
                             <ButtonGroup className="me-2" aria-label="First group">
-                                <Button onClick={() => Editor.getInstance().setTransformMode("TRANSLATE")} variant="secondary"><FontAwesomeIcon icon="arrows-up-down-left-right" /></Button>
+                                <Button onClick={() => editor.setTransformMode("TRANSLATE")} variant="secondary"><FontAwesomeIcon icon="arrows-up-down-left-right" /></Button>
                                 <Button onClick={() => setTransformMode("ROTATE")} variant="secondary"><FontAwesomeIcon icon="arrows-rotate" /></Button>
-                                <Button onClick={() => Editor.getInstance().setTransformMode("SCALE")} variant="secondary"><FontAwesomeIcon icon="maximize" /></Button>
-                                <Button onClick={() => Editor.getInstance().setTransformMode("BOUND_BOX")} variant="secondary" disabled={true}><FontAwesomeIcon icon="up-right-from-square" /></Button>
+                                <Button onClick={() => editor.setTransformMode("SCALE")} variant="secondary"><FontAwesomeIcon icon="maximize" /></Button>
+                                <Button onClick={() => editor.setTransformMode("BOUND_BOX")} variant="secondary" disabled={true}><FontAwesomeIcon icon="up-right-from-square" /></Button>
                             </ButtonGroup>
                             <ButtonGroup className="me-2" aria-label="Second group">
                                 <Button disabled variant="secondary"><FontAwesomeIcon icon="earth-europe" /> Monde</Button>
                                 <Button variant="secondary"><FontAwesomeIcon icon="location-crosshairs" /> Local</Button>
-                                <Button variant="danger" onClick={() => Editor.getInstance().deleteSelection()}><FontAwesomeIcon icon="trash" /></Button>
+                                <Button variant="danger" onClick={() => editor.deleteSelection()}><FontAwesomeIcon icon="trash" /></Button>
                             </ButtonGroup>
                         </ButtonToolbar>
                     </Col>
@@ -63,16 +64,16 @@ const LevelEditor = (props) => {
 
                 <Row>
                     <Col md={2}>
-                                        <GameObjectsTreeBar gameObjects={gameObjects}/>
+                        <GameObjectsTreeModal gameobjectslist={gameobjectslist} />
                     </Col>
 
                     <Col>
-                                        <RendererComponent />
+                        <RendererComponent />
                     </Col>
 
 
                     <div className="level-editor-panels">
-                                    </div>
+                    </div>
                 </Row>
 
 
@@ -81,13 +82,15 @@ const LevelEditor = (props) => {
                     <PropertiesBar
                         id={objetJeu?.Id}
                         gameobject_name={objetJeu?.name}
-                        parentid={objetJeu?.parent?.Id}
+                        parentid={objetJeu?.transform.parent?.uniqueId}
                     />
 
                     <ConsoleModal />
+                    <AssetsModal />
+
                     {/* <Col md={2}> */}
                     {/* <h2>Objets <FontAwesomeIcon icon="cubes" /></h2> */}
-                    {/* <Button onClick={() => Editor.getInstance().handleAddObject()}>Ajouter</Button> */}
+                    {/* <Button onClick={() => LGM3DEditor.getInstance().handleAddObject()}>Ajouter</Button> */}
                     {/* <TreeView data={data} expandedNodes={expandedNodes} setExpandedNodes={setExpandedNodes} />
                          */}
                     {/* <GameObjectsTreeView data={data}/> */}

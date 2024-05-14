@@ -1,11 +1,10 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { ProgrammableGameObject } from '@renderer/engine/ProgrammableGameObject';
 import React, { useEffect, useRef, useState } from 'react';
 import { Card, Col, Container, ProgressBar, Row } from 'react-bootstrap';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
-import Editor from './Editor';
-import Models3DModal from './Models3DModal';
+import Models3DModal from './Modals/Models3DModal';
+import LGM3DEditor from '@renderer/editor/LGM3DEditor';
 
 function AddObjectModal(props: any) {
 
@@ -83,7 +82,7 @@ function AddObjectModal(props: any) {
                             </Col>
                             <Col md={6}>
                                 <Card style={{ width: '18rem' }} onDoubleClick={() => {
-                                    Editor.getInstance().addProgrammableObject();
+                                    LGM3DEditor.getInstance().addProgrammableObject();
                                     handleClose();
                                     }}>
                                     <Card.Img variant="top" src="holder.js/100px180" />
@@ -110,7 +109,7 @@ function AddObjectModal(props: any) {
                         </Row>
                         <Row>
                             <Col>
-                                <Card style={{ width: '18rem' }} onDoubleClick={()=>Editor.getInstance().addBoxCollider()}>
+                                <Card style={{ width: '18rem' }} onDoubleClick={()=>LGM3DEditor.getInstance().addBoxCollider()}>
                                     <Card.Img variant="top" src="holder.js/100px180" />
                                     <Card.Body>
                                         <Card.Title>Boite de collision</Card.Title>

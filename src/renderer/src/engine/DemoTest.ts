@@ -1,11 +1,12 @@
 import { GameObject } from "./GameObject"
-import Editor from "@renderer/components/Editor";
+
 import Rigidbody from "./physics/lgm3D.Rigidbody";
 import BoxCollider from "./physics/lgm3D.BoxCollider";
 import { Game } from "./Game";
 import GameLoader from "@renderer/editor/GameLoader";
 import { ProgrammableGameObject } from "./ProgrammableGameObject";
 import { PhysicsShape, PhysicsShapeBox, PhysicsShapeMesh, PhysicsShapeType } from "babylonjs";
+import LGM3DEditor from "@renderer/editor/LGM3DEditor";
 
 export default class DemoTest {
 
@@ -28,19 +29,21 @@ export default class DemoTest {
             this.car.addComponent(new Rigidbody(this.car), "Rigidbody");
             const carCollider = new GameObject("CarCollider",this.scene);
             carCollider.addComponent(new BoxCollider(carCollider),"BoxCollider");
-            carCollider.scaling = new BABYLON.Vector3(1.938,1.0,3.151);
+            carCollider.scale = new BABYLON.Vector3(1.938,1.0,3.151);
             carCollider.position = new BABYLON.Vector3(0,0.512,0.570);
             carCollider.setParent(this.car);
 
             const groundGo = new GameObject("Ground",this.scene);
-            ground.setParent(groundGo);
+            ground.setParent(groundGo.transform);
 
             var groundAggregate = new BABYLON.PhysicsAggregate(ground, BABYLON.PhysicsShapeType.BOX, { mass: 0 }, scene);
 
             //TEST COPY
-            const car2 = GameObject.duplicate(this.car);
+            //const car2 = GameObject.duplicate(this.car);
 
-            Editor.getInstance().updateObjectsTreeView();
+            LGM3DEditor.getInstance().updateObjectsTreeView();
+
+            console.log(GameObject.gameObjects);
 
         });
     }
@@ -62,7 +65,7 @@ export default class DemoTest {
         //this.scene = scene;
         const obstacle = new GameObject("Obstacle", scene);
         obstacle.position = new BABYLON.Vector3(0, 2.38, 21.15);
-        obstacle.scaling = new BABYLON.Vector3(25, 25, 7);
+        obstacle.scale = new BABYLON.Vector3(25, 25, 7);
         obstacle.addComponent(new BoxCollider(obstacle), "BoxCollider");
 
 
@@ -74,7 +77,7 @@ export default class DemoTest {
 
         //car!._shapeContainer.addChild(box._colliderShape);
 
-        Editor.getInstance().updateObjectsTreeView();
+        LGM3DEditor.getInstance().updateObjectsTreeView();
 
         DemoTest.init = false;
 
@@ -82,7 +85,7 @@ export default class DemoTest {
 
     start() {
         const followCam = this.scene.getCameraById("FollowCam");
-        followCam.lockedTarget = this.car;
+        followCam.lockedTarget = this.car.transform;
         followCam.radius = 15;
         followCam.rotationOffset = 180;
         followCam.heightOffset = 5;

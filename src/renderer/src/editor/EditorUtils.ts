@@ -1,5 +1,5 @@
-import Editor from "@renderer/components/Editor";
 import StateEditorUtils from "./StateEditorUtils";
+import LGM3DEditor from "./LGM3DEditor";
 
 const { dialog } = require('@electron/remote');
 const { app } = require('@electron/remote');
@@ -7,11 +7,12 @@ const prompt = require('electron-prompt');
 
 export default class EditorUtils {
 
-  static readonly VERSION: string = 'Alpha 0.2.4';
+  static readonly VERSION: string = 'Alpha 0.2.5';
   static readonly EDITOR_TAG: string = '_EDITOR_TAG_';
 
+  //TODO : à peut être déplacer dans StateEditorUtils
   static updateStatesFilesList() {
-    Editor.getInstance().setState({ stateFiles: StateEditorUtils.statesFiles });
+    LGM3DEditor.getInstance().states.setStateFiles(StateEditorUtils.getStatesFiles());
   }
 
   static path = require('path'); //TODO : getter

@@ -2,7 +2,6 @@ import { AbstractMesh, Observable, SceneLoader } from "@babylonjs/core";
 import { GameObject } from "./GameObject";
 import { Material, MultiMaterial, PBRMaterial, PBRMetallicRoughnessMaterial, StandardMaterial } from "babylonjs";
 import EditorUtils from "@renderer/editor/EditorUtils";
-import AssetsManager from "@renderer/editor/AssetsManager";
 export class Model3D extends GameObject {
 
 
@@ -48,7 +47,7 @@ export class Model3D extends GameObject {
                 //SceneLoader.ImportMesh("", "https://models.babylonjs.com/", "aerobatic_plane.glb", scene, (meshes) => {
                 const mesh = SceneLoader.ImportMesh("", arg.directoryOrUrl + '/', arg.filename, arg.scene, (meshes) => {
 
-                    const materialsToDispose: AbstractMaterial[] = [];
+                    const materialsToDispose: BABYLON.AbstractMaterial[] = [];
                     const materialsSceneNames = [];
                     arg.scene.materials.forEach((mat: AbstractMaterial) => {
                         const last = materialsSceneNames.push(mat.name);
@@ -92,7 +91,7 @@ export class Model3D extends GameObject {
 
                     });
 
-                    mergedMesh.setParent(this);
+                    mergedMesh!.setParent(this.transform);
 
                     materialsToDispose.forEach((mat) => {
                         arg.scene.getMaterialByUniqueID(mat)!.dispose();
@@ -139,7 +138,7 @@ export class Model3D extends GameObject {
                             }
 
                             if (!mesh.parent) {
-                                mesh.setParent(this);
+                                mesh.setParent(this.transform);
                             }
 
 
@@ -156,7 +155,7 @@ export class Model3D extends GameObject {
                             if (element.parent) {
                                 element.setParent(nodes[index].parent);
                             } else {
-                                element.setParent(this);
+                                element.setParent(this.transform);
                             }
                         }
 
