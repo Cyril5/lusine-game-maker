@@ -43,7 +43,7 @@ export class GameObjectSetRotationNumbersBlock {
       const value_degz = generator.valueToCode(block, 'DEGZ', generator.ORDER_ATOMIC);
       const dropdown_space = block.getFieldValue('SPACE');
       
-      const code = value_obj+'.setEulerRotation('+value_degx+','+value_degy+','+value_degz+');\n';
+      const code = `${value_obj}.setEulerRotation(${value_degx},${value_degy},${value_degz});\n;`
       return code;
     };
   }

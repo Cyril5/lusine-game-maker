@@ -1,8 +1,11 @@
 this.onEnterState.add(() => {
-   this.gameObject.position = new BABYLON.Vector3(0,10,0);
-  this.gameObject.setEulerRotation(0,0,0);
- } );
+  } );
 
 this.onUpdateState.add(() => {
   this.gameObject.move(BABYLON.Axis.Z,3 * Game.deltaTime, BABYLON.Space.LOCAL);
   this.gameObject.rotateTowardsBehaviour.lookAtSpeed((GameObject.getById(57)).transform,'XYZ',5);});
+
+Game.getInstance().onGameStoped.add(() => {
+  this.gameObject.setEulerRotation(0,0,0);
+  ;this.gameObject.position = new BABYLON.Vector3(0,10,0);
+});

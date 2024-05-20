@@ -7,13 +7,13 @@ export class JSCodeBlocks {
 
     constructor() {
 
-        Blockly.Blocks['game_ongamestoped'] = {
+        Blockly.Blocks['game_ongamestoped_4w8xcv'] = {
             init: function () {
                 this.appendStatementInput("ONGAMESTOPPED")
                     .setCheck(null)
                     .appendField("A l'arrêt du jeu");
                 this.setColour(0);
-                this.setTooltip("Evenement qui s'execute après que le jeu s'arrête");
+                this.setTooltip("Evenement lancé lorsque le jeu s'arrête");
                 this.setHelpUrl("");
             }
         };
@@ -260,12 +260,12 @@ export class JSCodeBlocks {
             return code;
         };
 
-        javascriptGenerator.forBlock['game_ongamestoped'] = function (block, generator) {
+
+        javascriptGenerator.forBlock['game_ongamestoped_4w8xcv'] = function(block, generator) {
             const statements_ongamestopped = generator.statementToCode(block, 'ONGAMESTOPPED');
-            // TODO: Assemble javascript into code variable.
-            const code = `this.onGameStopped.add(() => {\n${statements_ongamestopped}});\n`;
+            const code = `Game.getInstance().onGameStoped.add(() => {\n${statements_ongamestopped}});\n`;
             return code;
-        };
+          };
 
         // ------------------------- GAME OBJECTS ------------------------------
 
@@ -305,15 +305,15 @@ export class JSCodeBlocks {
             return code;
         };
 
-        javascriptGenerator.forBlock['gameobject_turny'] = function(block, generator) {
+        javascriptGenerator.forBlock['gameobject_turny'] = function (block, generator) {
             const value_obj = generator.valueToCode(block, 'OBJ', generator.ORDER_ATOMIC);
-            const value_rotspeedy = generator.valueToCode(block, 'ROTSPEEDY',generator.ORDER_ATOMIC);
+            const value_rotspeedy = generator.valueToCode(block, 'ROTSPEEDY', generator.ORDER_ATOMIC);
             const dropdown_space = block.getFieldValue('SPACE');
             // TODO: Assemble javascript into code variable.
             const code = `${value_obj}.rotate(BABYLON.Axis.Y, BABYLON.Tools.ToRadians(${value_rotspeedy} * Game.deltaTime), BABYLON.Space.${dropdown_space});\n`;
             //return `${value_obj}.rotate(BABYLON.Axis.Y, BABYLON.Tools.ToRadians(${value_degy}), BABYLON.Space.${dropdown_space});\n`;
             return code;
-          };
+        };
 
 
 

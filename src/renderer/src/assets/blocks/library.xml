@@ -2348,4 +2348,39 @@
         <field name="HUE">260</field>
       </block>
     </value>
+  </block><block type="factory_base" id="!^2OwocTa6hh9W#g0)Dd" deletable="false" movable="false" x="10" y="10">
+    <mutation connections="NONE"></mutation>
+    <field name="NAME">game_ongamestoped_4W8Xcv</field>
+    <field name="INLINE">AUTO</field>
+    <field name="CONNECTIONS">NONE</field>
+    <statement name="INPUTS">
+      <block type="input_statement" id="g=M#N2d91leV[Bpx2TaL">
+        <field name="INPUTNAME">ONGAMESTOPPED</field>
+        <field name="ALIGN">LEFT</field>
+        <statement name="FIELDS">
+          <block type="field_static" id="of3q7VpCr(60`Qw(ebZ;">
+            <field name="TEXT">A l'arrêt du jeu</field>
+          </block>
+        </statement>
+        <value name="TYPE">
+          <shadow type="type_null" id="v+jQ_IO|#9h`da$%By)l"></shadow>
+        </value>
+      </block>
+    </statement>
+    <value name="TOOLTIP">
+      <block type="text" id="CFz_[$+w6.)IV#StR9Sw" deletable="false" movable="false">
+        <field name="TEXT">Evenement lancé lorsque le jeu s'arrête</field>
+      </block>
+    </value>
+    <value name="HELPURL">
+      <block type="text" id="O6T~374,c+OGY/my)_D9" deletable="false" movable="false">
+        <field name="TEXT"></field>
+      </block>
+    </value>
+    <value name="COLOUR">
+      <block type="colour_hue" id="8:?W*GlCF,Ub.[J,$V`D">
+        <mutation colour="#a55b5b"></mutation>
+        <field name="HUE">0</field>
+      </block>
+    </value>
   </block></xml>

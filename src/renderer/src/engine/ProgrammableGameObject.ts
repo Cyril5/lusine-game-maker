@@ -47,8 +47,8 @@ export class ProgrammableGameObject extends GameObject {
         }
     }
 
-    setEulerRotation(newRotation: BABYLON.Vector3) {
-        this.transform.rotation.set(newRotation.x, newRotation.y, newRotation.z);
+    setEulerRotation(x : number,y : number,z : number) {
+        this.transform.rotationQuaternion = BABYLON.Quaternion.FromEulerAngles(x, y, z);
         this._rigidbody?.body?.setTargetTransform(this.transform.absolutePosition,this.transform.rotationQuaternion);
     }
 

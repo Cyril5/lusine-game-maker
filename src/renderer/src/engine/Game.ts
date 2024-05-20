@@ -28,7 +28,7 @@ export class Game {
 
     private _t;
 
-    private _demoTest = new DemoTest();
+    //private _demoTest = new DemoTest();
 
 
     public static getInstance() {
@@ -64,7 +64,7 @@ export class Game {
         
         let runCodeSuccess = 0;
 
-        this._demoTest.init(scene);
+        //this._demoTest.init(scene);
         
         for (const gameObject of gameObjects) {
             
@@ -97,12 +97,7 @@ export class Game {
         
         this.onGameStarted.notifyObservers();
         
-        this._demoTest.start();
-        
-        //const followCam = scene.setActiveCameraByName("FollowCam");
-        // const camera = scene.cameras[0];
-        // followCam.position.copyFrom(camera.position);
-        // followCam.rotation.copyFrom(camera.rotation);
+        //this._demoTest.start();
         
     }
     
@@ -158,7 +153,7 @@ export class Game {
             }
         })
         
-        this._demoTest.stop(scene);
+        //this._demoTest.stop(scene);
         
         this.onGameUpdate.clear();
         this.onGameStoped.notifyObservers();

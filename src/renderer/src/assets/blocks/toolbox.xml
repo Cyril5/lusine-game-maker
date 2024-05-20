@@ -1,4 +1,8 @@
 <xml xmlns="https://developers.google.com/blockly/xml" id="toolbox" style="display: none">
+  <category name="Jeu">
+    <block type="game_ongamestoped_4w8xcv"></block>
+  </category>
+  <sep></sep>
   <category name="Etat">
     <block type="state_onenterstate"></block>
     <block type="state_onupdatestate"></block>
