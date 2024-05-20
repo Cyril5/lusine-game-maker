@@ -1,0 +1,82 @@
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <block type="state_onenterstate" id="$%`P8_I%J~DX;x%zlMub" x="13" y="-212">
+    <statement name="ENTERSTATE">
+      <block type="gameobject_setpos_numbers" id="Lt+6$*bcU*Q-t=`^;_W0">
+        <field name="SPACE">LOCAL</field>
+        <value name="OBJ">
+          <block type="gameobject_this" id="^DGagq_E]5F^ow#h)TRx"></block>
+        </value>
+        <value name="POSX">
+          <block type="math_number" id="LBF*rmaFj*`agxUrM*9l">
+            <field name="NUM">0</field>
+          </block>
+        </value>
+        <value name="POSY">
+          <block type="math_number" id="L-7|X%%!4|nW?i/KpG=Q">
+            <field name="NUM">10</field>
+          </block>
+        </value>
+        <value name="POSZ">
+          <block type="math_number" id="1HFau3b@,`iesHZ`xrg3">
+            <field name="NUM">0</field>
+          </block>
+        </value>
+        <next>
+          <block type="gameobject_setrotation_numbers" id="6o+a8eS0zOt_q#ZIp@pm">
+            <field name="SPACE">LOCAL</field>
+            <value name="OBJ">
+              <block type="gameobject_this" id="3v(zDgfTN-T$/LDk8eX4"></block>
+            </value>
+            <value name="DEGX">
+              <block type="math_number" id="0sJb7P:Ii#_QX}Jm~;k-">
+                <field name="NUM">0</field>
+              </block>
+            </value>
+            <value name="DEGY">
+              <block type="math_number" id="Ub2Fi{wL|0`41hfwQ|TO">
+                <field name="NUM">0</field>
+              </block>
+            </value>
+            <value name="DEGZ">
+              <block type="math_number" id=",~.uTUrvjMmuM$$:L!kg">
+                <field name="NUM">0</field>
+              </block>
+            </value>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+  <block type="state_onupdatestate" id="=2I,Vk7*J.TR~d/IVv0V" x="13" y="63">
+    <statement name="UPDATESTATE">
+      <block type="gameobject_move_forward" id=",$6tVmoe9JO.;gw9ieG;">
+        <value name="OBJ">
+          <block type="gameobject_this" id="`=NqJAqn*_|cYy8JFT~a"></block>
+        </value>
+        <value name="SPEED">
+          <block type="math_number" id="MER:MjNvA@ks7LQ=R(tR">
+            <field name="NUM">3</field>
+          </block>
+        </value>
+        <next>
+          <block type="bvhrotatetowards_lookatspeed_gameobject_wuro3t" id="=Qh%TD^m7tM3n9d.:g8m">
+            <value name="OBJ">
+              <block type="gameobject_find_by_id" id="Co3EDa9qRmXj%0@r*%et">
+                <value name="ID">
+                  <block type="math_number" id="Huv`sFoJd%`^}@=^#XFa">
+                    <field name="NUM">57</field>
+                  </block>
+                </value>
+              </block>
+            </value>
+            <value name="SPEED">
+              <block type="math_number" id="Sv7h63V=(idaEI%QXJ}y">
+                <field name="NUM">5</field>
+              </block>
+            </value>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>

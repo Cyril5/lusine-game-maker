@@ -17,12 +17,16 @@ const LevelEditor = (props) => {
     const editor = LGM3DEditor.getInstance();
 
     // Cela permet de simplifier la syntaxe lorsque vous voulez accéder à une propriété d'un objet. Au lieu d'écrire props.gameObjects à plusieurs endroits, vous pouvez simplement écrire gameObjects.
-    const { gameobjectslist } = props;
+    const { gameobjectslist, showgameobjectstreemodal } = props;
 
     const [objetJeu, setObjetJeu] = useState<GameObject | null>(null);
 
     const setTransformMode = (transformMode: string) => {
         editor.setTransformMode(transformMode);
+    }
+
+    const toogleGameObjectsTreeModal = ()=>{
+
     }
 
     useEffect(() => {
@@ -64,7 +68,7 @@ const LevelEditor = (props) => {
 
                 <Row>
                     <Col md={2}>
-                        <GameObjectsTreeModal gameobjectslist={gameobjectslist} />
+                        <GameObjectsTreeModal gameobjectslist={gameobjectslist} show={showgameobjectstreemodal} />
                     </Col>
 
                     <Col>
@@ -86,7 +90,7 @@ const LevelEditor = (props) => {
                     />
 
                     <ConsoleModal />
-                    <AssetsModal />
+                    {/* <AssetsModal /> */}
 
                     {/* <Col md={2}> */}
                     {/* <h2>Objets <FontAwesomeIcon icon="cubes" /></h2> */}

@@ -1,11 +1,14 @@
 import { FiniteStateMachine } from "./FSM/FiniteStateMachine";
 import { Game } from "./Game";
 import { GameObject } from "./GameObject";
+import RotateTowardsBehaviour from "./behaviours/lgm3D.RotateTowardsBehaviour";
 import Rigidbody from "./physics/lgm3D.Rigidbody";
 
 export class ProgrammableGameObject extends GameObject {
 
     static readonly TYPE_NAME = "PROG_GO";
+
+    rotateTowardsBehaviour;
 
     // Pour le moment il y a qu'un fsm sur un objet programmable
     private _fsms: Array<FiniteStateMachine>;
@@ -25,26 +28,40 @@ export class ProgrammableGameObject extends GameObject {
         this._scene = scene;
         this._rigidbody = new Rigidbody(this as GameObject);
         this.addComponent(this._rigidbody, "Rigidbody");
+
+        //Ajout du comportement RotateTowardsBehaviour
+        this.rotateTowardsBehaviour = this.addComponent(new RotateTowardsBehaviour(),"LGM3D_RotateTowardsBehaviour");
     }
 
     get position() : BABYLON.Vector3 {
         return super.position;
     }
     set position(newPosition: BABYLON.Vector3) {
-        super.position = newPosition;
+        this.transform.position = newPosition;
 
         if (Game.getInstance().isRunning) {
             if(!this._rigidbody) {
                 return;
             }
-            this._rigidbody!.body!.setTargetTransform(this.transform.absolutePosition,this.transform.rotationQuaternion);
+            this._rigidbody?.body?.setTargetTransform(this.transform.absolutePosition,this.transform.rotationQuaternion);
         }
     }
 
+    setEulerRotation(newRotation: BABYLON.Vector3) {
+        this.transform.rotation.set(newRotation.x, newRotation.y, newRotation.z);
+        this._rigidbody?.body?.setTargetTransform(this.transform.absolutePosition,this.transform.rotationQuaternion);
+    }
+
+
     move(axis: BABYLON.Vector3, distance: number, space: BABYLON.Space): void {
         const target = this.transform.translate(axis, distance, space);
-        //this.getComponent<Rigidbody>("Rigidbody2")!.body!.setTargetTransform(this.absolutePosition, this.rotationQuaternion);
-        this._rigidbody!.body!.setTargetTransform(this.transform.absolutePosition, this.transform.rotationQuaternion);
+
+        this._rigidbody?.body?.setTargetTransform(this.transform.absolutePosition, this.transform.rotationQuaternion);
+    }
+
+    setRotationQuaternion(quaternion: BABYLON.Quaternion): void {
+        this.transform.rotationQuaternion = quaternion;
+        this._rigidbody?.body?.setTargetTransform(this.transform.absolutePosition, this.transform.rotationQuaternion);
     }
 
     rotate(axis: BABYLON.Vector3, amount: number, space?: BABYLON.Space | undefined): void {
@@ -53,7 +70,7 @@ export class ProgrammableGameObject extends GameObject {
         if (Game.getInstance().isRunning) {
             if (this._rigidbody.body) {
                 //console.log(BABYLON.Tools.ToDegrees(amount));
-                this._rigidbody!.body!.setTargetTransform(this.transform.absolutePosition,this.transform.rotationQuaternion);
+                this._rigidbody?.body?.setTargetTransform(this.transform.absolutePosition,this.transform.rotationQuaternion);
             } 
         }
     }

@@ -155,8 +155,6 @@ export class Game {
                 //         go.rigidbody.disablePreStep = true;
                 //     },3000)
                 // }
-                go.position.set(0,0,0);
-                
             }
         })
         

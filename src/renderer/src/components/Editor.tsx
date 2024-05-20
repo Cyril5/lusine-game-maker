@@ -326,7 +326,7 @@ return (
 
         <Tabs activeKey={activeTab} onSelect={handleTabChange} >
             <Tab eventKey={1} title={<span><FontAwesomeIcon icon="ghost" /> Editeur de niveau</span>}>
-                <LevelEditor objJeu={objetJeu} gameobjectslist={gameObjects} />
+                <LevelEditor objJeu={objetJeu} gameobjectslist={gameObjects} showgameobjectstreemodal={activeTab==1}/>
             </Tab>
             <Tab eventKey={2} title={<span><FontAwesomeIcon icon="diagram-project" />
                 Automates Fini</span>}>

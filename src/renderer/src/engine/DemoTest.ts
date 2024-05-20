@@ -40,10 +40,12 @@ export default class DemoTest {
 
             //TEST COPY
             //const car2 = GameObject.duplicate(this.car);
+            const target = new GameObject("Target",scene);
+            const test = new GameObject("TEST",scene);
+            target.setParent(test);
+
 
             LGM3DEditor.getInstance().updateObjectsTreeView();
-
-            console.log(GameObject.gameObjects);
 
         });
     }

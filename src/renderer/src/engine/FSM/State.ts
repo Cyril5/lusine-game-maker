@@ -11,6 +11,7 @@ import { ProgrammableGameObject } from '../ProgrammableGameObject';
 import InputManager, { KeyCode } from '../InputManager';
 import FileManager from '../FileManager';
 import { Game } from '../Game';
+import { GameObject } from '../GameObject';
 
 //import StateEditorUtils from '@renderer/editor/StateEditorUtils';
 //import BoxCollider from '../physics/BoxCollider';
@@ -100,6 +101,9 @@ export default class State {
     
     if(!State._runtimeGlobalVars.includes(Game)) {
       State._runtimeGlobalVars.push(Game);
+    }
+    if(!State._runtimeGlobalVars.includes(GameObject)) {
+      State._runtimeGlobalVars.push(GameObject);
     }
 
     const objects = State._runtimeGlobalVars;

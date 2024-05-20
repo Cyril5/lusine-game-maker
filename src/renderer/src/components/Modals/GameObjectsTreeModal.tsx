@@ -19,6 +19,10 @@ const GameObjectsTreeModal = (props: any) => {
     LGM3DEditor.getInstance().updateObjectsTreeView();
   }
 
+  useEffect(()=>{
+    setShow(props.show);
+  },[props.show])
+
   useEffect(() => {
     const handleMouseMove = (e) => {
       if (isResizing) {
@@ -48,6 +52,7 @@ const GameObjectsTreeModal = (props: any) => {
     setStartX(e.clientX);
     setStartWidth(modalRef.current.dialog.offsetWidth);
   };
+
 
   return (
     <>

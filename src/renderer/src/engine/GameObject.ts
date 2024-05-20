@@ -4,6 +4,7 @@ import { Observable } from "babylonjs";
 import { Exclude, Expose, instanceToPlain } from 'class-transformer';
 import Rigidbody from "./physics/lgm3D.Rigidbody";
 import { GameObjectSetPosNumbersBlock } from "./blocks/gameObject/gameobject_setpos_numbers";
+import RotateTowardsBehaviour from "./behaviours/lgm3D.RotateTowardsBehaviour";
 
 export class GameObject {
 
@@ -99,6 +100,8 @@ export class GameObject {
     constructor(name : string, scene: BABYLON.Scene) {
  
         this._transform = new BABYLON.TransformNode(name,scene);
+
+        this._transform.rotationQuaternion = BABYLON.Quaternion.Identity();
  
         this._transform.metadata = {};
  
@@ -126,7 +129,8 @@ export class GameObject {
             return;
         }
         this.transform.metadata = { gameObjectId: this._transform.uniqueId, type: "GameObject", parentId: null }
- 
+
+
  
     }
 

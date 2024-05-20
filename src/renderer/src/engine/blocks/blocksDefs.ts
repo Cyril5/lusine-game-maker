@@ -11,8 +11,13 @@ import { GameObjectSetPosNumbersBlock } from "./gameObject/gameobject_setpos_num
 import { GameObjectSetRotationNumbersBlock } from "./gameObject/gameobject_setrot_numbers";
 import { GameObjectTranslateForwardBlock } from "./gameObject/gameobject_translate_forward_block";
 import { Vector3dBlocks } from "./vector3d_blocks";
+import RotateTowardsBehaviourBlock from './RotateTowardsBehaviourBlock';
 
 // import { Debug } from '../debug';
+
+RotateTowardsBehaviourBlock.init();
+
+
 new JSCodeBlocks();
 const GO_SETPOS_NUMBERS_BLOCK = new GameObjectSetPosNumbersBlock();
 const GO_TRANSLATE_FORWARD_BLOCK = new GameObjectTranslateForwardBlock();

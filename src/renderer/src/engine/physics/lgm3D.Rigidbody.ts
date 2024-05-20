@@ -80,8 +80,7 @@ export default class Rigidbody extends Component {
             return;
 
         }
-        // si null : enlever le body
-        this._body.dispose();
+        this._body?.dispose();
     }
     /**
      * Parcourre les colliders enfant pour les ajouter au containerShape

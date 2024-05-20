@@ -1,6 +1,5 @@
 import Blockly from 'blockly';
 import BlocklyJS from 'blockly/javascript';
-import { Mathf } from '../../math/mathf';
 
 export class GameObjectSetRotationNumbersBlock {
 
@@ -37,24 +36,14 @@ export class GameObjectSetRotationNumbersBlock {
     };
 
 
-    BlocklyJS[name] = function (block : any) {
-
-      var value_obj = BlocklyJS.valueToCode(block, 'OBJ', BlocklyJS.ORDER_ATOMIC);
-
-      var value_degx = BlocklyJS.valueToCode(block, 'DEGX', BlocklyJS.ORDER_ATOMIC);
-
-      var value_degy = BlocklyJS.valueToCode(block, 'DEGY', BlocklyJS.ORDER_ATOMIC);
-      var value_degz = BlocklyJS.valueToCode(block, 'DEGZ', BlocklyJS.ORDER_ATOMIC);
-      var dropdown_space = block.getFieldValue('SPACE');
-      // TODO: Assemble JavaScript into code variable.
-
-      //const euler = new THREE.Euler(Mathf.degToRad(value_degx),Mathf.degToRad(value_degy),Mathf.degToRad(value_degz));
-
-      const eulerX = Mathf.getVarClassName()+'.degToRad(' +value_degx+ ')';
-      const eulerY = Mathf.getVarClassName()+'.degToRad('+value_degy+')';
-      const eulerZ = Mathf.getVarClassName()+'.degToRad('+value_degz+')';
-
-      var code = value_obj+'.transform.rotation.set('+eulerX+','+eulerY+','+eulerZ+');\n';
+    BlocklyJS.javascriptGenerator.forBlock['gameobject_setrotation_numbers'] = function(block, generator) {
+      const value_obj = generator.valueToCode(block, 'OBJ', generator.ORDER_ATOMIC);
+      const value_degx = generator.valueToCode(block, 'DEGX', generator.ORDER_ATOMIC);
+      const value_degy = generator.valueToCode(block, 'DEGY', generator.ORDER_ATOMIC);
+      const value_degz = generator.valueToCode(block, 'DEGZ', generator.ORDER_ATOMIC);
+      const dropdown_space = block.getFieldValue('SPACE');
+      
+      const code = value_obj+'.setEulerRotation('+value_degx+','+value_degy+','+value_degz+');\n';
       return code;
     };
   }

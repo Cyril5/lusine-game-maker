@@ -2289,4 +2289,63 @@
         <field name="HUE">260</field>
       </block>
     </value>
+  </block><block type="factory_base" id="l(AM!F+9!_5QXmbUvl}I" deletable="false" movable="false" x="10" y="10">
+    <mutation connections="BOTH"></mutation>
+    <field name="NAME">BVHRotateTowards_lookatspeed_gameobject_wUrO3t</field>
+    <field name="INLINE">INT</field>
+    <field name="CONNECTIONS">BOTH</field>
+    <statement name="INPUTS">
+      <block type="input_value" id="!if+ZN=_Y2dN`saE!?TU">
+        <field name="INPUTNAME">OBJ</field>
+        <field name="ALIGN">LEFT</field>
+        <statement name="FIELDS">
+          <block type="field_static" id="-*(;4.aTM-dj:gvDRQ`?">
+            <field name="TEXT">Regarder dans la direction de l'objet</field>
+          </block>
+        </statement>
+        <value name="TYPE">
+          <shadow type="type_null" id="|~8Jda:R6y}sPxNfZqlE"></shadow>
+          <block type="type_other" id="dMJ^{4]pm#aVfkSLfSo/">
+            <field name="TYPE">GameObject</field>
+          </block>
+        </value>
+        <next>
+          <block type="input_value" id="58ukFAhb!BDslVF3$X:m">
+            <field name="INPUTNAME">SPEED</field>
+            <field name="ALIGN">LEFT</field>
+            <statement name="FIELDS">
+              <block type="field_static" id="$+c9#T_t#d;|TeXwS|:x">
+                <field name="TEXT">à une vitesse de</field>
+              </block>
+            </statement>
+            <value name="TYPE">
+              <shadow type="type_null" id="]k#.()/NDJPIYO1(6_8("></shadow>
+              <block type="type_number" id="$2!6`b)V/W0b(p_;3]q0"></block>
+            </value>
+          </block>
+        </next>
+      </block>
+    </statement>
+    <value name="TOOLTIP">
+      <block type="text" id="O*ILvM09,bun`$4d{2LC" deletable="false" movable="false">
+        <field name="TEXT">Pivote dans la direction de l'objet à une certaine vitesse</field>
+      </block>
+    </value>
+    <value name="HELPURL">
+      <block type="text" id=")Dy3=2Evl7JW*tJF?Z=]" deletable="false" movable="false">
+        <field name="TEXT"></field>
+      </block>
+    </value>
+    <value name="TOPTYPE">
+      <shadow type="type_null" id="UoIqmK0lb`hni|0%b3md"></shadow>
+    </value>
+    <value name="BOTTOMTYPE">
+      <shadow type="type_null" id="s-V:T8.6-u7Dk?!c7=t$"></shadow>
+    </value>
+    <value name="COLOUR">
+      <block type="colour_hue" id="G9fHF6hsV=xKP[o8PC=M">
+        <mutation colour="#745ba5"></mutation>
+        <field name="HUE">260</field>
+      </block>
+    </value>
   </block></xml>

@@ -7,12 +7,12 @@ import React, { useEffect, forwardRef, useImperativeHandle, useRef } from 'react
 import * as Vis from 'vis-network';
 import 'vis-network/styles/vis-network.min.css';
 
-import ReactDOMServer from 'react-dom/server';
 import State from '@renderer/engine/FSM/State';
 import { FiniteStateMachine } from '@renderer/engine/FSM/FiniteStateMachine';
 import EditorUtils from '@renderer/editor/EditorUtils';
 
-const FSMGraph = forwardRef((props, ref) => {
+
+const FSMGraph = forwardRef(({fsm,...props}, ref) => {
 
   const START_NODE_ID = '_START_NODE_ID_';
 
@@ -22,7 +22,7 @@ const FSMGraph = forwardRef((props, ref) => {
   const visjsNetworkRef = useRef<Vis.Network>(null);
   const drawflowRef = useRef(null);
   const selectedNodeRef = useRef(null);
-  const currentFSMRef = useRef<FiniteStateMachine>(props.fsm);
+  const currentFSMRef = useRef<FiniteStateMachine>(fsm);
 
 
   const addNode = (nodeData, callback) => {
@@ -75,8 +75,11 @@ const FSMGraph = forwardRef((props, ref) => {
 
   // Lorsque le fsm du parent à changé
   useEffect(() => {
-    currentFSMRef.current = props.fsm;
-  }, [props.fsm])
+    currentFSMRef.current = fsm;
+    console.log("FSM changed !");
+    console.log(visjsNetworkRef.current?.getViewPosition());
+    visjsNetworkRef.current?.fit();
+  }, [fsm])
 
   useEffect(() => {
     const container = document.getElementById('graph-container');
@@ -179,11 +182,13 @@ const FSMGraph = forwardRef((props, ref) => {
       }
     };
 
-
-
     visjsNetworkRef.current = new Vis.Network(container, data, options);
 
     const network = visjsNetworkRef.current;
+
+    // setInterval(()=>{
+    //   visjsNetworkRef.current!.moveTo({position:{x:0,y:0}});
+    // },2000)
 
     const startNode = {
       id: START_NODE_ID,
@@ -220,6 +225,7 @@ const FSMGraph = forwardRef((props, ref) => {
 
     // Écouter l'événement mousemove sur le document pour suivre les mouvements de la souris
     document.addEventListener('mousemove', function (event) {
+      return;
       if (isRightClicking) { // Si le clic droit de la souris est enfoncé
         var deltaX = event.clientX - prevMousePos.x; // Calculer le déplacement horizontal de la souris
         var deltaY = event.clientY - prevMousePos.y; // Calculer le déplacement vertical de la souris
@@ -240,6 +246,7 @@ const FSMGraph = forwardRef((props, ref) => {
       }
     });
 
+    visjsNetworkRef.current!.fit();
 
 
 

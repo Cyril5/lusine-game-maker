@@ -235,7 +235,7 @@ export class Renderer {
 
             Renderer.isReadyObservable.notifyObservers();
 
-            Renderer.instance.scene.debugLayer.show();
+            //Renderer.instance.scene.debugLayer.show();
 
             return Renderer.instance;
         });
