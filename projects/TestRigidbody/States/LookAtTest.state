@@ -1,9 +1,15 @@
+let Target;
+
+
 this.onEnterState.add(() => {
-  } );
+   Target = (GameObject.getById(122));
+ } );
 
 this.onUpdateState.add(() => {
-  this.gameObject.move(BABYLON.Axis.Z,3 * Game.deltaTime, BABYLON.Space.LOCAL);
-  this.gameObject.rotateTowardsBehaviour.lookAtSpeed((GameObject.getById(57)).transform,'XYZ',5);});
+  if (BABYLON.Vector3.Distance(this.gameObject.transform.getAbsolutePosition(),Target.transform.getAbsolutePosition()) > 3) {
+    this.gameObject.rotateTowardsBehaviour.lookAtSpeed(Target.transform,'XYZ',5);this.gameObject.move(BABYLON.Axis.Z,3 * Game.deltaTime, BABYLON.Space.LOCAL);
+  }
+});
 
 Game.getInstance().onGameStoped.add(() => {
   this.gameObject.setEulerRotation(0,0,0);

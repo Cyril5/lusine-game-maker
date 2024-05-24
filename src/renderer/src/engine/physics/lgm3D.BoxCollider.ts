@@ -5,7 +5,10 @@ import { ProgrammableGameObject } from "../ProgrammableGameObject";
 import Collider from "./lgm3D.Collider";
 import Rigidbody from "./lgm3D.Rigidbody";
 import { ColliderMetaData, GameObjectComponentMetaData } from "../structs/ComponentsMetaData";
+import BoxColliderInspector, { InspectorComponent } from "@renderer/components/Objects/BoxColliderComponentInspector";
 
+
+@InspectorComponent(BoxColliderInspector)
 export default class BoxCollider extends Collider {
 
     static COLLIDER_MAT: BABYLON.StandardMaterial;
@@ -28,21 +31,11 @@ export default class BoxCollider extends Collider {
     get isTrigger(): boolean {
         return this._isTrigger;
     }
-    set isTrigger(value: boolean) {
-        this._isTrigger = value;
-        if (this._isTrigger) {
-            //ammojs
-            //this._boxMesh.physicsImpostor?.dispose();
-            this._colliderShape.isTrigger = true;
-        } else {
-            //ammojs
-            // this._boxMesh.physicsImpostor = new BABYLON.PhysicsImpostor(this._boxMesh, BABYLON.PhysicsImpostor.BoxImpostor, {
-            //     mass: 0,
-            //     restitution: 0,
-            //     friction: 0,
-            // });
-            this._colliderShape.isTrigger = false;
 
+    set isTrigger(value: boolean) {
+        if (this._isTrigger !== value) {
+            this._isTrigger = value;
+            this._colliderShape.isTrigger = this._isTrigger;
         }
     }
 
@@ -50,7 +43,6 @@ export default class BoxCollider extends Collider {
     setEventReceiverFSM(fsm: FiniteStateMachine) {
         this._receiverFSM = fsm;
     }
-
 
 
     constructor(owner: GameObject) {
@@ -62,6 +54,7 @@ export default class BoxCollider extends Collider {
         
         const shapeSize = new BABYLON.Vector3(1, 1, 1);
         this._boxMesh = BABYLON.MeshBuilder.CreateBox("BoxCollider", { height: shapeSize.y, width: shapeSize.x, depth: shapeSize.z }, this._scene);
+        this._boxMesh.doNotSerialize = true; // ne pas sauvegarder le maillage dans le JSON à chaque fois
         this._boxMesh.parent = this._gameObject.transform;
         const shapePos = this._boxMesh.position;
         this._colliderShape = new BABYLON.PhysicsShapeBox(
@@ -82,10 +75,14 @@ export default class BoxCollider extends Collider {
 
             BoxCollider.COLLIDER_MAT = new BABYLON.StandardMaterial("_EDITOR_COLLIDER_MAT_", this._scene);
             BoxCollider.COLLIDER_MAT.wireframe = true;
-            BoxCollider.COLLIDER_MAT.diffuseColor = BABYLON.Color3.Green();
+            BoxCollider.COLLIDER_MAT.doNotSerialize = true;
         }
         // Appliquer le matériau au cube
         this._boxMesh.material = BoxCollider.COLLIDER_MAT;
+        //this._boxMesh.renderOutline = true;
+        this._boxMesh.renderOverlay = true;
+        this._boxMesh.outlineWidth = 0.5;
+        this._boxMesh.overlayColor = BABYLON.Color3.Green();
 
         this._boxMesh.name += this._boxMesh.uniqueId;
 
@@ -115,7 +112,6 @@ export default class BoxCollider extends Collider {
 
         // On remet à jour le shapeContainer si il y a des modifications sur les dimensions du boxCollider
         const parent = this._gameObject.transform.parent;
-        console.log(parent);
         // if (parent) {
         //     const parentRigidbody = parent.getComponent<Rigidbody>("Rigidbody");
         //     if (parentRigidbody) { // BUG : il faut d'abord ajouter le composant rigidbody sur le parent avec les collider enfants
@@ -160,13 +156,13 @@ export default class BoxCollider extends Collider {
 
         this._physicsBody = new BABYLON.PhysicsBody(this._gameObject.transform, BABYLON.PhysicsMotionType.STATIC, false, this._gameObject.scene);
 
-
-        console.log(this._boxMesh.getBoundingInfo().boundingBox.extendSize);
+        //console.log(this._boxMesh.getBoundingInfo().boundingBox.maximum * new BABYLON.Vector3(2, 2, 2));
         const collShapeUpdated = new BABYLON.PhysicsShapeBox(
             this._boxMesh.position,
             this._boxMesh.rotationQuaternion,
             //this._gameObject.parent ? this._boxMesh.getBoundingInfo().boundingBox.extendSize * this._gameObject.scaling : this._gameObject.scaling,
-            updateSize ? this._gameObject.scale : this._colliderShape.getBoundingBox().extendSizeWorld * this._gameObject.scale,
+            //updateSize ? this._boxMesh.getBoundingInfo().boundingBox.extendSize * this._gameObject.scale
+            this._gameObject.scale,
             this._scene
         );
 

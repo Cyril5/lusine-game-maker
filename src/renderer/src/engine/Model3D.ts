@@ -22,11 +22,15 @@ export class Model3D extends GameObject {
     }
 
     // Second constructeur
-    static createEmptyFromNodeData(node: BABYLON.TransformNode, scene: BABYLON.Scene): Model3D {
+    static createEmptyFromNodeData(node: BABYLON.TransformNode): Model3D {
 
-        const model3d = new Model3D({ scene: scene });
+        const model3d = new Model3D({ scene: node.getScene() });
+        console.log("mid :"+model3d.Id);
+        model3d.transform.dispose();
+        GameObject.gameObjects.delete(model3d.Id);
+        model3d._transform = node;
+        model3d.setUId(node.metadata.gameObjectId,false);
         model3d.name = node.name;
-        // model3d.uniqueId = node.metadata.gameObjectId;
         return model3d
     }
 

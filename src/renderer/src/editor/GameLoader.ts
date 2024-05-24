@@ -8,7 +8,7 @@ import StateEditorUtils from "./StateEditorUtils";
 import Collider from "@renderer/engine/physics/lgm3D.Collider";
 import BoxCollider from "@renderer/engine/physics/lgm3D.BoxCollider";
 import AssetsManager from "./AssetsManager";
-import { Observable} from "babylonjs";
+import { Observable } from "babylonjs";
 import Utils from "@renderer/engine/lgm3D.Utils";
 import LGM3DEditor from "./LGM3DEditor";
 
@@ -17,11 +17,11 @@ import LGM3DEditor from "./LGM3DEditor";
 export default abstract class GameLoader {
 
     private _scene: BABYLON.Scene;
-    static onLevelLoaded : Observable<BABYLON.Scene> = new Observable();
-    
+    static onLevelLoaded: Observable<BABYLON.Scene> = new Observable();
+
     constructor(scene) {
         this._scene = scene;
-        this.onLevelLoaded = new Observable();
+        GameLoader.onLevelLoaded = new Observable();
     }
 
     // private static onProgressSceneLoader(event : BABYLON.ISceneLoaderProgressEvent) {
@@ -33,13 +33,12 @@ export default abstract class GameLoader {
     //         loadedPercent = Math.floor(dlCount * 100.0) / 100.0;
     //     }
     // };
-    
+
     public static save(scene: BABYLON.Scene) {
         console.log("saving");
 
-        scene.transformNodes.filter((tNode) => tNode.metadata).forEach((node) => {
-            GameObject.getById(node.uniqueId).save();
-            //(node as GameObject).save();
+        GameObject.gameObjects.forEach((gameObject) => {
+            gameObject.save();
         });
 
         const serializedScene = BABYLON.SceneSerializer.Serialize(scene);
@@ -96,15 +95,17 @@ export default abstract class GameLoader {
                     EditorUtils.showErrorMsg(error);
                 }
             }
-            
+
             editor.states.setShowStartupModal(false);
         });
-        
-        const loadTextures = (materials) => {
-            console.log(materials);
 
-            materials.forEach((mat,index) => {
-                if(mat.albedoTexture) {
+        const loadTextures = (materials) => {
+
+
+            materials.forEach((mat, index) => {
+
+
+                if (mat.albedoTexture && mat.albedoTexture.metadata) {
                     const sourceFilename = mat.albedoTexture.metadata.source;
                     const filePath = ProjectManager.getFilePath(ProjectManager.getTexturesDirectory(), sourceFilename);
                     FileManager.readFile(filePath, (data) => {
@@ -112,23 +113,23 @@ export default abstract class GameLoader {
                         //     console.error('Erreur lors de la lecture du fichier :', err);
                         //     return;
                         // }
-                        const url = Utils.convertImgToBase64URL(data,'png');
-                        
+                        const url = Utils.convertImgToBase64URL(data, 'png');
+
                         // Ajout de la texture au projet
-                        const texture = new BABYLON.Texture(url, scene,{invertY:false});
+                        const texture = new BABYLON.Texture(url, scene, { invertY: false });
                         texture.name = sourceFilename;
-                        if(!AssetsManager.textures.has(sourceFilename)) {
-                            AssetsManager.textures.set(sourceFilename,texture);
+                        if (!AssetsManager.textures.has(sourceFilename)) {
+                            AssetsManager.textures.set(sourceFilename, texture);
                         }
                         mat.albedoTexture.name += ' (old)';
                         // Enlever l'anciene texture
                         mat.albedoTexture.dispose();
-                        
+
                         mat.albedoTexture = AssetsManager.textures.get(sourceFilename);
-                        
+
                     });
                 }
-                
+
             });
 
             //const sourceFilename = materials[0].getActiveTextures()[0].metadata.source;
@@ -157,7 +158,7 @@ export default abstract class GameLoader {
             let converted: Map<number, number> = new Map<number, number>();
 
 
-            scene.getNodes().forEach((node : BABYLON.Node) => {
+            scene.getNodes().forEach((node: BABYLON.Node) => {
 
                 const nodeData = node.metadata;
 
@@ -167,51 +168,19 @@ export default abstract class GameLoader {
                     if (nodeData.components) {
                         nodeData.components.forEach(component => {
                             if (component.type == Collider.name) {
-                                const collGo = GameObject.createFromTransformNodeMetaData(node, scene);
-                                collGo.addComponent(new BoxCollider(scene, collGo), "BoxCollider");
-                                converted.set(node.uniqueId, collGo.Id);
-
-                                if (node.parent) {
-                                    goLinks.push([collGo.Id, node.parent.metadata.gameObjectId]);
-                                }
-
-                                // node.getChildren().forEach((child) => {
-                                //     child.parent = collGo;
-                                // });
+                                const collGo = GameObject.buildFromTransformNode(node);
+                                collGo.addComponent(new BoxCollider(collGo), "BoxCollider");
                             }
                         });
                     }
 
                     if (node.metadata.type === Model3D.name) {
 
-                        const model3d: Model3D = Model3D.createEmptyFromNodeData(node, scene);
-                        model3d.setUId(node.metadata.gameObjectId);
-                        node.name += " (orig)";
-                        model3d.transform.position.copyFrom(node.position);
-                        model3d.transform.rotation.copyFrom(node.rotation);
-                        // model3d.scaling = node.scaling;
-                        converted.set(node.uniqueId, model3d.Id);
-
-                        if (node.parent) {
-                            //test
-                            //model3d.parent = node.parent;
-
-                            goLinks.push([model3d.Id, node.parent.metadata.gameObjectId]);
-                        }
-
-                        node.getChildren().forEach((child) => {
-                            child.parent = model3d.transform;
-                        });
-
-                        //node.dispose();
+                        const model3d: Model3D = Model3D.createEmptyFromNodeData(node);
 
                     } else if (node.metadata.type === ProgrammableGameObject.TYPE_NAME) {
-                        const pgo = new ProgrammableGameObject(node.name, scene);
-                        pgo.setUId(node.metadata.gameObjectId);
-                        node.name += " (orig)";
-                        pgo.transform.position.copyFrom(node.position);
-                        pgo.transform.rotation = node.rotation.clone();
-                        pgo.transform.scaling.copyFrom(node.scaling);
+
+                        const pgo = ProgrammableGameObject.createEmptyFromNodeData(node);
 
                         //FSM
                         node.metadata.finiteStateMachines.forEach((fsmData, index) => {
@@ -235,34 +204,46 @@ export default abstract class GameLoader {
 
                     }
 
+
                 }
             });
 
-            goLinks.forEach(el => {
+            const defaultMat = scene.getMaterialById("default material");
 
-                let source = scene.getTransformNodeByUniqueId(el[0]);
-                if (!source) {
-                    source = scene.getMeshByUniqueId(el[0]);
-                }
-                const target = scene.getTransformNodeByUniqueId(el[1]);
-                if (target && source) {
-                    source.parent = target;
-                }
-                //console.log('-------------------');
-
-            });
-
-            scene.getNodes().forEach(element => {
-                if (element.name.includes('(orig)')) {
-                    element.dispose();
+            scene.meshes.forEach((mesh: BABYLON.Mesh) => {
+                //Replace missing materials
+                const subMaterials = mesh.material!.subMaterials;
+                if (subMaterials) {
+                    
+                    subMaterials.forEach((subMat,index) => {
+                        //alert(subMat+'  ===>'+mesh.material!.name);
+                        if(!subMat){
+                            mesh.material.subMaterials[index] = defaultMat;
+                        }
+                    });
                 }
             });
 
-            //console.log(GameObject.gameObjects);
+            // goLinks.forEach(el => {
+
+            //     let source = scene.getTransformNodeByUniqueId(el[0]);
+            //     if (!source) {
+            //         source = scene.getMeshByUniqueId(el[0]);
+            //     }
+            //     const target = scene.getTransformNodeByUniqueId(el[1]);
+            //     if (target && source) {
+            //         source.parent = target;
+            //     }
+            //     //console.log('-------------------');
+
+            // });
+
+            console.log(GameObject.gameObjects);
             editor.setupBaseScene();
             editor.updateObjectsTreeView();
             GameLoader.onLevelLoaded.notifyObservers(scene);
         }
+
     }
 
 }

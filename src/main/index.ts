@@ -5,14 +5,17 @@ import icon from '../../resources/icon.png?asset'
 
 require('@electron/remote/main').initialize();
 
+const WINDOW_WIDTH = 1920; //defaut : 900
+const WINDOW_HEIGHT = 1080; //700
+
 
 app.commandLine.appendSwitch('enable-unsafe-webgpu');
 
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 900,
-    height: 670,
+    width: WINDOW_WIDTH,
+    height: WINDOW_HEIGHT,
     show: false,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),

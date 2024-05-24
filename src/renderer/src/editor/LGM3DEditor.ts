@@ -106,10 +106,14 @@ export default class LGM3DEditor {
 
         Renderer.isReadyObservable.addOnce(() => {
 
+            console.log("engine ready");
+        
             this.states.setShowStartupModal(true);
             this.states.setShowLoadingModal(false);
 
             this._renderer = Renderer.getInstance();
+
+
         });
 
     }
@@ -357,6 +361,8 @@ export default class LGM3DEditor {
 
         const scene = this._renderer.scene;
 
+        scene.debugLayer.show();
+
         const camRenderer = this._renderer.camera
         camRenderer.fov = 0.75;
         camRenderer.maxZ = 850;
@@ -374,6 +380,7 @@ export default class LGM3DEditor {
         scene.physicsEnabled = false;
 
         const ground = BABYLON.MeshBuilder.CreateGround("_EDITOR_GRID_", { width: 1000, height: 1000 }, scene);
+        ground.doNotSerialize = true;
         if (!scene.getEngine().isWebGPU) {
             //GRID
             const groundMaterial = new GridMaterial("_EDITOR_GRIDMAT_", scene);
@@ -382,6 +389,7 @@ export default class LGM3DEditor {
             groundMaterial.gridRatio = 10;
             groundMaterial.opacity = 0.99;
             groundMaterial.useMaxLine = true;
+            groundMaterial.doNotSerialize = true;
 
             ground.material = groundMaterial;
             BABYLON.Tags.AddTagsTo({ groundMaterial }, EditorUtils.EDITOR_TAG);

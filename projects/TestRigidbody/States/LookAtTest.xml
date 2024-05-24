@@ -1,25 +1,49 @@
 <xml xmlns="https://developers.google.com/blockly/xml">
-  <block type="state_onenterstate" id="$%`P8_I%J~DX;x%zlMub" x="13" y="-137"></block>
-  <block type="state_onupdatestate" id="=2I,Vk7*J.TR~d/IVv0V" x="13" y="13">
-    <statement name="UPDATESTATE">
-      <block type="gameobject_move_forward" id=",$6tVmoe9JO.;gw9ieG;">
-        <value name="OBJ">
-          <block type="gameobject_this" id="`=NqJAqn*_|cYy8JFT~a"></block>
-        </value>
-        <value name="SPEED">
-          <block type="math_number" id="MER:MjNvA@ks7LQ=R(tR">
-            <field name="NUM">3</field>
+  <variables>
+    <variable id="dk+DPT_nnYk3n`Ju|;ck">Target</variable>
+  </variables>
+  <block type="state_onenterstate" id="$%`P8_I%J~DX;x%zlMub" x="13" y="-137">
+    <statement name="ENTERSTATE">
+      <block type="variables_set" id="eBzez{zeTM-{bEf~z.IE">
+        <field name="VAR" id="dk+DPT_nnYk3n`Ju|;ck">Target</field>
+        <value name="VALUE">
+          <block type="gameobject_find_by_id" id="Co3EDa9qRmXj%0@r*%et">
+            <value name="ID">
+              <block type="math_number" id="*fsrwb5||NBqp~aKQR!L">
+                <field name="NUM">122</field>
+              </block>
+            </value>
           </block>
         </value>
-        <next>
+      </block>
+    </statement>
+  </block>
+  <block type="state_onupdatestate" id="=2I,Vk7*J.TR~d/IVv0V" x="13" y="-12">
+    <statement name="UPDATESTATE">
+      <block type="controls_if" id="qXL?lQ)j/})!Yl){%{xf">
+        <value name="IF0">
+          <block type="gameobject_compare_distance_drwgfz" id="k[[}A;Shqh!=o:)MZXWY">
+            <field name="DROPDOWN">GREATER</field>
+            <value name="OBJA">
+              <block type="gameobject_this" id=")}.X[y~mgsDr^NFqObdZ"></block>
+            </value>
+            <value name="VALUE_DIST">
+              <block type="math_number" id="4?X498no-xamULJ+yXWW">
+                <field name="NUM">3</field>
+              </block>
+            </value>
+            <value name="OBJB">
+              <block type="variables_get" id="IC?JbDj;nz5^,S#5ONi0">
+                <field name="VAR" id="dk+DPT_nnYk3n`Ju|;ck">Target</field>
+              </block>
+            </value>
+          </block>
+        </value>
+        <statement name="DO0">
           <block type="bvhrotatetowards_lookatspeed_gameobject_wuro3t" id="=Qh%TD^m7tM3n9d.:g8m">
             <value name="OBJ">
-              <block type="gameobject_find_by_id" id="Co3EDa9qRmXj%0@r*%et">
-                <value name="ID">
-                  <block type="math_number" id="Huv`sFoJd%`^}@=^#XFa">
-                    <field name="NUM">57</field>
-                  </block>
-                </value>
+              <block type="variables_get" id="9Lul=n,s+GhJ4Y.wa9|^">
+                <field name="VAR" id="dk+DPT_nnYk3n`Ju|;ck">Target</field>
               </block>
             </value>
             <value name="SPEED">
@@ -27,8 +51,20 @@
                 <field name="NUM">5</field>
               </block>
             </value>
+            <next>
+              <block type="gameobject_move_forward" id=",$6tVmoe9JO.;gw9ieG;">
+                <value name="OBJ">
+                  <block type="gameobject_this" id="`=NqJAqn*_|cYy8JFT~a"></block>
+                </value>
+                <value name="SPEED">
+                  <block type="math_number" id="MER:MjNvA@ks7LQ=R(tR">
+                    <field name="NUM">3</field>
+                  </block>
+                </value>
+              </block>
+            </next>
           </block>
-        </next>
+        </statement>
       </block>
     </statement>
   </block>

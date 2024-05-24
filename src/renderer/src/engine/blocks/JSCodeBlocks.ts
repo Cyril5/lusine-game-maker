@@ -54,6 +54,27 @@ export class JSCodeBlocks {
             }
         };
 
+        Blockly.Blocks['gameobject_compare_distance_drwgfz'] = {
+            init: function() {
+              this.appendValueInput("OBJA")
+                  .setCheck("GameObject");
+              this.appendDummyInput()
+                  .appendField("est à une distance ")
+                  .appendField(new Blockly.FieldDropdown([["inférieur","LOWER"], ["inférieur ou égale","LOWER_EQUAL"], ["égale","EQUAL"], ["supérieur ou égale","GREATER_EQUAL"], ["supérieur","GREATER"]]), "DROPDOWN");
+              this.appendValueInput("VALUE_DIST")
+                  .setCheck("Number")
+                  .appendField("à");
+              this.appendValueInput("OBJB")
+                  .setCheck("GameObject")
+                  .appendField("de");
+              this.setInputsInline(true);
+              this.setOutput(true, "Boolean");
+              this.setColour(260);
+           this.setTooltip("Retourne la distance entre deux objets");
+           this.setHelpUrl("");
+            }
+          };
+
 
         Blockly.Blocks['inputs_if_keypress'] = {
             init: function () {
@@ -154,6 +175,37 @@ export class JSCodeBlocks {
 
             return [code, generator.ORDER_NONE];
         };
+
+        javascriptGenerator.forBlock['gameobject_compare_distance_drwgfz'] = function(block, generator) {
+            const value_obja = generator.valueToCode(block, 'OBJA', generator.ORDER_ATOMIC);
+            const dropdown_dropdown = block.getFieldValue('DROPDOWN');
+            const value_value_dist = generator.valueToCode(block, 'VALUE_DIST', generator.ORDER_ATOMIC);
+            const value_objb = generator.valueToCode(block, 'OBJB', generator.ORDER_ATOMIC);
+
+            let operatorSymbol = '<='
+            switch (dropdown_dropdown) {
+                case 'LOWER':
+                    operatorSymbol = '<';
+                    break;
+                case 'EQUAL':
+                    operatorSymbol = '==';
+                    break;
+                case 'GREATER':
+                    operatorSymbol = '>';
+                    break;
+                case 'GREATER_EQUAL':
+                    operatorSymbol = '>=';
+                    break;
+            
+                default:
+                    break;
+            }
+
+            // TODO: Assemble javascript into code variable.
+            const code = `BABYLON.Vector3.Distance(${value_obja}.transform.getAbsolutePosition(),${value_objb}.transform.getAbsolutePosition()) ${operatorSymbol} ${value_value_dist}`;
+            // TODO: Change ORDER_NONE to the correct strength.
+            return [code, generator.ORDER_NONE];
+          };
 
 
 

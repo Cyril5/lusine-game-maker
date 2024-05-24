@@ -190,15 +190,16 @@ export default class Editor extends React.Component {
         const ground = MeshBuilder.CreateGround("_EDITOR_GRID_", { width: 1000, height: 1000 }, scene);
         if (!scene.getEngine().isWebGPU) {
             //GRID
-            const groundMaterial = new GridMaterial("_EDITOR_GRIDMAT_", scene);
-            groundMaterial.majorUnitFrequency = 100;
-            groundMaterial.minorUnitVisibility = 0.5;
-            groundMaterial.gridRatio = 10;
-            groundMaterial.opacity = 0.99;
-            groundMaterial.useMaxLine = true;
+            // const groundMaterial = new GridMaterial("_EDITOR_GRIDMAT_", scene);
+            // groundMaterial.majorUnitFrequency = 100;
+            // groundMaterial.minorUnitVisibility = 0.5;
+            // groundMaterial.gridRatio = 10;
+            // groundMaterial.opacity = 0.99;
+            // groundMaterial.useMaxLine = true;
+            //groundMaterial.doNotSerialize = true;
 
-            ground.material = groundMaterial;
-            BABYLON.Tags.AddTagsTo({ groundMaterial }, EditorUtils.EDITOR_TAG);
+            // ground.material = groundMaterial;
+            // BABYLON.Tags.AddTagsTo({ groundMaterial }, EditorUtils.EDITOR_TAG);
         } else {
             ground.dispose();
         }

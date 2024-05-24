@@ -1,63 +1,5 @@
 <xml xmlns="https://developers.google.com/blockly/xml"><block type="factory_base" id="l(AM!F+9!_5QXmbUvl}I" deletable="false" movable="false" x="10" y="10">
     <mutation connections="LEFT"></mutation>
-    <field name="NAME">compare_distance_objects</field>
-    <field name="INLINE">INT</field>
-    <field name="CONNECTIONS">LEFT</field>
-    <statement name="INPUTS">
-      <block type="input_value" id="!if+ZN=_Y2dN`saE!?TU">
-        <field name="INPUTNAME">OBJA</field>
-        <field name="ALIGN">LEFT</field>
-        <statement name="FIELDS">
-          <block type="field_static" id="-*(;4.aTM-dj:gvDRQ`?">
-            <field name="TEXT">Distance entre</field>
-          </block>
-        </statement>
-        <value name="TYPE">
-          <shadow type="type_null" id="|~8Jda:R6y}sPxNfZqlE"></shadow>
-          <block type="type_other" id="RkN~(Q7~rl6zKKfcgW9c">
-            <field name="TYPE">GameObject</field>
-          </block>
-        </value>
-        <next>
-          <block type="input_value" id="i$[%-5UIa`ji~!3h$oM(">
-            <field name="INPUTNAME">OBJB</field>
-            <field name="ALIGN">LEFT</field>
-            <statement name="FIELDS">
-              <block type="field_static" id="D=T(pi)VO:I@|w!d!#o1">
-                <field name="TEXT">et</field>
-              </block>
-            </statement>
-            <value name="TYPE">
-              <shadow type="type_null" id="|~8Jda:R6y}sPxNfZqlE"></shadow>
-              <block type="type_other" id="vtjcS?!kMR3_Rs9n0/YN">
-                <field name="TYPE">GameObject</field>
-              </block>
-            </value>
-          </block>
-        </next>
-      </block>
-    </statement>
-    <value name="TOOLTIP">
-      <block type="text" id="O*ILvM09,bun`$4d{2LC" deletable="false" movable="false">
-        <field name="TEXT">Retourne la distance entre deux objets</field>
-      </block>
-    </value>
-    <value name="HELPURL">
-      <block type="text" id=")Dy3=2Evl7JW*tJF?Z=]" deletable="false" movable="false">
-        <field name="TEXT"></field>
-      </block>
-    </value>
-    <value name="OUTPUTTYPE">
-      <shadow type="type_null" id="`1n+4S|U8}LZpLP?JiK*"></shadow>
-    </value>
-    <value name="COLOUR">
-      <block type="colour_hue" id="8(U_Lx^QMtd84hBGnC(G">
-        <mutation colour="#5b67a5"></mutation>
-        <field name="HUE">230</field>
-      </block>
-    </value>
-  </block><block type="factory_base" id="l(AM!F+9!_5QXmbUvl}I" deletable="false" movable="false" x="10" y="10">
-    <mutation connections="LEFT"></mutation>
     <field name="NAME">gameobject_this</field>
     <field name="INLINE">INT</field>
     <field name="CONNECTIONS">LEFT</field>
@@ -2381,6 +2323,101 @@
       <block type="colour_hue" id="8:?W*GlCF,Ub.[J,$V`D">
         <mutation colour="#a55b5b"></mutation>
         <field name="HUE">0</field>
+      </block>
+    </value>
+  </block><block type="factory_base" id="l(AM!F+9!_5QXmbUvl}I" deletable="false" movable="false" x="10" y="10">
+    <mutation connections="LEFT"></mutation>
+    <field name="NAME">gameobject_compare_distance_DRWGFZ</field>
+    <field name="INLINE">INT</field>
+    <field name="CONNECTIONS">LEFT</field>
+    <statement name="INPUTS">
+      <block type="input_value" id="!if+ZN=_Y2dN`saE!?TU">
+        <field name="INPUTNAME">OBJA</field>
+        <field name="ALIGN">LEFT</field>
+        <value name="TYPE">
+          <shadow type="type_null" id="|~8Jda:R6y}sPxNfZqlE"></shadow>
+          <block type="type_other" id="RkN~(Q7~rl6zKKfcgW9c">
+            <field name="TYPE">GameObject</field>
+          </block>
+        </value>
+        <next>
+          <block type="input_dummy" id=")4viD=Xn6z|kt~1%^BdE">
+            <field name="ALIGN">LEFT</field>
+            <statement name="FIELDS">
+              <block type="field_static" id="-*(;4.aTM-dj:gvDRQ`?">
+                <field name="TEXT">est à une distance </field>
+                <next>
+                  <block type="field_dropdown" id="s]rxCA%/[ql#e8?Th(F~">
+                    <mutation options="[&quot;text&quot;,&quot;text&quot;,&quot;text&quot;,&quot;text&quot;,&quot;text&quot;]"></mutation>
+                    <field name="FIELDNAME">DROPDOWN</field>
+                    <field name="USER0">inférieur</field>
+                    <field name="CPU0">LOWER</field>
+                    <field name="USER1">inférieur ou égale</field>
+                    <field name="CPU1">LOWER_EQUAL</field>
+                    <field name="USER2">égale</field>
+                    <field name="CPU2">EQUAL</field>
+                    <field name="USER3">supérieur ou égale</field>
+                    <field name="CPU3">GREATER_EQUAL</field>
+                    <field name="USER4">supérieur</field>
+                    <field name="CPU4">GREATER</field>
+                  </block>
+                </next>
+              </block>
+            </statement>
+            <next>
+              <block type="input_value" id="ZwbA@yS3ItMeEu=m#iQ?">
+                <field name="INPUTNAME">VALUE_DIST</field>
+                <field name="ALIGN">LEFT</field>
+                <statement name="FIELDS">
+                  <block type="field_static" id="r9~)NkDW}taN^2QyC0TY">
+                    <field name="TEXT">à</field>
+                  </block>
+                </statement>
+                <value name="TYPE">
+                  <shadow type="type_null" id="X8FI@_)#3qtfZ^?e!0-3"></shadow>
+                  <block type="type_number" id="AUpH[c]EoQMOaSSTi#[O"></block>
+                </value>
+                <next>
+                  <block type="input_value" id="i$[%-5UIa`ji~!3h$oM(">
+                    <field name="INPUTNAME">OBJB</field>
+                    <field name="ALIGN">LEFT</field>
+                    <statement name="FIELDS">
+                      <block type="field_static" id="EETmC`[vD@y$q$j%E2s,">
+                        <field name="TEXT">de</field>
+                      </block>
+                    </statement>
+                    <value name="TYPE">
+                      <shadow type="type_null" id="|~8Jda:R6y}sPxNfZqlE"></shadow>
+                      <block type="type_other" id="vtjcS?!kMR3_Rs9n0/YN">
+                        <field name="TYPE">GameObject</field>
+                      </block>
+                    </value>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+    <value name="TOOLTIP">
+      <block type="text" id="O*ILvM09,bun`$4d{2LC" deletable="false" movable="false">
+        <field name="TEXT">Retourne la distance entre deux objets</field>
+      </block>
+    </value>
+    <value name="HELPURL">
+      <block type="text" id=")Dy3=2Evl7JW*tJF?Z=]" deletable="false" movable="false">
+        <field name="TEXT"></field>
+      </block>
+    </value>
+    <value name="OUTPUTTYPE">
+      <shadow type="type_null" id="`1n+4S|U8}LZpLP?JiK*"></shadow>
+      <block type="type_boolean" id="!vpQ8_5wm/8T`qZhdRcE"></block>
+    </value>
+    <value name="COLOUR">
+      <block type="colour_hue" id="Ra:;V/g8,R$5h%ys|5s5">
+        <mutation colour="#745ba5"></mutation>
+        <field name="HUE">260</field>
       </block>
     </value>
   </block></xml>

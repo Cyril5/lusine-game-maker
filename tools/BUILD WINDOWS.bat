@@ -28,4 +28,6 @@ npm run build:win
 
 $env:NODE_OPTIONS="--max-old-space-size=512"
 
+explorer ../dist
+
 pause

@@ -211,6 +211,7 @@ export class Renderer {
         this._camera.lowerRadiusLimit = 0;
         this._camera.id = Renderer.CAMERA_ID;
         this._camera.name = Renderer.CAMERA_ID;
+        this._camera.doNotSerialize = true;
         this.init();
     }
 

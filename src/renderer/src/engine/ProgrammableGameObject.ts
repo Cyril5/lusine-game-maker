@@ -6,6 +6,17 @@ import Rigidbody from "./physics/lgm3D.Rigidbody";
 
 export class ProgrammableGameObject extends GameObject {
 
+    // Another constructor
+    static createEmptyFromNodeData(node: BABYLON.Node) {
+        const pgo = new ProgrammableGameObject(node.name, node.getScene());
+        pgo.transform.dispose();
+        GameObject.gameObjects.delete(pgo.Id);
+        pgo._transform = node;
+        pgo.setUId(node.metadata.gameObjectId,false);
+        pgo.name = node.name;
+        return pgo
+    }
+
     static readonly TYPE_NAME = "PROG_GO";
 
     rotateTowardsBehaviour;

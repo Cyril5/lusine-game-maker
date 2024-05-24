@@ -8,6 +8,8 @@ import RotateTowardsBehaviour from "./behaviours/lgm3D.RotateTowardsBehaviour";
 
 export class GameObject {
 
+
+
     private _components: Map<string, Component>
 
     private static _gameObjects = new Map<number | string, GameObject>() //unique id or uuid // map uuid,gameObject
@@ -81,19 +83,21 @@ export class GameObject {
         return this._scene;
     }
 
-    private _transform : BABYLON.TransformNode;
+    protected _transform : BABYLON.TransformNode;
     get transform() : BABYLON.TransformNode {
         return this._transform;
     }
 
+    static buildFromTransformNode(node : BABYLON.TransformNode) {
 
-    static buildFromTransformNode(transform : BABYLON.TransformNode) {
-        const go = new GameObject(transform.name,transform.getScene());
-        //go._transform.dispose(); //supprimer le transform crée par le gameObject avant de le remplacer
-        go._transform.name += "_old";
-        this._gameObjects.delete(go.Id);
-        go._transform = transform; 
-        go.setUId(transform.uniqueId,false);
+        if(!node.getScene())
+            throw "No scene found";
+
+        const go = new GameObject(node.name,node.getScene());
+        GameObject._gameObjects.delete(go.Id);
+        go._transform.dispose(); //supprimer le transform crée par le gameObject avant de le remplacer
+        go._transform = node; 
+        go.setUId(node.metadata.gameObjectId);
         return go;
     }
 
@@ -231,9 +235,6 @@ export class GameObject {
         const go = new GameObject(node.name, scene);
         go.setUId(node.metadata.gameObjectId);
         node.name += " (orig)";
-        go.transform.position.copyFrom(node.position);
-        go.transform.rotation.copyFrom(node.rotation);
-        go.transform.scaling.copyFrom(node.scaling);
         return go;
     }
 
@@ -266,6 +267,10 @@ export class GameObject {
         }
     }
 
+    public getAllComponents() {
+        return this._components.values();
+    }
+
 
     public removeComponent(componentName: string): void {
         this._components.delete(componentName);
@@ -286,11 +291,12 @@ export class GameObject {
 
     setUId(value: number, deleteOldId = true) {
         const oldId = this._transform.uniqueId;
-        this._transform.uniqueId = value;
         this.metadata["gameObjectId"] = value;
         if (deleteOldId) {
+            console.log("delete old id"+oldId);
             GameObject._gameObjects.delete(oldId);
         }
+        this._transform.uniqueId = value;
         GameObject._gameObjects.set(this._transform.uniqueId, this);
         //console.log(GameObject._gameObjects);
     }
@@ -310,9 +316,10 @@ export class GameObject {
     }
 
     setParent(newParent: GameObject) {
-        this.transform.setParent(newParent.transform);
-        if(newParent)
+        this.transform.setParent(newParent?.transform);
+        if(newParent) {
             this.metadata.parentId = newParent.Id;
+        }
         
         this.onParentChange.notifyObservers(newParent);
     }

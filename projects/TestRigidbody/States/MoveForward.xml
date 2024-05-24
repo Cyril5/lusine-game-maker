@@ -2,6 +2,31 @@
   <variables>
     <variable type="Number" id="qGp2^N*ar::l}f(P#fB@">turnSpeed</variable>
   </variables>
+  <block type="game_ongamestoped_4w8xcv" id="Z`_22|NX@!5qD+?y^pV:" x="13" y="-262">
+    <statement name="ONGAMESTOPPED">
+      <block type="gameobject_setpos_numbers" id="Q}ZjLN{f)0m[n@gP@LbA">
+        <field name="SPACE">LOCAL</field>
+        <value name="OBJ">
+          <block type="gameobject_this" id="/=o5^gU^G30iTxNBl}F_"></block>
+        </value>
+        <value name="POSX">
+          <block type="math_number" id=";msFYnd##3q94-sAUuhP">
+            <field name="NUM">0</field>
+          </block>
+        </value>
+        <value name="POSY">
+          <block type="math_number" id="eD-+eH)AzBxZUFk?^74C">
+            <field name="NUM">10</field>
+          </block>
+        </value>
+        <value name="POSZ">
+          <block type="math_number" id="nhQqDTu@fR69r$w~3a4V">
+            <field name="NUM">0</field>
+          </block>
+        </value>
+      </block>
+    </statement>
+  </block>
   <block type="state_onenterstate" id="$%`P8_I%J~DX;x%zlMub" x="13" y="-162">
     <statement name="ENTERSTATE">
       <block type="variables_set_dynamic" id="32:0tZGjR=#g!=e%g@g^">
@@ -34,7 +59,7 @@
             </value>
             <value name="SPEED">
               <block type="math_number" id="}E1rr;qOispnpW,j:X58">
-                <field name="NUM">5</field>
+                <field name="NUM">10</field>
               </block>
             </value>
           </block>
@@ -55,7 +80,7 @@
             </value>
             <value name="SPEED">
               <block type="math_number" id="k+0%=ZrIp0xV1y5F7UhR">
-                <field name="NUM">-5</field>
+                <field name="NUM">-8</field>
               </block>
             </value>
           </block>

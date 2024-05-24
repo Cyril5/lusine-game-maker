@@ -112,12 +112,15 @@ export default class Rigidbody extends Component {
                 return;
             }
 
-            this._shapeContainer!.addChildFromParent(this._gameObject.transform, collider._colliderShape, collider._boxMesh);
+            collider.updateBodyShape();
+            
+            //this._shapeContainer!.addChildFromParent(this._gameObject.transform, shape, collider._boxMesh);
+            this._shapeContainer!.addChild(collider._colliderShape, collider.gameObject.transform.position, collider._boxMesh.rotationQuaternion);
 
             if (this._shapeContainer!.getNumChildren() > 1)
                 this._shapeContainer?.removeChild(0);
-
-            //collider._physicsBody.shape!.dispose();
+            
+            // console.log("dispose collider body");
             collider._physicsBody.dispose();
 
         });

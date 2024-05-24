@@ -7,6 +7,7 @@ import State from "./FSM/State";
 import { Observable, Vector3 } from "babylonjs";
 import DemoTest from "./DemoTest";
 import Rigidbody from "./physics/lgm3D.Rigidbody";
+import BoxCollider from "./physics/lgm3D.BoxCollider";
 
 export class Game {
 
@@ -71,6 +72,13 @@ export class Game {
             //Mis à jour des shapes des rigidbody
             const rb = gameObject.getComponent<Rigidbody>("Rigidbody");
             rb?.test();
+
+            const collider = gameObject.getComponent<BoxCollider>("BoxCollider");
+            if(collider) {
+                if(!collider.gameObject.transform.parent) {
+                    collider.updateBodyShape();
+                }
+            }
             
             if(gameObject instanceof ProgrammableGameObject) {
                 

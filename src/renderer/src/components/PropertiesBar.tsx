@@ -58,7 +58,7 @@ const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
     }
 
     const handleSelectParent = () => {
-        LGM3DEditor.getInstance().selectGameObject(gameObjectRef.current.parent.uniqueId);
+        LGM3DEditor.getInstance().selectGameObject(gameObjectRef.current!.transform.parent.uniqueId);
     }
 
     const handleAddRigidbody = () => {
@@ -83,7 +83,10 @@ const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
                 </Offcanvas.Header>
                 <Offcanvas.Body>
                     {gameObjectRef.current && (
+
+                        
                         <Accordion defaultActiveKey={['0', '1']} alwaysOpen>
+
                             <Accordion.Item eventKey="0">
                                 <Accordion.Header>Objet</Accordion.Header>
                                 <Accordion.Body>
@@ -92,8 +95,8 @@ const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
                                         <Form.Control onChange={handleSetGameObjectName} value={name} />
                                     </Form.Group>
                                     <p>ID : {id}</p>
-                                    {gameObjectRef.current.parent && (
-                                        <p>Parent : <Button variant="primary" size="sm" onClick={handleSelectParent}>{gameObjectRef.current.parent.Id}</Button> <Button onClick={handleUnparent} variant="danger" size="sm" disabled={!gameObjectRef.current.parent.uniqueId}>Déparenter</Button></p>
+                                    {gameObjectRef.current.transform.parent && (
+                                        <p>Parent : <Button variant="primary" size="sm" onClick={handleSelectParent}>{gameObjectRef.current.transform.parent.uniqueId}</Button> <Button onClick={handleUnparent} variant="danger" size="sm" disabled={!gameObjectRef.current.transform.parent.uniqueId}>Déparenter</Button></p>
                                     )}
 
                                     Qualifieur <Form.Select aria-label="Default select example">
@@ -110,6 +113,20 @@ const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
                                     <TransformComponent gameObjectId={id} />
                                 </Accordion.Body>
                             </Accordion.Item>
+
+                            {Array.from(gameObjectRef.current.getAllComponents()).map((component, index) => {
+                                const InspectorComponent = (component as any).inspectorComponent;
+                                console.log(index);
+                                //TODO : voir si c'est plus performant d'utiliser l'id du component du gameObject au lieu de le passer dans la prop 
+                                if (InspectorComponent) {
+                                    return<>
+                                    <Accordion.Item eventKey={component.name} key={index}>
+                                        <InspectorComponent componentInstance={component}/> 
+                                    </Accordion.Item>
+                                    </>
+                                }
+                            })}
+
                             
                             {fsms && fsms.length > 0 && (
                             <Accordion.Item eventKey="2">

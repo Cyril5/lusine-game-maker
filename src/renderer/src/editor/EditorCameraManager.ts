@@ -12,6 +12,7 @@ export default class EditorCameraManager {
         // Créer une caméra orthographique
         this._orthoCamera = new BABYLON.FreeCamera('_EDITOR_ORTHO_CAM', new BABYLON.Vector3(0, 0, -10), scene);
         this._orthoCamera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
+        this._orthoCamera.doNotSerialize = true;
 
         let zoomFactor = 1;
         const maxZoomScale = 3;
