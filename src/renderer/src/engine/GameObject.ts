@@ -5,6 +5,8 @@ import { Exclude, Expose, instanceToPlain } from 'class-transformer';
 import Rigidbody from "./physics/lgm3D.Rigidbody";
 import { GameObjectSetPosNumbersBlock } from "./blocks/gameObject/gameobject_setpos_numbers";
 import RotateTowardsBehaviour from "./behaviours/lgm3D.RotateTowardsBehaviour";
+import { Game } from "./Game";
+import BoxCollider from "./physics/lgm3D.BoxCollider";
 
 export class GameObject {
 
@@ -14,6 +16,8 @@ export class GameObject {
 
     private static _gameObjects = new Map<number | string, GameObject>() //unique id or uuid // map uuid,gameObject
 
+    private static _instances = new Map<GameObject,Array<GameObject>>();
+    
     _collider: Collider;
 
     qualifier: number = 0;
@@ -30,6 +34,9 @@ export class GameObject {
       * Observable lorsque le parent change
     */
     onParentChange: Observable<GameObject>;
+
+
+    children: Array<GameObject> = [];
 
     /**
      * Get l'identifiant unique du GameObject.
@@ -101,9 +108,9 @@ export class GameObject {
         return go;
     }
 
-    constructor(name : string, scene: BABYLON.Scene) {
+    constructor(name : string, scene: BABYLON.Scene, transformNode?: BABYLON.TransformNode) {
  
-        this._transform = new BABYLON.TransformNode(name,scene);
+        this._transform = !transformNode ? new BABYLON.TransformNode(name,scene) : transformNode;
 
         this._transform.rotationQuaternion = BABYLON.Quaternion.Identity();
  
@@ -138,8 +145,12 @@ export class GameObject {
  
     }
 
+    /**
+     * Si le transformNode est relié à un GameObject ?
+     * TODO : A améliorer
+    */
     static nodeIsGameObject(node: BABYLON.TransformNode) {
-        return node instanceof GameObject;
+        return node.metadata?.gameObjectId != null;
     }
 
     static saveAllTransforms() {
@@ -164,56 +175,24 @@ export class GameObject {
      * Converti un TransformNode en gameObject
      * TODO : A améliorer
     */
-    static convertToGameObject(transformNode: BABYLON.TransformNode): GameObject {
+    static convertToGameObject(transformNode: BABYLON.TransformNode,recursive = true): GameObject {
         
         const scene = transformNode.getScene();
 
-        const gameObject = GameObject.buildFromTransformNode(transformNode);
-        transformNode.metadata.convertedId = gameObject.Id;
-
-        const children = new Map<Number,BABYLON.TransformNode>();
-        const nonGONodes: BABYLON.TransformNode[] = [];
-        const convertedNodes : BABYLON.TransformNode[] = [];
-
-        // on exclus les objets qui ne peuvent pas être converti en GameObject
-        // transformNode.getChildTransformNodes().forEach(childNode => {
-
-        //     children.set(childNode.uniqueId,childNode);
-
-        //     if (childNode.metadata) {
-        //         return;
-        //     }
-
-        //     if (childNode.parent) {
-
-        //         childNode.metadata = { parentId: null };
-
-        //         childNode.metadata.parentId = childNode.parent.uniqueId;
-        //         //childNode.parent = null;
-        //     }
-        //     nonGONodes.push(childNode);
-        // });
-
-        transformNode.getChildTransformNodes().forEach(childNode => {
-
-            const types = ['GameObject', 'Model3D','PROG_GO'];
-
-            
-            if (childNode.metadata && childNode.metadata.gameObjectId) {
-                
-                const convertedObject = GameObject.buildFromTransformNode(childNode);
-
-                convertedNodes.push(childNode);
-                children.set(convertedObject.Id,convertedObject.transform);
-
-                childNode.metadata.convertedId = convertedObject.Id;
-                
-                convertedObject.transform.position.copyFrom(childNode.position);
-                convertedObject.transform.rotation = childNode.rotation;
-                convertedObject.transform.scaling.copyFrom(childNode.scaling);
-            }
-
-        });
+        if(recursive) {
+            transformNode.getChildTransformNodes().forEach(childNode => {
+    
+                if (childNode.metadata && childNode.metadata.gameObjectId) {
+    
+                    const convertedObject = new GameObject(childNode.name,scene,childNode);
+                    
+                    convertedObject.transform.position.copyFrom(childNode.position);
+                    convertedObject.transform.rotation = childNode.rotation;
+                    convertedObject.transform.scaling.copyFrom(childNode.scaling);
+                }
+    
+            });
+        }
 
         // nonGONodes.forEach(node=>{
         //     const oldParent = children.get(node.metadata.parentId);
@@ -228,7 +207,7 @@ export class GameObject {
         // });
         // transformNode.dispose();
 
-        return gameObject;
+        return  new GameObject(transformNode.name,scene,transformNode);
     }
 
     public static createFromTransformNodeMetaData(node: BABYLON.TransformNode, scene: BABYLON.Scene): GameObject {
@@ -239,16 +218,35 @@ export class GameObject {
     }
 
 
-    public static duplicate(sourceGO: GameObject): GameObject {
+    public static createInstance(sourceGO: GameObject): GameObject {
 
         const instance = sourceGO.transform.instantiateHierarchy(null);
-        const targetGO = GameObject.convertToGameObject(instance!);
+        const targetGO : GameObject= GameObject.convertToGameObject(instance!);
 
-        const rbSource = sourceGO.getComponent<Rigidbody>("Rigidbody");
-        if (rbSource) {
-            const rb = targetGO.addComponent(new Rigidbody(targetGO), "Rigidbody");
-            (rb as Rigidbody).copy(rbSource);
-        }
+        sourceGO.transform.getChildTransformNodes().forEach((node) => {
+            if(GameObject.nodeIsGameObject(node)) {
+                // Créer tous les composants et les copier
+                const componentSources = sourceGO.getAllComponents();
+                for (const componentSource of componentSources) { 
+                    const c : Component = targetGO.addComponent(componentSource, componentSource.name);
+                    c.copyFrom(componentSource);
+                }
+            }
+        })
+
+        // const rbSource = sourceGO.getComponent<Rigidbody>("Rigidbody");
+
+        // // if (rbSource) {
+        //     const rb = targetGO.addComponent(new Rigidbody(targetGO), "Rigidbody");
+        //     (rb as Rigidbody).copyFrom(rbSource!);
+        // // }
+        // const collider = targetGO.children[0]; 
+        // //collider.addComponent(new BoxCollider(collider), "BoxCollider");
+        // console.log(targetGO.children);
+
+        const instances = new Array<GameObject>();
+        instances.push(targetGO);
+        GameObject._instances.set(sourceGO, instances);
 
         // return go2;
         return targetGO;
@@ -313,12 +311,19 @@ export class GameObject {
         // this.onDelete.clear();
         // this._physicsImpostor?.dispose();
         this.transform.dispose();
+
+        if(GameObject._instances.has(this)) {
+            GameObject._instances.delete(this);
+        }
     }
 
     setParent(newParent: GameObject) {
         this.transform.setParent(newParent?.transform);
         if(newParent) {
             this.metadata.parentId = newParent.Id;
+            newParent.children.push(this);
+        }else{
+            newParent.children.delete(this);
         }
         
         this.onParentChange.notifyObservers(newParent);

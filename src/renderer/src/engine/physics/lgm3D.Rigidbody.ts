@@ -25,8 +25,9 @@ export default class Rigidbody extends Component {
         return this._body;
     }
 
-    public copy(rbSource: Rigidbody) {
-        this.options = rbSource.options;
+    public copyFrom<Rigidbody>(componentSource: Rigidbody) {
+        this.options = componentSource.options;
+        alert("COPY RIGIDBODY FROM " + componentSource.gameObject.Id+ "INTO : "+this.gameObject.Id);
     }
 
     public update(dt: number) {

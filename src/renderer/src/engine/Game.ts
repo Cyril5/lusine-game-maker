@@ -29,7 +29,7 @@ export class Game {
 
     private _t;
 
-    //private _demoTest = new DemoTest();
+    private _demoTest = new DemoTest();
 
 
     public static getInstance() {

@@ -19,31 +19,26 @@ export default class DemoTest {
     constructor() {
         GameLoader.onLevelLoaded.addOnce((scene) => {
 
-            
             this.scene = scene;
-            const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 50, height: 50 }, scene);
+            // const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 50, height: 50 }, scene);
             
             this.car = GameObject.getById(122);
             //const carMesh = scene.getMeshByUniqueId(16)!.material = null;
             
-            this.car.addComponent(new Rigidbody(this.car), "Rigidbody");
-            const carCollider = new GameObject("CarCollider",this.scene);
-            carCollider.addComponent(new BoxCollider(carCollider),"BoxCollider");
-            carCollider.scale = new BABYLON.Vector3(1.938,1.0,3.151);
-            carCollider.position = new BABYLON.Vector3(0,0.512,0.570);
-            carCollider.setParent(this.car);
+            // this.car.addComponent(new Rigidbody(this.car), "Rigidbody");
+            // const carCollider = new GameObject("CarCollider",this.scene);
+            // carCollider.addComponent(new BoxCollider(carCollider),"BoxCollider");
+            // carCollider.scale = new BABYLON.Vector3(1.938,1.0,3.151);
+            // carCollider.position = new BABYLON.Vector3(0,0.512,0.570);
+            // carCollider.setParent(this.car);
 
-            const groundGo = new GameObject("Ground",this.scene);
-            ground.setParent(groundGo.transform);
+            // const groundGo = new GameObject("Ground",this.scene);
+            // ground.setParent(groundGo.transform);
 
-            var groundAggregate = new BABYLON.PhysicsAggregate(ground, BABYLON.PhysicsShapeType.BOX, { mass: 0 }, scene);
+            // var groundAggregate = new BABYLON.PhysicsAggregate(ground, BABYLON.PhysicsShapeType.BOX, { mass: 0 }, scene);
 
             //TEST COPY
-            //const car2 = GameObject.duplicate(this.car);
-            const target = new GameObject("Target",scene);
-            const test = new GameObject("TEST",scene);
-            target.setParent(test);
-
+            const car2 = GameObject.createInstance(this.car);
 
             LGM3DEditor.getInstance().updateObjectsTreeView();
 

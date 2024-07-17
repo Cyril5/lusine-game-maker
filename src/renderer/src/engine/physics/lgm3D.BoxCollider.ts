@@ -6,6 +6,7 @@ import Collider from "./lgm3D.Collider";
 import Rigidbody from "./lgm3D.Rigidbody";
 import { ColliderMetaData, GameObjectComponentMetaData } from "../structs/ComponentsMetaData";
 import BoxColliderInspector, { InspectorComponent } from "@renderer/components/Objects/BoxColliderComponentInspector";
+import Component from "../lgm3D.Component";
 
 
 @InspectorComponent(BoxColliderInspector)
@@ -131,6 +132,10 @@ export default class BoxCollider extends Collider {
             this._physicsBody.setCollisionCallbackEnabled(true);
             this._physicsBody.getCollisionObservable().add(this.detectionCollision);
         }
+    }
+
+    public copyFrom<BoxCollider>(componentSource: BoxCollider) {
+        alert("COPY BOX COLLIDER");
     }
 
     /**
