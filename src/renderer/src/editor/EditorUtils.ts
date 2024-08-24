@@ -55,6 +55,20 @@ export default class EditorUtils {
     });
   }
 
+  static openFileDialog(options: {}, onSuccess: (response: any) => any, onError?: (error: any) => any) {
+    prompt(options)
+      .then((result: any) => {
+        // Vérifie si l'utilisateur a annulé la boîte de dialogue (result sera null dans ce cas).
+        onSuccess(result);
+      })
+      .catch((error: any) => {
+        // Gère les erreurs, si besoin.
+        if (onError) {
+          onError(error);
+        }
+      });
+  }
+
   static showErrorMsg(message: string = "", title: string = "error") {
 
     const options = {

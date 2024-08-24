@@ -48,7 +48,7 @@ export default class BoxCollider extends Collider {
 
     constructor(owner: GameObject) {
 
-        super();
+        super(owner);
 
         this._gameObject = owner;
         this._scene = this._gameObject.scene;
@@ -86,10 +86,10 @@ export default class BoxCollider extends Collider {
         this._boxMesh.overlayColor = BABYLON.Color3.Green();
 
         this._boxMesh.name += this._boxMesh.uniqueId;
+        this._boxMesh.isPickable = false;
 
         this.isTrigger = false;
 
-        this._boxMesh.isPickable = false;
 
         // Cet évenement est appelé après l'activation du moteur physique
         // TODO : enlever cet event quand le collider est supprimé
@@ -135,7 +135,10 @@ export default class BoxCollider extends Collider {
     }
 
     public copyFrom<BoxCollider>(componentSource: BoxCollider) {
-        alert("COPY BOX COLLIDER");
+        alert("COPY BOX COLLIDER FROM " +componentSource.gameObject.Id+ " INTO  : " + this._gameObject.Id);
+        this._boxMesh.dispose();
+        this._boxMesh = componentSource._boxMesh;
+        return this;
     }
 
     /**

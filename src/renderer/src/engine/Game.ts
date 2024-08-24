@@ -13,9 +13,9 @@ export class Game {
 
     //historyCommand : ICommand;
 
-    onGameStarted : Observable<void>;
-    onGameUpdate : Observable<void>;
-    onGameStoped : Observable<void>;
+    onGameStarted: Observable<void>;
+    onGameUpdate: Observable<void>;
+    onGameStoped: Observable<void>;
 
     private static _instance: any;
 
@@ -23,13 +23,14 @@ export class Game {
     private _engine: Engine | undefined;
     private _isRunning: boolean = false;
 
-    get isRunning() : boolean {
+    get isRunning(): boolean {
         return this._isRunning;
-    } 
+    }
 
     private _t;
 
     private _demoTest = new DemoTest();
+    private pyodide;
 
 
     public static getInstance() {
@@ -42,73 +43,76 @@ export class Game {
         }
     }
 
+    public getPyodide() {
+        return this.pyodide;
+    }
+
     // Deltatime in seconds
     static get deltaTime(): Number {
         return Game._deltaTime;
     }
 
 
-
     public async start() {
-        
-        
+
+
         this._isRunning = true;
         console.log("Game started");
-        
-        
+
+
         const scene = Renderer.getInstance().scene;
-        
+
         InputManager.initKeyboardListeners();
-        
+
         // Interpretation des codes de chaques states de chaques fsm
         const gameObjects = GameObject.gameObjects.values();
-        
+
         let runCodeSuccess = 0;
 
         //this._demoTest.init(scene);
-        
+
         for (const gameObject of gameObjects) {
-            
+
             //Mis à jour des shapes des rigidbody
             const rb = gameObject.getComponent<Rigidbody>("Rigidbody");
             rb?.test();
 
             const collider = gameObject.getComponent<BoxCollider>("BoxCollider");
-            if(collider) {
-                if(!collider.gameObject.transform.parent) {
+            if (collider) {
+                if (!collider.gameObject.transform.parent) {
                     collider.updateBodyShape();
                 }
             }
-            
-            if(gameObject instanceof ProgrammableGameObject) {
-                
+
+            if (gameObject instanceof ProgrammableGameObject) {
+
                 const states = gameObject.finiteStateMachines[0].states.length;
-                if(states > 0) {
+                if (states > 0) {
                     for (let index = 0; index < states; index++) {
                         const state = gameObject.finiteStateMachines[0].states[index];
                         await state.runCode();
                     }
-                    if(gameObject.finiteStateMachines[0].currentState) {
+                    if (gameObject.finiteStateMachines[0].currentState) {
                         console.log(gameObject.finiteStateMachines[0].currentState.onEnterState);
                         gameObject.finiteStateMachines[0].currentState.onEnterState.notifyObservers();
                     }
                 }
             }
         }
-        
+
         //GameObject.saveAllTransforms();
-        
-        
+
+
         clearTimeout(this._t);
-        
+
         scene.physicsEnabled = true;
-        
+
         this.onGameStarted.notifyObservers();
-        
+
         //this._demoTest.start();
-        
+
     }
-    
+
 
 
     private update(deltaTime: Number) {
@@ -116,15 +120,15 @@ export class Game {
         if (!this._isRunning)
             return;
 
-        Game._deltaTime = deltaTime/1000;
+        Game._deltaTime = deltaTime / 1000;
         // console.log(this._isRunning);
         this.onGameUpdate.notifyObservers();
-        
+
         const gameObjects = GameObject.gameObjects.values();
         for (const go of gameObjects) {
-            if(go instanceof ProgrammableGameObject) {
+            if (go instanceof ProgrammableGameObject) {
                 //console.log(Game.deltaTime);
-                if(go.finiteStateMachines[0].currentState) {
+                if (go.finiteStateMachines[0].currentState) {
                     go.finiteStateMachines[0].currentState.onUpdateState.notifyObservers();
                 }
             }
@@ -133,20 +137,20 @@ export class Game {
 
 
     public stop() {
-        
+
         console.log('stop game');
-        
+
         State.deleteRuntimeGlobalVars();
-        
+
         const scene = Renderer.getInstance().scene;
 
         InputManager.removeKeyboardListeners();
         this._isRunning = false;
-        
+
         Renderer.getInstance().scene.physicsEnabled = false;
 
-        GameObject.gameObjects.forEach((go : GameObject,key)=>{
-            if(go instanceof ProgrammableGameObject) {
+        GameObject.gameObjects.forEach((go: GameObject, key) => {
+            if (go instanceof ProgrammableGameObject) {
                 // if(go.rigidbody) {
                 //     const zeroVector = BABYLON.Vector3.Zero();
                 //     go.rigidbody.setAngularVelocity(zeroVector);
@@ -160,12 +164,12 @@ export class Game {
                 // }
             }
         })
-        
+
         //this._demoTest.stop(scene);
-        
+
         this.onGameUpdate.clear();
         this.onGameStoped.notifyObservers();
-        
+
     }
 
     private constructor() {

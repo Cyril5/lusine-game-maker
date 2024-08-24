@@ -3,7 +3,6 @@ import { GameObject } from "../GameObject";
 import Component from "../lgm3D.Component";
 import BoxCollider from "./lgm3D.BoxCollider";
 import EditorUtils from "@renderer/editor/EditorUtils";
-import { Material, StandardMaterial } from "babylonjs";
 import Collider from "./lgm3D.Collider";
 
 export default class Rigidbody extends Component {
@@ -28,6 +27,7 @@ export default class Rigidbody extends Component {
     public copyFrom<Rigidbody>(componentSource: Rigidbody) {
         this.options = componentSource.options;
         alert("COPY RIGIDBODY FROM " + componentSource.gameObject.Id+ "INTO : "+this.gameObject.Id);
+        return this;
     }
 
     public update(dt: number) {

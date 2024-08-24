@@ -18,3 +18,23 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <App />
   //</React.StrictMode>
 )
+
+// Assurez-vous que le code est exécuté après que le DOM est chargé
+document.addEventListener('DOMContentLoaded', async () => {
+  alert("KABOUM !");
+
+  try {
+      // Charger Pyodide
+      const pyodide = await loadPyodide();
+      console.warn("Pyodide chargé :", pyodide);
+
+      // Rendre Pyodide disponible globalement
+      (window as any).pyodide = pyodide;
+
+      // Exemple d'exécution Python
+      const result = pyodide.runPython("print('Hello from Python')");
+      console.log(result);
+  } catch (error) {
+      console.error("Erreur lors du chargement de Pyodide :", error);
+  }
+});

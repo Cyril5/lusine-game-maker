@@ -24,6 +24,7 @@ import StateEditorUtils from '@renderer/editor/StateEditorUtils';
 import EditorUtils from '@renderer/editor/EditorUtils';
 import { cp } from 'fs';
 import CustomPrompt from '@renderer/components/StatesEditor/CustomPrompt';
+import { pythonGenerator } from 'blockly/python';
 
 //const serializer: Blockly.serialization.blocks.BlockSerializer = new Blockly.serialization.blocks.BlockSerializer();
 
@@ -207,13 +208,16 @@ const StateEditor = (statefiles = StateEditorUtils.getStatesFiles(), resizeWorks
 
     const updateCodeFromCodeEditor = () => {
         //javascriptGenerator.addReservedWords('code');
-        const code: string = javascriptGenerator.workspaceToCode(workspaceRef.current);
-        if (code !== "") {
+        const lang : string = 'python';
+        
+        // const code: string = javascriptGenerator.workspaceToCode(workspaceRef.current);
+        const code = pythonGenerator.workspaceToCode(workspaceRef.current);
+        if (lang == 'javascript' && code !== "") {
             //setCode(currentStateFile.outputCode);
             const updatedCode = code.replace(/\bvar\b/g, 'let'); // Remplacez toutes les occurrences de "var" par "let"
-            console.log(updatedCode);
-            setCode(updatedCode);
         }
+        console.log(code);
+        setCode(code);
     }
 
 

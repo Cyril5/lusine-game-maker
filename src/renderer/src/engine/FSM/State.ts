@@ -66,8 +66,8 @@ export default class State {
     this.onEnterState = new FSMObservable();
 
     this.onEnterState.add(() => {
-   console.log('ENTER !!');
- } );
+      console.log('ENTER !!');
+    });
 
 
     this.onUpdateState = new FSMObservable();
@@ -82,7 +82,7 @@ export default class State {
 
   async runCode() { // run state code
 
-    if(!this.stateFile)
+    if (!this.stateFile)
       return;
 
     // On eval une seul fois les classes qui peuvent être utilisé par d'autres state
@@ -90,81 +90,102 @@ export default class State {
     // if(this.stateFile.outputCode.includes(InputManager)) {
     //   // faire un eval
     // }
+    const lang : string = "python";
 
-    const options = {
-      compress: true,
-      mangle: {
-        toplevel: true,
-      },
-      nameCache: {},
-    };
-    
-    if(!State._runtimeGlobalVars.includes(Game)) {
-      State._runtimeGlobalVars.push(Game);
-    }
-    if(!State._runtimeGlobalVars.includes(GameObject)) {
-      State._runtimeGlobalVars.push(GameObject);
-    }
+    if (lang == "javascript") {
 
-    const objects = State._runtimeGlobalVars;
-    for (let i = 0; i < objects.length; i++) {
-      let object = objects[i];
-      let clsName = object.name; // prendre le nom de la classe
-      if (object[0]) {
-        clsName = object[0]; // prendre un autre nom (pour les enum par exemple)
-        object = JSON.stringify(object[1]); // Récupérer l'objet
+      const options = {
+        compress: true,
+        mangle: {
+          toplevel: true,
+        },
+        nameCache: {},
+      };
+
+      if (!State._runtimeGlobalVars.includes(Game)) {
+        State._runtimeGlobalVars.push(Game);
+      }
+      if (!State._runtimeGlobalVars.includes(GameObject)) {
+        State._runtimeGlobalVars.push(GameObject);
       }
 
-      const importCode: string = `
-           if(!window.${clsName}) {
-             window.${clsName} = ${object};
-             //console.log("import "+${clsName});
-           }else{
-             //alert("${clsName} exists");
-           }`;
+      const objects = State._runtimeGlobalVars;
+      for (let i = 0; i < objects.length; i++) {
+        let object = objects[i];
+        let clsName = object.name; // prendre le nom de la classe
+        if (object[0]) {
+          clsName = object[0]; // prendre un autre nom (pour les enum par exemple)
+          object = JSON.stringify(object[1]); // Récupérer l'objet
+        }
+
+        const importCode: string = `
+                 if(!window.${clsName}) {
+                   window.${clsName} = ${object};
+                   //console.log("import "+${clsName});
+                 }else{
+                   //alert("${clsName} exists");
+                 }`;
 
 
-      const minifiedObject = terser.minify(importCode, options).then((value) => {
-        //console.log(value.code);
-        eval(value.code);
-      });
-      // eval(`
-      //     if(!window.${clsName}) {
-      //       window.${clsName} = ${minifiedObject};
-      //       console.log("import "+${clsName});
-      //     }else{
-      //       //alert("${clsName} exists");
-      //     }`
-      // );
+        const minifiedObject = terser.minify(importCode, options).then((value) => {
+          //console.log(value.code);
+          eval(value.code);
+        });
+        // eval(`
+        //     if(!window.${clsName}) {
+        //       window.${clsName} = ${minifiedObject};
+        //       console.log("import "+${clsName});
+        //     }else{
+        //       //alert("${clsName} exists");
+        //     }`
+        // );
 
+      }
     }
 
 
     // Clear all states callbacks
     this.onEnterState.clear();
     this.onExitState.clear();
-    this.onUpdateState.clear(); 
+    this.onUpdateState.clear();
 
     console.log(this.stateFile.codeFilename);
     console.log(this.stateFile.outputCode);
 
-    if (this.stateFile.outputCode === "" && this.stateFile.needToLoad) {
+    if (this.stateFile.outputCode == "" && this.stateFile.needToLoad) {
       // récupérer le code depuis le fichier .state
       FileManager.readTextFile(this.stateFile.codeFilename, async (data) => {
         this.stateFile.outputCode = data;
         console.log(this.stateFile.outputCode);
         this.stateFile.needToLoad = false;
-        await this.evalStateCode(options);
+        //await this.evalStateCode(options);
+        await this.runStatePyCode();
       });
-    }else{
+    } else {
 
-      // ne pas ré-evaluer le code car il a déjà était fait après l'ouverture du fichier du code
-      await this.evalStateCode(options);
+      // ne pas ré-evaluer/interpréter le code car il a déjà était fait après l'ouverture du fichier du code
+      await this.runStatePyCode();
     }
-
-
-
   };
+
+  private async runStatePyCode() {
+
+    return;
+    const pyodide = Game.getInstance().getPyodide();
+        // Expose state instance
+        pyodide.globals.set("self", this);
+
+    try {
+      const result = pyodide.runPythonAsync(this.stateFile.outputCode);
+      console.log("Résultat:", result);
+    } catch (err) {
+      console.error("Erreur d'exécution:", err);
+    }finally{
+      // Nettoie le contexte global après l'exécution
+      pyodide.globals.delete("self");
+    }
+  }
+
 
   private async evalStateCode(minifyOptions: any) {
     // Generate JavaScript code and run it.

@@ -1,24 +1,23 @@
 import Component from "./lgm3D.Component";
 import { Vector3 } from "@babylonjs/core";
 import { Observable } from "babylonjs";
-import { Exclude, Expose, instanceToPlain } from 'class-transformer';
-import Rigidbody from "./physics/lgm3D.Rigidbody";
-import { GameObjectSetPosNumbersBlock } from "./blocks/gameObject/gameobject_setpos_numbers";
-import RotateTowardsBehaviour from "./behaviours/lgm3D.RotateTowardsBehaviour";
-import { Game } from "./Game";
-import BoxCollider from "./physics/lgm3D.BoxCollider";
+
 
 export class GameObject {
 
+    static getInstancesOfType(gameObject: GameObject) {
 
+        if(GameObject._instances.has(gameObject)) {
+            return GameObject._instances.get(gameObject);
+        }
+        return [];
+    }
 
     private _components: Map<string, Component>
 
     private static _gameObjects = new Map<number | string, GameObject>() //unique id or uuid // map uuid,gameObject
 
-    private static _instances = new Map<GameObject,Array<GameObject>>();
-    
-    _collider: Collider;
+    private static _instances = new Map<GameObject,GameObject[]>();
 
     qualifier: number = 0;
 
@@ -165,6 +164,12 @@ export class GameObject {
     }
 
     public addComponent<T extends Component>(component: T, componentName: string): Component {
+        
+        if(this._components.has(componentName)) {
+            console.error("Component already exists in gameObject");
+            return null;
+        }
+        
         this._components.set(componentName, component);
         component.name = componentName;
         component._gameObject = this;
@@ -173,9 +178,10 @@ export class GameObject {
 
     /**
      * Converti un TransformNode en gameObject
-     * TODO : A améliorer
+     * TODO : A améliorer 
+     * Ajouter peut être une callback à chaque traitement des enfants (source, clone)
     */
-    static convertToGameObject(transformNode: BABYLON.TransformNode,recursive = true): GameObject {
+    static convertToGameObject(transformNode: BABYLON.TransformNode,recursive = true): GameObject | null {
         
         const scene = transformNode.getScene();
 
@@ -186,12 +192,16 @@ export class GameObject {
     
                     const convertedObject = new GameObject(childNode.name,scene,childNode);
                     
-                    convertedObject.transform.position.copyFrom(childNode.position);
-                    convertedObject.transform.rotation = childNode.rotation;
-                    convertedObject.transform.scaling.copyFrom(childNode.scaling);
+                    // convertedObject.transform.position.copyFrom(childNode.position);
+                    // convertedObject.transform.rotation = childNode.rotation;
+                    // convertedObject.transform.scaling.copyFrom(childNode.scaling);
                 }
     
             });
+        }else{
+            if(transformNode.metadata && transformNode.metadata.gameObjectId) {
+                return new GameObject(transformNode.name,scene,transformNode);
+            }
         }
 
         // nonGONodes.forEach(node=>{
@@ -207,7 +217,7 @@ export class GameObject {
         // });
         // transformNode.dispose();
 
-        return  new GameObject(transformNode.name,scene,transformNode);
+        return  null;
     }
 
     public static createFromTransformNodeMetaData(node: BABYLON.TransformNode, scene: BABYLON.Scene): GameObject {
@@ -220,36 +230,60 @@ export class GameObject {
 
     public static createInstance(sourceGO: GameObject): GameObject {
 
-        const instance = sourceGO.transform.instantiateHierarchy(null);
-        const targetGO : GameObject= GameObject.convertToGameObject(instance!);
+        let rootGameObject : GameObject | null= null;
 
-        sourceGO.transform.getChildTransformNodes().forEach((node) => {
-            if(GameObject.nodeIsGameObject(node)) {
-                // Créer tous les composants et les copier
-                const componentSources = sourceGO.getAllComponents();
+        let root = true;
+        const onNewNodeCreated = (source : BABYLON.TransformNode,clone: BABYLON.TransformNode) : void =>{
+
+            const childSourceGO : GameObject = GameObject.getById(source.uniqueId);  
+
+            if(childSourceGO) {             
+                const cloneGO : GameObject | null = GameObject.convertToGameObject(clone,false);
+                
+                if(!cloneGO) return;
+                
+                alert('CONVERT : '+source.name);
+                cloneGO.transform!.metadata = { ...source.metadata };
+                cloneGO.transform!.metadata.gameObjectId = clone.uniqueId;
+                // Créer tous les composants et les copier (à faire aussi sur les enfants)
+                const componentSources = childSourceGO.getAllComponents();
                 for (const componentSource of componentSources) { 
-                    const c : Component = targetGO.addComponent(componentSource, componentSource.name);
+                    const c : Component = cloneGO.addComponent(new componentSource.constructor(cloneGO), componentSource.name);
                     c.copyFrom(componentSource);
                 }
-            }
-        })
+                
+                if(root) {
+                    rootGameObject = cloneGO;
+                    const instances = [];
+                    instances.push(cloneGO);
+                    GameObject._instances.set(sourceGO, instances);
+                    root = false;
+                }
+            } 
+        };
+        
+        sourceGO.transform.instantiateHierarchy(null,{doNotInstantiate : false},(source,clone) => onNewNodeCreated(source,clone));
+        
+        //sourceGO.transform.setEnabled(false);
+        // const nodes : BABYLON.TransformNode[] = [];
+        // nodes.push(targetGO.transform);
+        // nodes.push(sourceGO.transform.getChildTransformNodes());
+        
+        // nodes.forEach((node) => {
+        //     if(GameObject.nodeIsGameObject(node)) {
+        //         targetGO.transform!.metadata = { ...sourceGO.metadata };
+        //         targetGO.transform!.metadata.gameObjectId = instance!.uniqueId;
+        //         // Créer tous les composants et les copier
+        //         const componentSources = sourceGO.getAllComponents();
+        //         for (const componentSource of componentSources) { 
+        //             const c : Component = targetGO.addComponent(componentSource, componentSource.name);
+        //             console.log(componentSource);
+        //             c.copyFrom(componentSource);
+        //         }
+        //     }
+        // })
 
-        // const rbSource = sourceGO.getComponent<Rigidbody>("Rigidbody");
-
-        // // if (rbSource) {
-        //     const rb = targetGO.addComponent(new Rigidbody(targetGO), "Rigidbody");
-        //     (rb as Rigidbody).copyFrom(rbSource!);
-        // // }
-        // const collider = targetGO.children[0]; 
-        // //collider.addComponent(new BoxCollider(collider), "BoxCollider");
-        // console.log(targetGO.children);
-
-        const instances = new Array<GameObject>();
-        instances.push(targetGO);
-        GameObject._instances.set(sourceGO, instances);
-
-        // return go2;
-        return targetGO;
+        return rootGameObject;
     }
 
     public static getById(id: number): GameObject {
@@ -416,10 +450,4 @@ export class SerialTest {
         this._firstName = firstName;
         this._lastName = lastName;
     }
-
-    @Expose()
-    get name() {
-        return this._firstName + ' ' + this._lastName;
-    }
-
 }

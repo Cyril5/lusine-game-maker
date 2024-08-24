@@ -66,7 +66,7 @@ export default class Collider extends Component {
     }
 
     
-    constructor() {
+    constructor(owner: GameObject) {
 
         super();
 

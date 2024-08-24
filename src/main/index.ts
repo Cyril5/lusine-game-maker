@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow} from 'electron'
+import { app, shell, BrowserWindow, dialog} from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
@@ -38,6 +38,15 @@ function createWindow(): void {
     // 3 pour les erreurs
     if(level===3) {
       mainWindow.webContents.send('console-message', { level, message, line, sourceId });
+      const options = {
+        type: 'error',
+        buttons: ['Ok'],
+        defaultId: 0,
+        title: 'Erreur',
+        message: 'Erreur : '+message,
+        detail: `${sourceId} : ${line}`};
+
+        dialog.showMessageBox(null, options);
     }
   });
 

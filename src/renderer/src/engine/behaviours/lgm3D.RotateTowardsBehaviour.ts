@@ -54,6 +54,11 @@ export default class RotateTowardsBehaviour extends Component {
 
     }
 
+    public copyFrom<T extends Component>(componentSource: T): RotateTowardsBehaviour {
+        alert("COPY ROTATETOWARDS BEHAVIOUR FROM " + componentSource.gameObject.Id+ "INTO : "+this.gameObject.Id);
+        return this;
+    }
+
     constructor() {
         super();
     }

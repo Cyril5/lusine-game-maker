@@ -38,7 +38,7 @@ export default class DemoTest {
             // var groundAggregate = new BABYLON.PhysicsAggregate(ground, BABYLON.PhysicsShapeType.BOX, { mass: 0 }, scene);
 
             //TEST COPY
-            const car2 = GameObject.createInstance(this.car);
+            //const car2 = GameObject.createInstance(this.car);
 
             LGM3DEditor.getInstance().updateObjectsTreeView();
 

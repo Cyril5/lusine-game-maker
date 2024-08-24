@@ -115,6 +115,9 @@ const GameObjectsTreeView = (props: any) => {
               <FontAwesomeIcon icon={node.data.type=='Model3D' ? 'cube' : 'bug'}></FontAwesomeIcon>
               {node.text}
             </Button>
+            <Button variant={'warning'} className='tree-btn' onClick={()=>console.log(LGM3DEditor.getInstance().getGameObjectById(node.id))}>
+              Log
+            </Button>
           </div>
         )}
         dragPreviewRender={(monitorProps) => (

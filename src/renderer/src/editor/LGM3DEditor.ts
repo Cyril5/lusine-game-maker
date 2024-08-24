@@ -210,8 +210,6 @@ export default class LGM3DEditor {
 
     addModel3DObject(filename: string, options = null, callback: (model: Model3D) => void | null) {
 
-
-        // TODO : Remplacer par Game.getFilePath("Models");
         // const os = require('os');
         // const path = require('path');
         // const documentsPath = os.homedir() + '\\Documents\\Lusine Game Maker\\MonProjet';
@@ -266,7 +264,8 @@ export default class LGM3DEditor {
                 "text": gameObject.name + " (ID : " + id + ")",
                 "data": {
                     "type": gameObject.metadata.type,
-                    "chidrenCount": gameObject.transform.getChildren().length
+                    "chidrenCount": gameObject.transform.getChildren().length,
+                    "instancesCount": GameObject.getInstancesOfType(gameObject)!.length,
                 }
             });
         }
@@ -288,6 +287,11 @@ export default class LGM3DEditor {
         this._renderer!.camera.target.copyFrom(this._selectedGameObject.position);
     
         this.updateObjectsTreeView();
+    }
+
+    getGameObjectById = (id: number) => {
+
+        return GameObject.gameObjects.get(id);
     }
 
     setTransformMode(transformMode: string) {

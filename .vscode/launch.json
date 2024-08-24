@@ -11,11 +11,34 @@
         "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron-vite.cmd"
       },
       "runtimeArgs": ["--sourcemap"],
+      "env":{
+        "REMOTE_DEBUGGING_PORT": "9223"
+      },
 
       //new
       "args" : ["."],
       "outputCapture": "std"
 
+    },
+    {
+      "name": "Debug Renderer Process",
+      "type": "chrome",       //use the Chrome debugger that comes with VS Code
+      "request": "attach",
+      "port": 9223,           //use debug port opened in Electron: Main configuration
+      "webRoot": "${workspaceFolder}/src/renderer",
+      "timeout": 30000,
+      // "presentation": {
+      //   "hidden": true,
+      // }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Debug All",
+      "configurations": ["Debug Main Process", "Debug Renderer Process"],
+      "presentation": {
+        "order": 1
+      }
     }
   ]
 }

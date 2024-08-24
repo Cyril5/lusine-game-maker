@@ -6,6 +6,7 @@ import javascriptGenerator from 'blockly/javascript';
 
 import { InputsBlocks } from "./inputs/inputs_blocks";
 import { JSCodeBlocks } from "./JSCodeBlocks";
+import { PyCodeBlocks } from './PyCodeBlocks';
 import { GameObjectRotateYBlock } from "./gameObject/gameobject_rotate_y_block";
 import { GameObjectSetPosNumbersBlock } from "./gameObject/gameobject_setpos_numbers";
 import { GameObjectSetRotationNumbersBlock } from "./gameObject/gameobject_setrot_numbers";
@@ -17,8 +18,8 @@ import RotateTowardsBehaviourBlock from './RotateTowardsBehaviourBlock';
 
 RotateTowardsBehaviourBlock.init();
 
-
 new JSCodeBlocks();
+new PyCodeBlocks();
 const GO_SETPOS_NUMBERS_BLOCK = new GameObjectSetPosNumbersBlock();
 const GO_TRANSLATE_FORWARD_BLOCK = new GameObjectTranslateForwardBlock();
 const GO_ROTATE_Y_BLOCK = new GameObjectRotateYBlock();
