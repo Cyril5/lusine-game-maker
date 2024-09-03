@@ -8,13 +8,16 @@ import * as BABYLON from 'babylonjs';
 import "@babylonjs/loaders";
 // Enable GLTF/GLB loader (side-effects)
 import "@babylonjs/loaders/glTF";
+
 import { GLTF2Export, IExportOptions } from '@babylonjs/serializers/glTF';
 import { SceneLoader } from "@babylonjs/core/Loading/sceneLoader.js";
+import { SceneSerializer } from "@babylonjs/core/";
 import { Container, Row } from 'react-bootstrap';
 
+const electron = require('electron');
 
 function App(): JSX.Element {
-
+  
   const [metaData, setMetaData] = useState<string>("");
   const currNodeRef = useRef<BABYLON.Node>(null);
   const sceneRef = useRef<BABYLON.Scene>(null);
@@ -69,41 +72,53 @@ function App(): JSX.Element {
       })
     });
 
-    const { ipcRenderer } = require('electron');
-
-    //EditorUtils.openFileDialog();
-
     const os = require('os');
     const path = require('path');
     const documentsPath = os.homedir() + '\\Documents\\Lusine Game Maker\\MonProjet';
     let modelsDirectory = path.resolve(documentsPath, 'Game');
+    
 
-
-    ipcRenderer.invoke('dialog:open').then((file) => {
+    electron.ipcRenderer.invoke('dialog:open').then((file) => {
       SceneLoader.Append("file://" + file.filePaths[0], "", sceneRef.current, function (sceneModel) {
-
+        
         const rootNode = sceneModel.getNodeById("__root__"); // seulement pour les fichiers gltf ou glb
-        rootNode!.getChildren().forEach((node) => {
-          node.parent = null;
-        });
-        rootNode!.dispose();
-
+        
         // remplacer les mesh qui ont des instances
-        sceneModel.meshes.forEach((mesh) => {
+        rootNode!.getChildren(undefined,false).forEach((mesh) => {
 
+          console.log(mesh.name+" "+mesh.uniqueId+" par : "+mesh.parent.name);
+          
+          if(mesh.parent == rootNode) {
+            mesh.parent = null;
+          }
+          
           if(!mesh.metadata || !mesh.metadata.gltf || !mesh.metadata.gltf.extras) {
             return;
           }
-
+  
+          if(mesh.metadata.gltf.extras.uniqueId) {
+            mesh.uniqueId = mesh.metadata.gltf.extras.uniqueId;
+          }
+          
           if(mesh.metadata.gltf.extras.instanceRefUID) {
             // convertir en instancedMesh
             const source = sceneModel.getMeshByUniqueId(mesh.metadata.gltf.extras.instanceRefUID);
-            const instance = (mesh as BABYLON.Mesh).createInstance("INSTANCE_" source.name +" "+ mesh.uniqueId);
-            instance.position.clone(source.position);
-            instance.rotation.clone(source.rotation);
-            instance.setParent(sceneModel.getMeshByUniqueId(mesh.metadata.gltf.extras.instanceRefUID)!);
+  
+            if(!source) {
+              console.error("Source not found: ", mesh.metadata.gltf.extras.instanceRefUID);
+              return;
+            }
+            const instance = source.createInstance("Instance_"+ source!.name +" "+ mesh.uniqueId);
+            instance.uniqueId = mesh.metadata.gltf.extras.uniqueId;
+            instance.setParent(mesh.parent);
+            instance.position = mesh.position;
+            instance.rotation = mesh.rotation;
+            instance.scaling = mesh.scaling;
+            mesh.dispose();
           }
-        })
+        });
+
+        rootNode!.dispose();
 
         writeInstancesExtras();
 
@@ -128,10 +143,31 @@ function App(): JSX.Element {
   }, []);
 
   const exportToLGM = (): void => {
-    const serializedScene = BABYLON.SceneSerializer.Serialize(sceneRef.current!);
-
+    
+    const fs = require('fs');
+    
     // todo : ouvrir le selecteur de fichier pour enregistrer la scene
     // (à voir) si on garde les images base64 stocké dans le fichier
+    electron.ipcRenderer.invoke('dialog:exportLGM').then((file) => {
+      try {
+        const serializedScene = SceneSerializer.Serialize(sceneRef.current!);
+        serializedScene.transformNodes.forEach(tn => {
+          
+          if(!tn.metadata || !tn.metadata.gltf || !tn.metadata.gltf.extras) {
+            return;
+          }
+          const extras = tn.metadata.gltf.extras; // on récupère les extras du noeud avant de les mettre directement dans le metadata du noeud
+          tn.metadata = {...extras};
+          console.log(tn.metadata);
+        });
+        
+        fs.writeFileSync(file.filePath, JSON.stringify(serializedScene));
+        console.log(serializedScene);
+      } catch (error) {
+        console.error(error);
+      }
+    });
+
   }
 
   const addGltfExtrasToNode = (node : BABYLON.Node) => {
@@ -152,8 +188,11 @@ function App(): JSX.Element {
       node.getChildMeshes().forEach((mesh) => {
         console.log(mesh.name + " : " + mesh.isAnInstance);
         if (mesh.isAnInstance) {
-          const instancedMesh = mesh as BABYLON.InstancedMesh;
           addGltfExtrasToNode(mesh);
+          const instancedMesh = mesh as BABYLON.InstancedMesh;
+          addGltfExtrasToNode(instancedMesh.sourceMesh);
+          instancedMesh.sourceMesh.metadata.gltf.extras["uniqueId"] = instancedMesh.sourceMesh.uniqueId;
+          mesh.metadata.gltf.extras["uniqueId"] = mesh.uniqueId;
           mesh.metadata.gltf.extras.instanceRefUID = instancedMesh.sourceMesh.uniqueId;
         }
       });

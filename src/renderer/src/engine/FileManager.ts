@@ -20,7 +20,7 @@ export default abstract class FileManager {
             
             afterCheckCallback(stats.size === 0);
             
-          });
+        });
     }
     
     static fileExists(filename: string) : boolean {

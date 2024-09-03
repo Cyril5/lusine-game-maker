@@ -67,6 +67,14 @@ app.whenReady().then(() => {
     return result;
   });
 
+  ipcMain.handle('dialog:exportLGM',async (event) => {
+    const result = await dialog.showSaveDialog({
+      properties:['showOverwriteConfirmation'],
+      filters: [{ name: 'Lusine Game Maker Scene', extensions: ['lgm']}],
+    });
+    return result;
+  });
+
   createWindow()
 
 

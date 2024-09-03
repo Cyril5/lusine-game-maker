@@ -146,8 +146,8 @@ export default abstract class GameLoader {
         //         });
         //     }
         // });
-        console.log(AssetsManager._materials);
-        console.log(AssetsManager.textures);
+        // console.log(AssetsManager._materials);
+        // console.log(AssetsManager.textures);
 
         const processNodes = (scene: BABYLON.Scene) => {
 
@@ -162,14 +162,19 @@ export default abstract class GameLoader {
 
                 const nodeData = node.metadata;
 
+                if(!nodeData) {
+                    return;
+                }
+
+                let go : GameObject | null = null;
+
                 if (nodeData?.type) {
 
                     //component
                     if (nodeData.components) {
                         nodeData.components.forEach(component => {
                             if (component.type == Collider.name) {
-                                const collGo = GameObject.buildFromTransformNode(node);
-                                collGo.addComponent(new BoxCollider(collGo), "BoxCollider");
+                                go!.addComponent(new BoxCollider(go!), "BoxCollider");
                             }
                         });
                     }
@@ -196,15 +201,11 @@ export default abstract class GameLoader {
 
                         });
 
-                        // node.getChildren().forEach((child) => {
-                        //     console.log("CHILD : " + child.name);
-                        //     child.parent = pgo;
-                        // });
-                        // node.dispose();
-
                     }
-
-
+                }else{
+                    if(nodeData?.gameObjectId) {
+                        go = GameObject.createFromTransformNodeMetaData(node, scene);
+                    }
                 }
             });
 
