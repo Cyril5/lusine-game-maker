@@ -138,7 +138,7 @@ export class GameObject {
             this.setUId(newId, false);
             return;
         }
-        this.transform.metadata = { gameObjectId: this._transform.uniqueId, type: "GameObject", parentId: null }
+        this.transform.metadata = { gameObjectId: this._transform.uniqueId, parentId: null }
 
 
  
@@ -221,8 +221,9 @@ export class GameObject {
     }
 
     public static createFromTransformNodeMetaData(node: BABYLON.TransformNode, scene: BABYLON.Scene): GameObject {
-        const go = new GameObject(node.name, scene);
-        go.setUId(node.metadata.gameObjectId);
+        const nodeId = node.metadata.gameObjectId;
+        const go = new GameObject(node.name, scene,node);
+        go.setUId(nodeId);
         node.name += " (orig)";
         return go;
     }
@@ -323,7 +324,7 @@ export class GameObject {
 
     setUId(value: number, deleteOldId = true) {
         const oldId = this._transform.uniqueId;
-        this.metadata["gameObjectId"] = value;
+        this.metadata.gameObjectId = value;
         if (deleteOldId) {
             console.log("delete old id"+oldId);
             GameObject._gameObjects.delete(oldId);

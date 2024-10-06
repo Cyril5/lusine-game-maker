@@ -51,6 +51,7 @@
     "blockly": "^10.0.0",
     "bootstrap": "^5.2.3",
     "bootswatch": "^5.2.3",
+    "brython": "^3.12.4",
     "cannon": "^0.6.2",
     "class-transformer": "^0.5.1",
     "drawflow": "^0.0.59",

@@ -30,7 +30,8 @@
     "babylonjs": "^7.22.3",
     "babylonjs-inspector": "^7.22.3",
     "bootstrap": "^5.3.3",
-    "react-bootstrap": "^2.10.4"
+    "react-bootstrap": "^2.10.4",
+    "short-unique-id": "^5.2.0"
   },
   "devDependencies": {
     "@babylonjs/loaders": "^7.21.4",

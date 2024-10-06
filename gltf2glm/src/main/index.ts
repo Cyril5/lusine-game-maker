@@ -62,7 +62,7 @@ app.whenReady().then(() => {
   ipcMain.handle('dialog:open', async (event) => {
     const result = await dialog.showOpenDialog({
       properties: ['openFile'],
-      filters: [{ name: 'glTF (GL Transmission Format)', extensions: ['gltf']},{name: 'glTF Binary', extensions: ['glb'] }],
+      filters: [{ name: 'glTF (GL Transmission Format) | gltf Binary', extensions: ['gltf','glb']},{name: 'glTF Binary', extensions: ['glb'] }],
     });
     return result;
   });
@@ -75,8 +75,11 @@ app.whenReady().then(() => {
     return result;
   });
 
-  createWindow()
+  ipcMain.handle('show-error', (event, errorMessage) => {
+    dialog.showErrorBox('Erreur', errorMessage);
+  });
 
+  createWindow()
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the

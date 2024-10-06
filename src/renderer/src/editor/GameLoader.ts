@@ -170,15 +170,6 @@ export default abstract class GameLoader {
 
                 if (nodeData?.type) {
 
-                    //component
-                    if (nodeData.components) {
-                        nodeData.components.forEach(component => {
-                            if (component.type == Collider.name) {
-                                go!.addComponent(new BoxCollider(go!), "BoxCollider");
-                            }
-                        });
-                    }
-
                     if (node.metadata.type === Model3D.name) {
 
                         const model3d: Model3D = Model3D.createEmptyFromNodeData(node);
@@ -205,6 +196,13 @@ export default abstract class GameLoader {
                 }else{
                     if(nodeData?.gameObjectId) {
                         go = GameObject.createFromTransformNodeMetaData(node, scene);
+                    }
+                    if (nodeData.components) {
+                        nodeData.components.forEach(component => {
+                            if (component.type == BoxCollider.name) {
+                                go!.addComponent(new BoxCollider(go!), "BoxCollider") as BoxCollider;
+                            }
+                        });
                     }
                 }
             });

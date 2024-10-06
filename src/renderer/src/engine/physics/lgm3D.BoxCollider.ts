@@ -17,6 +17,8 @@ export default class BoxCollider extends Collider {
 
     _colliderShape: BABYLON.PhysicsShape;
 
+    size: BABYLON.Vector3 = new BABYLON.Vector3(1, 1, 1);  // dimensions of the box
+
     public metaData: ColliderMetaData = {
         shape: undefined,
         isTrigger: false,
