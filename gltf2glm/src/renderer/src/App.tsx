@@ -1,3 +1,8 @@
+/*
+BLENDER peut exporter les extras (metadata) des fichiers glb mais pas l'exporteur gltf/glb de C4D
+BABYLONJS importe bien et exporte bien les extras 
+*/
+
 import { useEffect, useRef, useState } from "react";
 
 import CodeMirror from '@uiw/react-codemirror';
@@ -19,6 +24,7 @@ import ShortUniqueId from 'short-unique-id';
 
 const electron = require('electron');
 const fs = require('fs');
+const DELETE_ROOT_NODE = true; // true par defaut
 
 function App(): JSX.Element {
 
@@ -157,7 +163,7 @@ function App(): JSX.Element {
         let index = 0;
         rootNode!.getChildren(undefined, false).forEach((mesh) => {
 
-          if (mesh.parent == rootNode) {
+          if (mesh.parent == rootNode && DELETE_ROOT_NODE) {
             mesh.parent = null;
           }
 
@@ -192,7 +198,9 @@ function App(): JSX.Element {
           index++;
         });
 
-        rootNode!.dispose();
+        if(DELETE_ROOT_NODE) {          
+          rootNode!.dispose();
+        }
 
         writeInstancesExtras();
 

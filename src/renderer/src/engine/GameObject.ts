@@ -306,6 +306,7 @@ export class GameObject {
 
 
     public removeComponent(componentName: string): void {
+        this._components.get(componentName).destroy();
         this._components.delete(componentName);
     }
 
@@ -326,8 +327,12 @@ export class GameObject {
         const oldId = this._transform.uniqueId;
         this.metadata.gameObjectId = value;
         if (deleteOldId) {
-            console.log("delete old id"+oldId);
-            GameObject._gameObjects.delete(oldId);
+            if(!GameObject._gameObjects.has(oldId)) {
+                console.error(`GameObject ID ${oldId} not found `); 
+            }else{
+                console.log("delete old id"+oldId);
+                GameObject._gameObjects.delete(oldId);
+            }
         }
         this._transform.uniqueId = value;
         GameObject._gameObjects.set(this._transform.uniqueId, this);

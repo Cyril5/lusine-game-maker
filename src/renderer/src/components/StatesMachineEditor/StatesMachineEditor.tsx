@@ -1,9 +1,8 @@
 import { useRef, useEffect, useState } from 'react';
 
-import { Accordion, Alert, Breadcrumb, Button, ButtonGroup, Card, Col, Container, Dropdown, Form, Row } from 'react-bootstrap';
+import { Accordion, Alert, Breadcrumb, Button, Col, Container, Dropdown, Form, Row } from 'react-bootstrap';
 import '../../assets/css/fsm-graph.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import Editor from '@renderer/components/EditorOld';
 import StateEditorUtils from '@renderer/editor/StateEditorUtils';
 import { IStateFile } from '@renderer/engine/FSM/IStateFile';
 

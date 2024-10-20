@@ -64,24 +64,43 @@ export class ProgrammableGameObject extends GameObject {
     }
 
 
-    move(axis: BABYLON.Vector3, distance: number, space: BABYLON.Space): void {
-        const target = this.transform.translate(axis, distance, space);
-
-        this._rigidbody?.body?.setTargetTransform(this.transform.absolutePosition, this.transform.rotationQuaternion);
+    move(axis: BABYLON.Vector3, speed: number, space: BABYLON.Space): void {
+        if (this._rigidbody?.body) {
+            // Si l'objet utilise des rotations en Quaternion
+            const forward = new BABYLON.Vector3(0, 0, 1); // Z est la direction avant par défaut
+    
+            // Créer une matrice de rotation vide
+            const rotationMatrix = new BABYLON.Matrix();
+    
+            // Convertir le quaternion en matrice de rotation
+            this.transform.rotationQuaternion!.toRotationMatrix(rotationMatrix);
+    
+            // Transformer le vecteur 'forward' par la matrice de rotation
+            const direction = BABYLON.Vector3.TransformNormal(forward, rotationMatrix);
+    
+            // Appliquer la vélocité linéaire dans la direction de l'orientation
+            this._rigidbody!.body.setLinearVelocity(direction.scale(speed));
+        } else {
+            // Déplacement classique si pas de physique
+            this.transform.translate(axis, speed, space);
+        }
     }
 
     setRotationQuaternion(quaternion: BABYLON.Quaternion): void {
         this.transform.rotationQuaternion = quaternion;
-        this._rigidbody?.body?.setTargetTransform(this.transform.absolutePosition, this.transform.rotationQuaternion);
     }
 
     rotate(axis: BABYLON.Vector3, amount: number, space?: BABYLON.Space | undefined): void {
-        // amount de base est en radians
-        this.transform.rotate(axis, amount, space);
         if (Game.getInstance().isRunning) {
             if (this._rigidbody.body) {
                 //console.log(BABYLON.Tools.ToDegrees(amount));
-                this._rigidbody?.body?.setTargetTransform(this.transform.absolutePosition,this.transform.rotationQuaternion);
+                //this._rigidbody?.body?.setTargetTransform(this.transform.absolutePosition,this.transform.rotationQuaternion);
+                const vel = new BABYLON.Vector3();
+                this._rigidbody?.body?.getAngularVelocityToRef(vel);
+                this._rigidbody?.body?.setAngularVelocity(new BABYLON.Vector3(vel.x,amount,vel.z));
+            }else{                
+                // amount de base est en radians
+                this.transform.rotate(axis, amount, space);
             } 
         }
     }

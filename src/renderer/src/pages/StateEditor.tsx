@@ -208,10 +208,11 @@ const StateEditor = (statefiles = StateEditorUtils.getStatesFiles(), resizeWorks
 
     const updateCodeFromCodeEditor = () => {
         //javascriptGenerator.addReservedWords('code');
-        const lang : string = 'python';
+        const lang : string = 'javascript'; // ou 'python'
         
-        // const code: string = javascriptGenerator.workspaceToCode(workspaceRef.current);
-        const code = pythonGenerator.workspaceToCode(workspaceRef.current);
+        const code: string = javascriptGenerator.workspaceToCode(workspaceRef.current);
+        //const code = pythonGenerator.workspaceToCode(workspaceRef.current);
+        
         if (lang == 'javascript' && code !== "") {
             //setCode(currentStateFile.outputCode);
             const updatedCode = code.replace(/\bvar\b/g, 'let'); // Remplacez toutes les occurrences de "var" par "let"

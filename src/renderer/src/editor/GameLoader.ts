@@ -185,7 +185,7 @@ export default abstract class GameLoader {
 
                             fsmData.states.forEach((stateData, index) => {
                                 const state = fsm.states[index];
-                                if (stateData.statefile.name) {
+                                if (stateData.statefile?.name) {
                                     state.stateFile = StateEditorUtils.getStateFile(stateData.statefile.name);
                                 }
                             });
@@ -199,7 +199,7 @@ export default abstract class GameLoader {
                     }
                     if (nodeData.components) {
                         nodeData.components.forEach(component => {
-                            if (component.type == BoxCollider.name) {
+                            if (component.type == "BoxCollider") {
                                 go!.addComponent(new BoxCollider(go!), "BoxCollider") as BoxCollider;
                             }
                         });
@@ -211,6 +211,10 @@ export default abstract class GameLoader {
 
             scene.meshes.forEach((mesh: BABYLON.Mesh) => {
                 //Replace missing materials
+                if(!mesh.material) {
+                    return;
+                }
+                
                 const subMaterials = mesh.material!.subMaterials;
                 if (subMaterials) {
                     

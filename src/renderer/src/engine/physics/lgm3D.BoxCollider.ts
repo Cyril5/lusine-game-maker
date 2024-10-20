@@ -54,19 +54,15 @@ export default class BoxCollider extends Collider {
 
         this._gameObject = owner;
         this._scene = this._gameObject.scene;
+
+        // Si il y a déjà un maillage alors prendre les dimensions de ce dernier
+        const mesh : BABYLON.AbstractMesh = this._gameObject.transform.getChildMeshes(true)[0];
+        //this._boxMesh.doNotSerialize = true; // ne pas sauvegarder le maillage dans le JSON à chaque fois
+        //if (mesh) {
+            this._boxMesh = mesh;
+            this._boxMesh.doNotSerialize = false;
+        //}
         
-        const shapeSize = new BABYLON.Vector3(1, 1, 1);
-        this._boxMesh = BABYLON.MeshBuilder.CreateBox("BoxCollider", { height: shapeSize.y, width: shapeSize.x, depth: shapeSize.z }, this._scene);
-        this._boxMesh.doNotSerialize = true; // ne pas sauvegarder le maillage dans le JSON à chaque fois
-        this._boxMesh.parent = this._gameObject.transform;
-        const shapePos = this._boxMesh.position;
-        this._colliderShape = new BABYLON.PhysicsShapeBox(
-            shapePos,
-            BABYLON.Quaternion.Identity(),
-            shapeSize,
-            this._scene);
-
-
         this._boxMesh.isVisible = true;
         this._boxMesh.visibility = 0.5;
 
@@ -157,7 +153,7 @@ export default class BoxCollider extends Collider {
     }
 
     public toJson() {
-        this.metaData.type = Collider.name;
+        this.metaData.type = "BoxCollider";
         (this.metaData as ColliderMetaData).isTrigger = this.isTrigger;
         return this.metaData;
     }
@@ -165,14 +161,13 @@ export default class BoxCollider extends Collider {
     updateBodyShape(updateSize = true) : BABYLON.PhysicsShapeBox {
 
         this._physicsBody = new BABYLON.PhysicsBody(this._gameObject.transform, BABYLON.PhysicsMotionType.STATIC, false, this._gameObject.scene);
-
+        const bound = this._boxMesh.getBoundingInfo().boundingBox;
+        
         //console.log(this._boxMesh.getBoundingInfo().boundingBox.maximum * new BABYLON.Vector3(2, 2, 2));
         const collShapeUpdated = new BABYLON.PhysicsShapeBox(
-            this._boxMesh.position,
-            this._boxMesh.rotationQuaternion,
-            //this._gameObject.parent ? this._boxMesh.getBoundingInfo().boundingBox.extendSize * this._gameObject.scaling : this._gameObject.scaling,
-            //updateSize ? this._boxMesh.getBoundingInfo().boundingBox.extendSize * this._gameObject.scale
-            this._gameObject.scale,
+            bound.center,
+            this.gameObject.transform.rotationQuaternion,
+            bound.extendSize.multiplyByFloats(2, 2, 2),
             this._scene
         );
 

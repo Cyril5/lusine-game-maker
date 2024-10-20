@@ -90,17 +90,17 @@ export default class State {
     // if(this.stateFile.outputCode.includes(InputManager)) {
     //   // faire un eval
     // }
-    const lang : string = "python";
+    const lang : string = "javascript"; // ou 'python'
+    const options = {
+      compress: true,
+      mangle: {
+        toplevel: true,
+      },
+      nameCache: {},
+    };
 
     if (lang == "javascript") {
 
-      const options = {
-        compress: true,
-        mangle: {
-          toplevel: true,
-        },
-        nameCache: {},
-      };
 
       if (!State._runtimeGlobalVars.includes(Game)) {
         State._runtimeGlobalVars.push(Game);
@@ -158,13 +158,14 @@ export default class State {
         this.stateFile.outputCode = data;
         console.log(this.stateFile.outputCode);
         this.stateFile.needToLoad = false;
-        //await this.evalStateCode(options);
-        await this.runStatePyCode();
+        await this.evalStateCode(options);
+        //await this.runStatePyCode();
       });
     } else {
 
       // ne pas ré-evaluer/interpréter le code car il a déjà était fait après l'ouverture du fichier du code
-      await this.runStatePyCode();
+      //await this.runStatePyCode();
+      await this.evalStateCode(options);
     }
   };
 

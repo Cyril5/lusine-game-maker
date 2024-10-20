@@ -12,6 +12,7 @@ import { ProgrammableGameObject } from "@renderer/engine/ProgrammableGameObject"
 import { Game } from "@renderer/engine/Game";
 import OriginAxis from "@renderer/editor/OriginAxis";
 import { GridMaterial } from "@babylonjs/materials/grid";
+import defaultSkyBoxTexture from  '@renderer/engine/sanGiuseppeBridge.env?url';
 
 export enum Mode {
     LevelEditor = 1,
@@ -378,12 +379,26 @@ export default class LGM3DEditor {
         //const ammo = renderer.ammo;
         const havok = this._renderer!.hk;
 
-        this._editorCameraManager = new EditorCameraManager(this._renderer.canvas, this._renderer.scene, this._renderer.camera);
+        this._editorCameraManager = new EditorCameraManager(this._renderer!.canvas, this._renderer!.scene, this._renderer!.camera);
 
         // Mettre en pause le moteur physique
         scene.physicsEnabled = false;
 
         const ground = BABYLON.MeshBuilder.CreateGround("_EDITOR_GRID_", { width: 1000, height: 1000 }, scene);
+                
+        //scene.createDefaultEnvironment();
+        const hdrTexture = BABYLON.CubeTexture.CreateFromPrefilteredData(defaultSkyBoxTexture, scene);
+        scene.environmentTexture = hdrTexture;
+        
+        // Skybox
+        const skybox = BABYLON.MeshBuilder.CreateBox("skyBox", {size:1000.0}, this._renderer!.scene);
+        const skyboxMaterial = new BABYLON.PBRMaterial("skyBox", this._renderer!.scene);
+        skyboxMaterial.backFaceCulling = false;
+        skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture(defaultSkyBoxTexture, this._renderer!.scene);
+        skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+        skybox.material = skyboxMaterial;
+        skybox.doNotSerialize = true;
+        
         ground.doNotSerialize = true;
         if (!scene.getEngine().isWebGPU) {
             //GRID

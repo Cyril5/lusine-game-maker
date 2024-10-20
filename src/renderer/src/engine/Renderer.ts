@@ -8,8 +8,8 @@ import { Observable } from "babylonjs";
 // import { AmmoJSPlugin } from "babylonjs";
 
 import '@renderer/assets/css/index.scss';
-import cannon from "cannon";
-import EditorUtils from "@renderer/editor/EditorUtils";
+import cannon from 'cannon';
+import EditorUtils from '@renderer/editor/EditorUtils';
 
 
 export class Renderer {
@@ -117,16 +117,6 @@ export class Renderer {
         light.intensity = 1.0;
 
         //const sunLight = new BABYLON.DirectionalLight("DirectionalLight", new BABYLON.Vector3(0, -1, 0), this._scene);
-
-        // Skybox
-        // const skybox = BABYLON.MeshBuilder.CreateBox("skyBox", { size: 1000.0 }, this._scene);
-        // const skyboxMaterial = new BABYLON.StandardMaterial("skyBox", this._scene);
-        // skyboxMaterial.backFaceCulling = false;
-        // skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("textures/skybox", this._scene);
-        // skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
-        // skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
-        // skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
-        // skybox.material = skyboxMaterial;
 
 
         //SceneLoader.ImportMesh("", "/models/", "haunted_house.glb", this._scene, function (meshes) {});

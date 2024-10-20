@@ -109,7 +109,7 @@ export class Game {
 
         this.onGameStarted.notifyObservers();
 
-        //this._demoTest.start();
+        this._demoTest.start();
 
     }
 
@@ -120,8 +120,6 @@ export class Game {
         if (!this._isRunning)
             return;
 
-        Game._deltaTime = deltaTime / 1000;
-        // console.log(this._isRunning);
         this.onGameUpdate.notifyObservers();
 
         const gameObjects = GameObject.gameObjects.values();
@@ -165,7 +163,7 @@ export class Game {
             }
         })
 
-        //this._demoTest.stop(scene);
+        this._demoTest.stop(scene);
 
         this.onGameUpdate.clear();
         this.onGameStoped.notifyObservers();
@@ -177,10 +175,20 @@ export class Game {
         this.onGameUpdate = new Observable();
         this.onGameStoped = new Observable();
 
-        const engine = Renderer.getInstance().scene.getEngine();
-        engine.runRenderLoop(() => {
+        const scene = Renderer.getInstance().scene;
+        const engine = scene.getEngine();
+
+        engine.runRenderLoop(()=>{
+            if (!this._isRunning)
+                return;
+            Game._deltaTime = engine.getDeltaTime() / 1000;
+        })
+        
+        scene.onBeforeRenderObservable.add(()=>{            
             // appeler tous les start des machine states
-            this.update(engine.getDeltaTime());
-        });
+            this.update(Game._deltaTime);
+        })
     }
+
+
 }
