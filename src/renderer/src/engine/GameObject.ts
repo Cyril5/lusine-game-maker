@@ -111,7 +111,10 @@ export class GameObject {
  
         this._transform = !transformNode ? new BABYLON.TransformNode(name,scene) : transformNode;
 
-        this._transform.rotationQuaternion = BABYLON.Quaternion.Identity();
+        if(!transformNode)
+            this._transform.rotationQuaternion = BABYLON.Quaternion.Identity();
+        else
+            this._transform.rotationQuaternion = transformNode.rotationQuaternion;
  
         this._transform.metadata = {};
  
@@ -224,7 +227,6 @@ export class GameObject {
         const nodeId = node.metadata.gameObjectId;
         const go = new GameObject(node.name, scene,node);
         go.setUId(nodeId);
-        node.name += " (orig)";
         return go;
     }
 

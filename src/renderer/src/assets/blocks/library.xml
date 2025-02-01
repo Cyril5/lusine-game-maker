@@ -1089,7 +1089,7 @@
         <field name="HUE">210</field>
       </block>
     </value>
-  </block><block type="factory_base" id="!^2OwocTa6hh9W#g0)Dd" deletable="false" movable="false" x="10" y="10">
+  </block><block type="factory_base" id="!^2OwocTa6hh9W#g0)Dd" x="10" y="10">
     <mutation connections="LEFT"></mutation>
     <field name="NAME">keycode_d</field>
     <field name="INLINE">AUTO</field>

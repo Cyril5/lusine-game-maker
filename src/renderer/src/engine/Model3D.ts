@@ -31,6 +31,9 @@ export class Model3D extends GameObject {
         model3d._transform = node;
         model3d.setUId(node.metadata.gameObjectId,false);
         model3d.name = node.name;
+        // SceneLoader.ImportMesh("", "https://models.babylonjs.com/", "aerobatic_plane.glb", node.getScene(), (meshes) => {
+        
+        // });
         return model3d
     }
 
@@ -48,7 +51,6 @@ export class Model3D extends GameObject {
             // Regarder l'extension du modèle
             const extension = arg.filename.split(".")[arg.filename.split(".").length - 1];
             if (extension !== "fbx") {
-                //SceneLoader.ImportMesh("", "https://models.babylonjs.com/", "aerobatic_plane.glb", scene, (meshes) => {
                 const mesh = SceneLoader.ImportMesh("", arg.directoryOrUrl + '/', arg.filename, arg.scene, (meshes) => {
 
                     const materialsToDispose: BABYLON.AbstractMaterial[] = [];
@@ -56,8 +58,6 @@ export class Model3D extends GameObject {
                     arg.scene.materials.forEach((mat: AbstractMaterial) => {
                         const last = materialsSceneNames.push(mat.name);
                     });
-
-
                     //---------------------------------------------------
                     // Fusionner tous les maillages individuels en un seul maillage
                     const mergedMesh = BABYLON.Mesh.MergeMeshes(meshes[0].getChildMeshes(), true, true, undefined, false, true);
@@ -69,7 +69,6 @@ export class Model3D extends GameObject {
                     const multiMaterial = mergedMesh.material as MultiMaterial;
 
                     // si le material existe déjà dans le projet remplacer par celui ci
-
                     multiMaterial.subMaterials.forEach((subMat, index) => {
 
                         if (materialsSceneNames.includes(subMat.name)) {

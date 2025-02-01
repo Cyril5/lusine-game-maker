@@ -150,13 +150,11 @@ export default class LGM3DEditor {
 
     load = () => {
         console.log("ready load game");
-        const scene = this._renderer.scene;
-        GameLoader.load(scene);
+        GameLoader.load(this._renderer!.scene);
     }
 
     save = () => {
-        const scene = this._renderer.scene;
-        GameLoader.save(scene);
+        GameLoader.save(this._renderer!.scene);
     }
 
     // TODO : A déplacer dans un export de EditorAlert 
@@ -387,17 +385,17 @@ export default class LGM3DEditor {
         const ground = BABYLON.MeshBuilder.CreateGround("_EDITOR_GRID_", { width: 1000, height: 1000 }, scene);
                 
         //scene.createDefaultEnvironment();
-        const hdrTexture = BABYLON.CubeTexture.CreateFromPrefilteredData(defaultSkyBoxTexture, scene);
-        scene.environmentTexture = hdrTexture;
+        // const hdrTexture = BABYLON.CubeTexture.CreateFromPrefilteredData(defaultSkyBoxTexture, scene);
+        // scene.environmentTexture = hdrTexture;
         
         // Skybox
-        const skybox = BABYLON.MeshBuilder.CreateBox("skyBox", {size:1000.0}, this._renderer!.scene);
-        const skyboxMaterial = new BABYLON.PBRMaterial("skyBox", this._renderer!.scene);
-        skyboxMaterial.backFaceCulling = false;
-        skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture(defaultSkyBoxTexture, this._renderer!.scene);
-        skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
-        skybox.material = skyboxMaterial;
-        skybox.doNotSerialize = true;
+        // const skybox = BABYLON.MeshBuilder.CreateBox("skyBox", {size:1000.0}, this._renderer!.scene);
+        // const skyboxMaterial = new BABYLON.PBRMaterial("skyBox", this._renderer!.scene);
+        // skyboxMaterial.backFaceCulling = false;
+        // skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture(defaultSkyBoxTexture, this._renderer!.scene);
+        // skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+        // skybox.material = skyboxMaterial;
+        // skybox.doNotSerialize = true;
         
         ground.doNotSerialize = true;
         if (!scene.getEngine().isWebGPU) {
@@ -414,6 +412,10 @@ export default class LGM3DEditor {
             BABYLON.Tags.AddTagsTo({ groundMaterial }, EditorUtils.EDITOR_TAG);
         } else {
             ground.dispose();
+        }
+
+        if (scene.lights.length === 0) {
+            new BABYLON.HemisphericLight("defaultLight", new BABYLON.Vector3(0, 1, 0), scene);
         }
 
         const axis = new OriginAxis(scene);

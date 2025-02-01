@@ -5,12 +5,13 @@ import { GameObject } from "@renderer/engine/GameObject";
 import { Model3D } from "@renderer/engine/Model3D";
 import { ProgrammableGameObject } from "@renderer/engine/ProgrammableGameObject";
 import StateEditorUtils from "./StateEditorUtils";
-import Collider from "@renderer/engine/physics/lgm3D.Collider";
 import BoxCollider from "@renderer/engine/physics/lgm3D.BoxCollider";
 import AssetsManager from "./AssetsManager";
 import { Observable } from "babylonjs";
 import Utils from "@renderer/engine/lgm3D.Utils";
 import LGM3DEditor from "./LGM3DEditor";
+import { SceneSerializer } from "@babylonjs/core";
+import "@babylonjs/serializers";
 
 //import logo from "../assets/logo.png";
 
@@ -38,18 +39,17 @@ export default abstract class GameLoader {
         console.log("saving");
 
         GameObject.gameObjects.forEach((gameObject) => {
-            gameObject.save();
+           gameObject.save();
         });
 
         const serializedScene = BABYLON.SceneSerializer.Serialize(scene);
+        console.log(serializedScene.meshes);
         console.log((serializedScene.cameras as Array<any>).shift()); //enlever le premier élement
 
         //Enlever les transformNodes de l'editeur
         const editorNodes = serializedScene.transformNodes as any[];
         const meshes = serializedScene.meshes as any[];
         const materials = serializedScene.materials as any[];
-        // const textures = serializedScene.textures as any[];
-
 
         [editorNodes, meshes, materials, serializedScene.cameras].forEach((arr, index) => {
             let tags: string;
@@ -107,7 +107,9 @@ export default abstract class GameLoader {
 
                 if (mat.albedoTexture && mat.albedoTexture.metadata) {
                     const sourceFilename = mat.albedoTexture.metadata.source;
-                    const filePath = ProjectManager.getFilePath(ProjectManager.getTexturesDirectory(), sourceFilename);
+                    if(!mat.albedoTexture.metadata.source)
+                        return;
+                        const filePath = ProjectManager.getFilePath(ProjectManager.getTexturesDirectory(), sourceFilename);
                     FileManager.readFile(filePath, (data) => {
                         // if (err) {
                         //     console.error('Erreur lors de la lecture du fichier :', err);
@@ -200,7 +202,9 @@ export default abstract class GameLoader {
                     if (nodeData.components) {
                         nodeData.components.forEach(component => {
                             if (component.type == "BoxCollider") {
-                                go!.addComponent(new BoxCollider(go!), "BoxCollider") as BoxCollider;
+                                const bxcol = go!.addComponent(new BoxCollider(go!), "BoxCollider") as BoxCollider;
+                                if(component.isTrigger)
+                                    bxcol.isTrigger = component.isTrigger;
                             }
                         });
                     }

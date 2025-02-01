@@ -56,12 +56,14 @@ export default class BoxCollider extends Collider {
         this._scene = this._gameObject.scene;
 
         // Si il y a déjà un maillage alors prendre les dimensions de ce dernier
-        const mesh : BABYLON.AbstractMesh = this._gameObject.transform.getChildMeshes(true)[0];
-        //this._boxMesh.doNotSerialize = true; // ne pas sauvegarder le maillage dans le JSON à chaque fois
-        //if (mesh) {
-            this._boxMesh = mesh;
-            this._boxMesh.doNotSerialize = false;
-        //}
+        let mesh : BABYLON.AbstractMesh = this._gameObject.transform.getChildMeshes(true)[0];
+        if(!mesh) {
+            mesh = BABYLON.MeshBuilder.CreateBox("__MeshBoxCollider__", {height: 1, width: 1, depth: 1},this._scene);
+            mesh.parent = this._gameObject.transform;
+            mesh.setPositionWithLocalVector(new BABYLON.Vector3(0,0,0));
+        }
+        this._boxMesh = mesh;
+        this._boxMesh.doNotSerialize = false;
         
         this._boxMesh.isVisible = true;
         this._boxMesh.visibility = 0.5;
@@ -167,7 +169,7 @@ export default class BoxCollider extends Collider {
         const collShapeUpdated = new BABYLON.PhysicsShapeBox(
             bound.center,
             this.gameObject.transform.rotationQuaternion,
-            bound.extendSize.multiplyByFloats(2, 2, 2),
+            bound.extendSize.multiplyByFloats(2, 2, 2).multiply(this._gameObject.transform.scaling),
             this._scene
         );
 

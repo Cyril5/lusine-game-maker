@@ -63,12 +63,7 @@ function App(): JSX.Element {
     const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), sceneRef.current);
     // Dim the light a small amount - 0 to 1
     light.intensity = 0.7;
-
-    // Built-in 'ground' shape.
-    const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 6, height: 6 }, sceneRef.current);
-
-    BABYLON.CreateBox("box", { width: 1, height: 1, depth: 1 }, sceneRef.current);
-
+    light.doNotSerialize = true;
 
     // Creates and positions a free camera
     const camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), sceneRef.current);
@@ -151,54 +146,64 @@ function App(): JSX.Element {
     }
   }, []);
 
+  let rootNode;
+  const processMesh = (mesh,sceneModel)=>{
+
+    if (rootNode && mesh.parent == rootNode && DELETE_ROOT_NODE) {
+      mesh.parent = null;
+    }
+
+    if (!mesh.metadata || !mesh.metadata.gltf || !mesh.metadata.gltf.extras) {
+      return;
+    }
+
+    if (mesh.metadata.gltf.extras.uniqueId) {
+      mesh.uniqueId = mesh.metadata.gltf.extras.uniqueId;
+    }
+    // remplacer les mesh qui ont des instances
+    if (mesh.metadata.gltf.extras.instanceRefUID) {
+      // convertir en instancedMesh
+      const source = sceneModel.getMeshByUniqueId(mesh.metadata.gltf.extras.instanceRefUID);
+      if (!source) {
+        console.error("Source not found: ", mesh.metadata.gltf.extras.instanceRefUID);
+        return;
+      }
+
+      //if(mesh.metadata.gltf.extras.instanceRefUID == 10) {
+        const instance = source.instantiateHierarchy(null,{doNotInstantiate : false});
+        instance.name = "Instance_" + source!.name + " " + mesh.uniqueId;
+        instance.setParent(mesh.parent);
+        instance.position = mesh.position;
+        instance.rotation = mesh.rotation;
+        instance.scaling = mesh.scaling;
+        mesh.dispose();
+      //}
+      // instance.uniqueId = mesh.metadata.gltf.extras.uniqueId;
+    }
+  }
+
   const loadScene = (filename: string) => {
 
+    let rootNodeFound = true;
     // TODO : A remplacer par deserialize puisque le contenu de la scène est récupéré lorsqu'on lit le fichier gltf
     SceneLoader.Append("file://" + filename, "", sceneRef.current, function (sceneModel) {
 
-      let rootNode = sceneModel.getNodeById("__root__"); // seulement pour les fichiers gltf ou glb
-
+      rootNode = sceneModel.getNodeById("__root__"); // seulement pour les fichiers gltf ou glb
+      rootNodeFound = rootNode;
       try {
-        // remplacer les mesh qui ont des instances
         let index = 0;
-        rootNode!.getChildren(undefined, false).forEach((mesh) => {
+        if(rootNodeFound) {
+            rootNode!.getChildren(undefined, false).forEach((mesh) => {
+                processMesh(mesh,sceneModel);
+              index++;
+            });
+        }else{
+          sceneModel.meshes.forEach((mesh)=>{
+            processMesh(mesh,sceneModel);
+          });
+        }
 
-          if (mesh.parent == rootNode && DELETE_ROOT_NODE) {
-            mesh.parent = null;
-          }
-
-          if (!mesh.metadata || !mesh.metadata.gltf || !mesh.metadata.gltf.extras) {
-            return;
-          }
-
-          if (mesh.metadata.gltf.extras.uniqueId) {
-            mesh.uniqueId = mesh.metadata.gltf.extras.uniqueId;
-          }
-
-          if (mesh.metadata.gltf.extras.instanceRefUID) {
-            // convertir en instancedMesh
-            const source = sceneModel.getMeshByUniqueId(mesh.metadata.gltf.extras.instanceRefUID);
-
-            if (!source) {
-              console.error("Source not found: ", mesh.metadata.gltf.extras.instanceRefUID);
-              return;
-            }
-
-            //if(mesh.metadata.gltf.extras.instanceRefUID == 10) {
-              const instance = source.instantiateHierarchy(null,{doNotInstantiate : false});
-              instance.name = "Instance_" + source!.name + " " + mesh.uniqueId;
-              instance.setParent(mesh.parent);
-              instance.position = mesh.position;
-              instance.rotation = mesh.rotation;
-              instance.scaling = mesh.scaling;
-              mesh.dispose();
-            //}
-            // instance.uniqueId = mesh.metadata.gltf.extras.uniqueId;
-          }
-          index++;
-        });
-
-        if(DELETE_ROOT_NODE) {          
+        if(DELETE_ROOT_NODE && rootNodeFound) {          
           rootNode!.dispose();
         }
 
@@ -223,6 +228,7 @@ function App(): JSX.Element {
     electron.ipcRenderer.invoke('dialog:exportLGM').then((file) => {
       try {
         const serializedScene = SceneSerializer.Serialize(sceneRef.current!);
+        console.log(serializedScene.meshes);
         serializedScene.transformNodes.forEach(tn => {
 
           if (!tn.metadata || !tn.metadata.gltf || !tn.metadata.gltf.extras) {
@@ -256,7 +262,6 @@ function App(): JSX.Element {
 
   const writeInstancesExtras = () => {
     sceneRef.current!.getNodes().forEach((node) => {
-
       node.getChildMeshes().forEach((mesh) => {
         console.log(mesh.name + " : " + mesh.isAnInstance);
         if (mesh.isAnInstance) {
@@ -268,7 +273,6 @@ function App(): JSX.Element {
           mesh.metadata.gltf.extras.instanceRefUID = instancedMesh.sourceMesh.uniqueId;
         }
       });
-
     })
   }
 
@@ -333,10 +337,36 @@ function App(): JSX.Element {
     currNodeRef.current!.metadata["gameObjectId"] = currNodeRef.current!.uniqueId;
   }
 
+  function addGameObjectNode(event): void {
+    const transformNode = new BABYLON.TransformNode('GameObject');
+    transformNode.metadata = {};
+    transformNode.metadata["gameObjectId"] = transformNode.uniqueId;
+  }
+
+  function addBox(event): void {
+    BABYLON.MeshBuilder.CreateBox('Cube',{height: 1, width: 1, depth: 1});
+  }
+
+  function addBoxColliderComponent(event): void {
+    const components = currNodeRef.current!.metadata.components;
+    if(!components)
+      currNodeRef.current!.metadata.components = [];
+    components.push({type:"BoxCollider"});
+  }
+
+  function addFSMComponent(event): void {
+    const fsm = currNodeRef.current!.metadata.finiteStateMachines;
+    if(!fsm)
+      currNodeRef.current!.metadata.finiteStateMachines = [];
+    fsm.push({states: []});
+  }
+
   return (
     <>
       <div className="div">
           <Button onClick={addMetaGameObject}>Convertir en GameObject</Button>
+          <Button onClick={addGameObjectNode}>(+) GameObject</Button>
+          <Button onClick={addBox}>Cube</Button>
           {/* <button onClick={exportToGLTF}>Exporter en GLTF</button> */}
           <Button onClick={exportToGLB}>Exporter en GLB</Button>
           <Button onClick={exportToLGM}>Exporter en LGM</Button>
@@ -344,6 +374,10 @@ function App(): JSX.Element {
       <canvas id="renderCanvas"></canvas>
       <Container>
         <Row>
+          <div className="components-btn-list">
+            <Button onClick={addBoxColliderComponent}>-{'>'}BoxCollider</Button>
+            <Button onClick={addFSMComponent}>-{'>'}FSM</Button>
+          </div>
         </Row>
         <CodeMirror value={JSON.stringify(metaData, null, 2)} onChange={handleChangeMetadata} height="250px"
           theme="dark" options={{

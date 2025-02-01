@@ -124,7 +124,7 @@
     <block type="state_onexitstate" disabled="true"></block>
   </category>
   <category name="GameObject">
-    <block type="gameobject_get_posy" deletable="false" movable="false" editable="false">
+    <block type="gameobject_get_posy">
       <value name="OBJ">
         <block type="gameobject_this"></block>
       </value>
@@ -246,6 +246,15 @@
     </block>
   </category>
   <category name="Collisions"></category>
+  <category name="Contrôles">
+    <block type="keycode_z"></block>
+    <block type="inputs_if_keydown"></block>
+    <block type="keycode_d"></block>
+    <block type="inputs_onkeydown"></block>
+    <block type="keycode_s"></block>
+    <block type="inputs_if_keypress"></block>
+    <block type="keycode_q"></block>
+  </category>
   <category name="Variables" colour="#a55b80" custom="VARIABLE"></category>
   <category name="Functions" colour="#995ba5" custom="PROCEDURE"></category>
 </xml>

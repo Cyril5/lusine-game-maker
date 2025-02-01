@@ -92,16 +92,16 @@ export class ProgrammableGameObject extends GameObject {
 
     rotate(axis: BABYLON.Vector3, amount: number, space?: BABYLON.Space | undefined): void {
         if (Game.getInstance().isRunning) {
-            if (this._rigidbody.body) {
+            //if (this._rigidbody.body) {
                 //console.log(BABYLON.Tools.ToDegrees(amount));
                 //this._rigidbody?.body?.setTargetTransform(this.transform.absolutePosition,this.transform.rotationQuaternion);
                 const vel = new BABYLON.Vector3();
                 this._rigidbody?.body?.getAngularVelocityToRef(vel);
                 this._rigidbody?.body?.setAngularVelocity(new BABYLON.Vector3(vel.x,amount,vel.z));
-            }else{                
-                // amount de base est en radians
-                this.transform.rotate(axis, amount, space);
-            } 
+            // }else{                
+            //     // amount de base est en radians
+            //     this.transform.rotate(axis, amount, space);
+            // } 
         }
     }
 

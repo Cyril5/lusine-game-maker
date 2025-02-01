@@ -62,7 +62,11 @@ app.whenReady().then(() => {
   ipcMain.handle('dialog:open', async (event) => {
     const result = await dialog.showOpenDialog({
       properties: ['openFile'],
-      filters: [{ name: 'glTF (GL Transmission Format) | gltf Binary', extensions: ['gltf','glb']},{name: 'glTF Binary', extensions: ['glb'] }],
+      filters: [
+        { name: 'Formats supportés', extensions: ['gltf','glb','lgm']},
+        { name: 'glTF (GL Transmission Format)', extensions: ['gltf']},
+        { name: 'glTF Binary', extensions: ['glb']}, 
+        {name: 'Contenu Lusine Game Maker 0.2', extensions: ['lgm']}],
     });
     return result;
   });

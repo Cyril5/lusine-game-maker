@@ -398,9 +398,7 @@ export class JSCodeBlocks {
 
         javascriptGenerator.forBlock['keycode_d'] = function (block: any) {
             // TODO: Assemble JavaScript into code constiable.
-            return 'KeyCode.D';
-            // TODO: Change ORDER_NONE to the correct strength.
-            //return [code,javascriptGenerator.ORDER_ATOMIC];
+            return ['KeyCode.D', javascriptGenerator.ORDER_ATOMIC];
         };
         javascriptGenerator.forBlock['keycode_space'] = function (block: any) {
             // TODO: Assemble JavaScript into code constiable.
