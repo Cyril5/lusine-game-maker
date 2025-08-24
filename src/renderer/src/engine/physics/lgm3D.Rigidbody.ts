@@ -11,6 +11,7 @@ export class Rigidbody extends Component {
     linearDamping: 10,
     mass: 1,
   }
+  private _initMotionType: any;
 
   public copyFrom<T extends Component>(componentSource: T): Component {
     throw new Error("Method not implemented.");
@@ -46,28 +47,99 @@ export class Rigidbody extends Component {
       this.body.setMassProperties({ mass });
     }
 
-    // Game.getInstance().onGameStarted.add(() => {
-    //   this.body.setTargetTransform(this._initLocalPos, this._initLocalRot);
-    // });
-
-    // Game.getInstance().onPhysicsDisabled.add(() => {
-    //   // Pose d'origine (clonée par sécurité)
-    //   this._initLocalPos = this._gameObject.transform.position;
-    //   this._initLocalRot = this._gameObject.transform.rotationQuaternion;
-
-    //   // Toujours remettre l'affichage de l'éditeur (LOCAL)
-    //   this._gameObject.setLocalPosition(this._initLocalPos);
-    //   this._gameObject.setRotationQuaternion(this._initLocalRot);
-
-    //   // Vélocités à zéro
-    //   this.body.setLinearVelocity(BABYLON.Vector3.Zero());
-    //   this.body.setAngularVelocity(BABYLON.Vector3.Zero());
-    // });
+    Game.getInstance().onGameStarted.add(() => {
+      // Capture poses initiales au démarrage
+      this._captureInitialPose();
+      const scene = this._gameObject.scene;
+      // Snap juste avant le 1er step physique
+      const token = scene.onBeforePhysicsObservable.add(() => {
+        scene.onBeforePhysicsObservable.remove(token);
+        this._syncBodyToCurrentOnStart();
+      });
+    });
+    // Reset à l’arrêt du jeu
+    Game.getInstance().onGameStopped.add(() => this._resetToInitial());
   }
 
   /** Ajout d’un collider (appelé par BoxCollider) */
   public addShape(shape: any, offset: BABYLON.Vector3, rotation: any) {
     this._shapeContainer.addChild(shape, offset, rotation);
+  }
+
+  private _captureInitialPose() {
+    // Local
+    this._initLocalPos = this.gameObject.localPosition.clone();
+    this._initLocalRot = (this.gameObject.rotationQuaternion ?? BABYLON.Quaternion.Identity()).clone();
+
+    // Monde (helper safe)
+    const { pos, rot } = this._getWorldPose(this._gameObject.transform);
+    this._initWorldPos = pos;
+    this._initWorldRot = rot;
+
+    // MotionType initial
+    this._initMotionType = (this.body as any)._pluginData?.motionType ?? BABYLON.PhysicsMotionType.DYNAMIC;
+  }
+
+  /** Retourne la pose monde du TransformNode, même s’il a un parent */
+  private _getWorldPose(node: BABYLON.TransformNode): { pos: BABYLON.Vector3, rot: BABYLON.Quaternion } {
+    if (!node.parent) {
+      // Pas de parent → on peut prendre directement
+      return {
+        pos: node.position.clone(),
+        rot: node.rotationQuaternion
+          ? node.rotationQuaternion.clone()
+          : BABYLON.Quaternion.FromEulerAngles(
+            (node as any).rotation.x, (node as any).rotation.y, (node as any).rotation.z
+          ),
+      };
+    }
+    // Sinon, extraire via la worldMatrix
+    node.computeWorldMatrix(true);
+    const wm = node.getWorldMatrix();
+    return {
+      pos: wm.getTranslation().clone(),
+      rot: BABYLON.Quaternion.FromRotationMatrix(wm.getRotationMatrix()),
+    };
+  }
+
+  private _resetToInitial() {
+    // Recaler l’éditeur (LOCAL)
+    this._gameObject.setLocalPosition(this._initLocalPos);
+    this._gameObject.setRotationQuaternion(this._initLocalRot);
+
+    // Stop vélocités
+    this.body.setLinearVelocity(BABYLON.Vector3.Zero());
+    this.body.setAngularVelocity(BABYLON.Vector3.Zero());
+
+    // Téléportation physique en MONDE (sans attendre un step)
+    const prevType = (this.body as any)._pluginData?.motionType ?? this._initMotionType;
+    this.body.setMotionType(BABYLON.PhysicsMotionType.ANIMATED);
+    this.body.setTargetTransform(this._initWorldPos, this._initWorldRot);
+    this.body.setMotionType(prevType);
+
+    // En mode éditeur : geler la physique tout de suite
+    this.body.disablePreStep = true;
+  }
+
+  private _syncBodyToCurrentOnStart() {
+    // Pose MONDE courante (que l’éditeur voit)
+    const node = this._gameObject.transform;
+    node.computeWorldMatrix(true);
+    const wm = node.getWorldMatrix();
+    const posW = wm.getTranslation().clone();
+    const rotW = BABYLON.Quaternion.FromRotationMatrix(wm.getRotationMatrix());
+
+    // Zéro vélocités & snap en ANIMATED, puis on remet le type
+    const prevType = (this.body as any)._pluginData?.motionType ?? this._initMotionType ?? BABYLON.PhysicsMotionType.DYNAMIC;
+    this.body.setLinearVelocity(BABYLON.Vector3.Zero());
+    this.body.setAngularVelocity(BABYLON.Vector3.Zero());
+
+    this.body.setMotionType(BABYLON.PhysicsMotionType.ANIMATED);
+    this.body.setTargetTransform(posW, rotW);
+    this.body.setMotionType(prevType);
+
+    // On s’assure que la physique est autorisée pendant le Play
+    this.body.disablePreStep = false;
   }
 
   // --------------------
