@@ -20,7 +20,6 @@ export default class State {
 
   private static _runtimeGlobalVars: Array<any> = [InputManager, ["KeyCode", KeyCode]]; // ne pas oublier de supprimer la variable lorsqu'on clic sur Stop
 
-
   static deleteRuntimeGlobalVars() {
     const arr = State._runtimeGlobalVars;
 
@@ -69,9 +68,7 @@ export default class State {
       console.log('ENTER !!');
     });
 
-
     this.onUpdateState = new FSMObservable();
-
   }
 
 
@@ -129,7 +126,7 @@ export default class State {
 
         const minifiedObject = terser.minify(importCode, options).then((value) => {
           //console.log(value.code);
-          eval(value.code);
+          //eval(value.code);
         });
         // eval(`
         //     if(!window.${clsName}) {
@@ -192,11 +189,8 @@ export default class State {
     // Generate JavaScript code and run it.
     window.LoopTrap = 1000;
     javascriptGenerator.INFINITE_LOOP_TRAP = 'if(--window.LoopTrap == 0) throw "Infinite loop.";\n';
-
-
+    
     const result = await terser.minify(this.stateFile.outputCode, minifyOptions);
-    //console.log(result.code);
-
     try {
       eval(result.code);
     } catch (e: any) {

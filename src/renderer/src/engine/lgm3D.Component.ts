@@ -14,6 +14,9 @@ export default abstract class Component {
         return this._gameObject;
     }
 
+    constructor(gameObject: GameObject) {
+        this._gameObject = gameObject;
+    }
 
     public destroy() : void {
         this._gameObject.removeComponent(this.componentName);

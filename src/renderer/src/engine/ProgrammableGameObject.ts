@@ -2,7 +2,8 @@ import { FiniteStateMachine } from "./FSM/FiniteStateMachine";
 import { Game } from "./Game";
 import { GameObject } from "./GameObject";
 import RotateTowardsBehaviour from "./behaviours/lgm3D.RotateTowardsBehaviour";
-import Rigidbody from "./physics/lgm3D.Rigidbody";
+import Utils from "./lgm3D.Utils";
+import { Rigidbody } from "./physics/lgm3D.Rigidbody";
 
 export class ProgrammableGameObject extends GameObject {
 
@@ -12,7 +13,7 @@ export class ProgrammableGameObject extends GameObject {
         pgo.transform.dispose();
         GameObject.gameObjects.delete(pgo.Id);
         pgo._transform = node;
-        pgo.setUId(node.metadata.gameObjectId,false);
+        pgo.setUId(node.metadata.gameObjectId, false);
         pgo.name = node.name;
         return pgo
     }
@@ -38,52 +39,52 @@ export class ProgrammableGameObject extends GameObject {
         this._fsms.push(new FiniteStateMachine(this));
         this._scene = scene;
         this._rigidbody = new Rigidbody(this as GameObject);
-        this.addComponent(this._rigidbody, "Rigidbody");
+        this.addComponent(Utils.RB_COMPONENT_TYPE, this._rigidbody);
 
         //Ajout du comportement RotateTowardsBehaviour
-        this.rotateTowardsBehaviour = this.addComponent(new RotateTowardsBehaviour(),"LGM3D_RotateTowardsBehaviour");
+        this.rotateTowardsBehaviour = this.addComponent(new RotateTowardsBehaviour(), "LGM3D_RotateTowardsBehaviour");
     }
 
-    get position() : BABYLON.Vector3 {
+    get position(): BABYLON.Vector3 {
         return super.position;
     }
     set position(newPosition: BABYLON.Vector3) {
         this.transform.position = newPosition;
 
         if (Game.getInstance().isRunning) {
-            if(!this._rigidbody) {
+            if (!this._rigidbody) {
                 return;
             }
-            this._rigidbody?.body?.setTargetTransform(this.transform.absolutePosition,this.transform.rotationQuaternion);
+            this._rigidbody?.body?.setTargetTransform(this.transform.absolutePosition, this.transform.rotationQuaternion);
         }
     }
 
-    setEulerRotation(x : number,y : number,z : number) {
+    setEulerRotation(x: number, y: number, z: number) {
         this.transform.rotationQuaternion = BABYLON.Quaternion.FromEulerAngles(x, y, z);
-        this._rigidbody?.body?.setTargetTransform(this.transform.absolutePosition,this.transform.rotationQuaternion);
+        this._rigidbody?.body?.setTargetTransform(this.transform.absolutePosition, this.transform.rotationQuaternion);
     }
-
 
     move(axis: BABYLON.Vector3, speed: number, space: BABYLON.Space): void {
-        if (this._rigidbody?.body) {
-            // Si l'objet utilise des rotations en Quaternion
-            const forward = new BABYLON.Vector3(0, 0, 1); // Z est la direction avant par défaut
-    
-            // Créer une matrice de rotation vide
-            const rotationMatrix = new BABYLON.Matrix();
-    
-            // Convertir le quaternion en matrice de rotation
-            this.transform.rotationQuaternion!.toRotationMatrix(rotationMatrix);
-    
-            // Transformer le vecteur 'forward' par la matrice de rotation
-            const direction = BABYLON.Vector3.TransformNormal(forward, rotationMatrix);
-    
-            // Appliquer la vélocité linéaire dans la direction de l'orientation
-            this._rigidbody!.body.setLinearVelocity(direction.scale(speed));
-        } else {
-            // Déplacement classique si pas de physique
-            this.transform.translate(axis, speed, space);
+        if (!this._rigidbody) {
+            console.error('Un rigidbody est requis pour cet objet programmable');
+            return; // this.body = PhysicsBody de l'objet
         }
+
+        // Récupérer la vélocité actuelle
+        const currentVel = this._rigidbody.getLinearVelocity();
+
+        // Calculer la direction dans le bon espace (local ou world)
+        const forward = BABYLON.Vector3.TransformNormal(axis.normalize(),
+            space === BABYLON.Space.LOCAL ? this.transform.getWorldMatrix() : BABYLON.Matrix.Identity()
+        );
+
+        forward.normalize().scaleInPlace(speed);
+
+        // On garde la composante Y (gravité, sauts, etc.)
+        const newVel = new BABYLON.Vector3(forward.x, currentVel.y, forward.z);
+
+        // Appliquer la nouvelle vélocité
+        this._rigidbody.setLinearVelocity(newVel);
     }
 
     setRotationQuaternion(quaternion: BABYLON.Quaternion): void {
@@ -93,11 +94,11 @@ export class ProgrammableGameObject extends GameObject {
     rotate(axis: BABYLON.Vector3, amount: number, space?: BABYLON.Space | undefined): void {
         if (Game.getInstance().isRunning) {
             //if (this._rigidbody.body) {
-                //console.log(BABYLON.Tools.ToDegrees(amount));
-                //this._rigidbody?.body?.setTargetTransform(this.transform.absolutePosition,this.transform.rotationQuaternion);
-                const vel = new BABYLON.Vector3();
-                this._rigidbody?.body?.getAngularVelocityToRef(vel);
-                this._rigidbody?.body?.setAngularVelocity(new BABYLON.Vector3(vel.x,amount,vel.z));
+            //console.log(BABYLON.Tools.ToDegrees(amount));
+            //this._rigidbody?.body?.setTargetTransform(this.transform.absolutePosition,this.transform.rotationQuaternion);
+            const vel = new BABYLON.Vector3();
+            this._rigidbody?.body?.getAngularVelocityToRef(vel);
+            this._rigidbody?.body?.setAngularVelocity(new BABYLON.Vector3(vel.x, amount, vel.z));
             // }else{                
             //     // amount de base est en radians
             //     this.transform.rotate(axis, amount, space);

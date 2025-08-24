@@ -353,7 +353,7 @@ export class JSCodeBlocks {
             const value_obj = generator.valueToCode(block, 'OBJ', generator.ORDER_ATOMIC);
             const value_speed = generator.valueToCode(block, 'SPEED', generator.ORDER_ATOMIC);
             // TODO: Assemble javascript into code variable.
-            const code = `${value_obj}.move(BABYLON.Axis.Z,${value_speed} * Game.deltaTime, BABYLON.Space.LOCAL);\n`
+            const code = `${value_obj}.move(BABYLON.Axis.Z,${value_speed}, BABYLON.Space.LOCAL);\n`
             return code;
         };
 
@@ -362,7 +362,7 @@ export class JSCodeBlocks {
             const value_rotspeedy = generator.valueToCode(block, 'ROTSPEEDY', generator.ORDER_ATOMIC);
             const dropdown_space = block.getFieldValue('SPACE');
             // TODO: Assemble javascript into code variable.
-            const code = `${value_obj}.rotate(BABYLON.Axis.Y, BABYLON.Tools.ToRadians(${value_rotspeedy} * Game.deltaTime), BABYLON.Space.${dropdown_space});\n`;
+            const code = `${value_obj}.rotate(BABYLON.Axis.Y, BABYLON.Tools.ToRadians(${value_rotspeedy}), BABYLON.Space.${dropdown_space});\n`;
             //return `${value_obj}.rotate(BABYLON.Axis.Y, BABYLON.Tools.ToRadians(${value_degy}), BABYLON.Space.${dropdown_space});\n`;
             return code;
         };
@@ -392,7 +392,7 @@ export class JSCodeBlocks {
 
             const value_keycode = generator.valueToCode(block, 'KEYCODE', generator.ORDER_ATOMIC);
             // TODO: Assemble JavaScript into code constiable.
-            const code = `InputManager.getKeyDown(${value_keycode})`;
+            const code = `Game.input.isDown(${value_keycode})`;
             return [code, generator.ORDER_NONE];
         };
 

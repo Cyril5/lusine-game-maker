@@ -1,13 +1,20 @@
 import Component from "./lgm3D.Component";
-import { Vector3 } from "@babylonjs/core";
 import { Observable } from "babylonjs";
+import { BoxColliderTest } from "./DemoTest/BoxColliderTest";
+import Utils from "./lgm3D.Utils";
 
 
 export class GameObject {
 
+    private _parent?: GameObject;
+    private _wmObs: BABYLON.Observer<BABYLON.TransformNode>;
+    public get parent(): GameObject {
+        return this._parent;
+    }
+
     static getInstancesOfType(gameObject: GameObject) {
 
-        if(GameObject._instances.has(gameObject)) {
+        if (GameObject._instances.has(gameObject)) {
             return GameObject._instances.get(gameObject);
         }
         return [];
@@ -17,23 +24,27 @@ export class GameObject {
 
     private static _gameObjects = new Map<number | string, GameObject>() //unique id or uuid // map uuid,gameObject
 
-    private static _instances = new Map<GameObject,GameObject[]>();
+    private static _instances = new Map<GameObject, GameObject[]>();
 
     qualifier: number = 0;
 
     /**
      * Observable lorsque l'objet est détruit.
     */
-    onDelete: Observable<void>;
+    readonly onDelete: Observable<void> = new BABYLON.Observable();
     /**
      * Observable lorsque l'objet est créé.
     */
-    onCreated: Observable<void>;
+    readonly onCreated: Observable<void> = new BABYLON.Observable();
     /**
-      * Observable lorsque le parent change
+     * Observable lorsque le parent change
     */
-    onParentChange: Observable<GameObject>;
+    readonly onParentChange: Observable<GameObject> = new BABYLON.Observable();
 
+    private _lastRelativeMatrix: BABYLON.Matrix = BABYLON.Matrix.Identity();
+    private _relInit = false;
+    public readonly onLocalTransformChanged = new BABYLON.Observable<GameObject>();
+    public readonly onWorldTransformChanged = new BABYLON.Observable<GameObject>();
 
     children: Array<GameObject> = [];
 
@@ -55,27 +66,71 @@ export class GameObject {
         return this._transform.name;
     }
 
+    /**
+     * Obsolète
+    */
+    set position(value: BABYLON.Vector3) {
+        this._transform.position = value;
+        console.warn('gameObject.position = value : Vector3 est obsolète. Utilisez plutôt setLocalPosition');
+    }
+    /**
+     * Obsolète
+    */
     get position() {
+        console.warn('gameObject.position est obsolète. Utilisez plutôt localPosition');
         return this._transform.position;
     }
-    set position(value) {
-        this._transform.position = value;
+    get localPosition() {
+        return this._transform.position;
     }
 
-    get rotation() {
-        return this._transform.rotation;
+    // --- SURCHARGES (signatures seulement) ---
+    setLocalPosition(x: number, y: number, z: number): void;
+    setLocalPosition(v: BABYLON.Vector3): void;
+    setLocalPosition(a: number | BABYLON.Vector3, b?: number, c?: number): void {
+        let target: BABYLON.Vector3;
+
+        if (a instanceof BABYLON.Vector3) {
+            target = a;
+        } else {
+            // évite une allocation si tu veux : this._transform.position.set(a, b!, c!)
+            target = new BABYLON.Vector3(a, b ?? 0, c ?? 0);
+        }
+
+        // compare puis copie
+        if (!Utils.vector3Equals(this._transform.position, target)) {
+            this._transform.position.copyFrom(target);
+            this.onLocalTransformChanged.notifyObservers(this);
+        }
     }
-    set rotation(value) {
-        this._transform.rotation = value;
+
+    // --- Rotation (Euler locale) ---
+    get rotation() { return this._transform.rotation; }
+    setRotationEuler(v: BABYLON.Vector3): void {
+        if (Utils.vector3Equals(this._transform.rotation, v)) return;
+        this._transform.rotation.copyFrom(v);
+        this.onLocalTransformChanged.notifyObservers(this);
+    }
+
+    // --- Rotation (Quaternion local) ---
+    get rotationQuaternion() { return this._transform.rotationQuaternion; }
+    setRotationQuaternion(q: BABYLON.Quaternion): void {
+        const rq = this._transform.rotationQuaternion ?? (this._transform.rotationQuaternion = new BABYLON.Quaternion());
+        if (BABYLON.Quaternion.Dot(rq, q) > 0.999999) return;
+        rq.copyFrom(q);
+        this.onLocalTransformChanged.notifyObservers(this);
     }
 
     get scale() {
         return this._transform.scaling;
     }
-    set scale(value : BABYLON.Vector3) {
-        this._transform.scaling = value;
+    setScale(v: BABYLON.Vector3) {
+        //if (this._transform.scaling.equals(v)) return;
+        if (Utils.vector3Equals(this._transform.scaling, v)) return;
+        this._transform.scaling.copyFrom(v);
+        this.onLocalTransformChanged.notifyObservers(this);
     }
-    
+
     set type(value) {
         this.metadata.type = value;
     }
@@ -83,55 +138,52 @@ export class GameObject {
         return this.metadata.type;
     }
 
-
     private _scene: BABYLON.Scene;
     get scene(): BABYLON.Scene {
         return this._scene;
     }
 
-    protected _transform : BABYLON.TransformNode;
-    get transform() : BABYLON.TransformNode {
+    protected _transform: BABYLON.TransformNode;
+    get transform(): BABYLON.TransformNode {
         return this._transform;
     }
 
-    static buildFromTransformNode(node : BABYLON.TransformNode) {
+    static buildFromTransformNode(node: BABYLON.TransformNode) {
 
-        if(!node.getScene())
+        if (!node.getScene())
             throw "No scene found";
 
-        const go = new GameObject(node.name,node.getScene());
+        const go = new GameObject(node.name, node.getScene());
         GameObject._gameObjects.delete(go.Id);
         go._transform.dispose(); //supprimer le transform crée par le gameObject avant de le remplacer
-        go._transform = node; 
+        go._transform = node;
         go.setUId(node.metadata.gameObjectId);
         return go;
     }
 
-    constructor(name : string, scene: BABYLON.Scene, transformNode?: BABYLON.TransformNode) {
- 
-        this._transform = !transformNode ? new BABYLON.TransformNode(name,scene) : transformNode;
+    constructor(name: string, scene: BABYLON.Scene, transformNode?: BABYLON.TransformNode) {
 
-        if(!transformNode)
+        this._transform = !transformNode ? new BABYLON.TransformNode(name, scene) : transformNode;
+
+        if (!transformNode)
             this._transform.rotationQuaternion = BABYLON.Quaternion.Identity();
         else
             this._transform.rotationQuaternion = transformNode.rotationQuaternion;
- 
+
         this._transform.metadata = {};
- 
+
         this._scene = scene;
- 
+
         this._components = new Map<string, Component>();
- 
- 
+
         //this._physicsRootMesh.setParent(this);
- 
+
         // L'accès direct au renderer provoque une erreur
         //        this._transform = new TransformComponent(this, name, scene);
-        this.onDelete = new Observable();
-        this.onCreated = new Observable();
-        this.onParentChange = new Observable();
- 
- 
+
+        // Capte TOUT (gizmos / code / physique) mais filtre via matrice relative
+        this._wmObs = this.transform.onAfterWorldMatrixUpdateObservable.add(()=>this._onAfterWorldMatrixUpdate());
+
         if (!GameObject._gameObjects.has(this._transform.uniqueId)) {
             GameObject._gameObjects.set(this._transform.uniqueId, this);
             // this.onCreated.notifyObservers();
@@ -142,9 +194,29 @@ export class GameObject {
             return;
         }
         this.transform.metadata = { gameObjectId: this._transform.uniqueId, parentId: null }
+    }
 
+    private _onAfterWorldMatrixUpdate() {
+        // ⚠️ ne pas appeler computeWorldMatrix ici
+        const parent = this._transform.parent as BABYLON.TransformNode | null;
 
- 
+        // matrice "relative" = parent^-1 * self  (ou monde si pas de parent)
+        const rel = parent
+            ? BABYLON.Matrix.Invert(parent.getWorldMatrix()).multiply(this.transform.getWorldMatrix())
+            : this.transform.getWorldMatrix().clone();
+
+        // première init : mémorise et (optionnel) notifie une fois
+        if (!this._relInit) {
+            this._lastRelativeMatrix.copyFrom(rel);
+            this._relInit = true;
+            // this.onWorldTransformChanged.notifyObservers(this); // optionnel
+            return;
+        }
+
+        if (!Utils.matrixAlmostEqual(this._lastRelativeMatrix, rel, 1e-5)) {
+            this._lastRelativeMatrix.copyFrom(rel);
+            this.onWorldTransformChanged.notifyObservers(this);
+        }
     }
 
     /**
@@ -166,13 +238,13 @@ export class GameObject {
         return GameObject._gameObjects;
     }
 
-    public addComponent<T extends Component>(component: T, componentName: string): Component {
-        
-        if(this._components.has(componentName)) {
+    public addComponent<T extends Component>(componentName: string, component: T): Component {
+
+        if (this._components.has(componentName)) {
             console.error("Component already exists in gameObject");
             return null;
         }
-        
+
         this._components.set(componentName, component);
         component.name = componentName;
         component._gameObject = this;
@@ -184,26 +256,26 @@ export class GameObject {
      * TODO : A améliorer 
      * Ajouter peut être une callback à chaque traitement des enfants (source, clone)
     */
-    static convertToGameObject(transformNode: BABYLON.TransformNode,recursive = true): GameObject | null {
-        
+    static convertToGameObject(transformNode: BABYLON.TransformNode, recursive = true): GameObject | null {
+
         const scene = transformNode.getScene();
 
-        if(recursive) {
+        if (recursive) {
             transformNode.getChildTransformNodes().forEach(childNode => {
-    
+
                 if (childNode.metadata && childNode.metadata.gameObjectId) {
-    
-                    const convertedObject = new GameObject(childNode.name,scene,childNode);
-                    
+
+                    const convertedObject = new GameObject(childNode.name, scene, childNode);
+
                     // convertedObject.transform.position.copyFrom(childNode.position);
                     // convertedObject.transform.rotation = childNode.rotation;
                     // convertedObject.transform.scaling.copyFrom(childNode.scaling);
                 }
-    
+
             });
-        }else{
-            if(transformNode.metadata && transformNode.metadata.gameObjectId) {
-                return new GameObject(transformNode.name,scene,transformNode);
+        } else {
+            if (transformNode.metadata && transformNode.metadata.gameObjectId) {
+                return new GameObject(transformNode.name, scene, transformNode);
             }
         }
 
@@ -220,12 +292,12 @@ export class GameObject {
         // });
         // transformNode.dispose();
 
-        return  null;
+        return null;
     }
 
     public static createFromTransformNodeMetaData(node: BABYLON.TransformNode, scene: BABYLON.Scene): GameObject {
         const nodeId = node.metadata.gameObjectId;
-        const go = new GameObject(node.name, scene,node);
+        const go = new GameObject(node.name, scene, node);
         go.setUId(nodeId);
         return go;
     }
@@ -233,45 +305,45 @@ export class GameObject {
 
     public static createInstance(sourceGO: GameObject): GameObject {
 
-        let rootGameObject : GameObject | null= null;
+        let rootGameObject: GameObject | null = null;
 
         let root = true;
-        const onNewNodeCreated = (source : BABYLON.TransformNode,clone: BABYLON.TransformNode) : void =>{
+        const onNewNodeCreated = (source: BABYLON.TransformNode, clone: BABYLON.TransformNode): void => {
 
-            const childSourceGO : GameObject = GameObject.getById(source.uniqueId);  
+            const childSourceGO: GameObject = GameObject.getById(source.uniqueId);
 
-            if(childSourceGO) {             
-                const cloneGO : GameObject | null = GameObject.convertToGameObject(clone,false);
-                
-                if(!cloneGO) return;
-                
-                alert('CONVERT : '+source.name);
+            if (childSourceGO) {
+                const cloneGO: GameObject | null = GameObject.convertToGameObject(clone, false);
+
+                if (!cloneGO) return;
+
+                alert('CONVERT : ' + source.name);
                 cloneGO.transform!.metadata = { ...source.metadata };
                 cloneGO.transform!.metadata.gameObjectId = clone.uniqueId;
                 // Créer tous les composants et les copier (à faire aussi sur les enfants)
                 const componentSources = childSourceGO.getAllComponents();
-                for (const componentSource of componentSources) { 
-                    const c : Component = cloneGO.addComponent(new componentSource.constructor(cloneGO), componentSource.name);
+                for (const componentSource of componentSources) {
+                    const c: Component = cloneGO.addComponent(componentSource.name, new componentSource.constructor(cloneGO));
                     c.copyFrom(componentSource);
                 }
-                
-                if(root) {
+
+                if (root) {
                     rootGameObject = cloneGO;
                     const instances = [];
                     instances.push(cloneGO);
                     GameObject._instances.set(sourceGO, instances);
                     root = false;
                 }
-            } 
+            }
         };
-        
-        sourceGO.transform.instantiateHierarchy(null,{doNotInstantiate : false},(source,clone) => onNewNodeCreated(source,clone));
-        
+
+        sourceGO.transform.instantiateHierarchy(null, { doNotInstantiate: false }, (source, clone) => onNewNodeCreated(source, clone));
+
         //sourceGO.transform.setEnabled(false);
         // const nodes : BABYLON.TransformNode[] = [];
         // nodes.push(targetGO.transform);
         // nodes.push(sourceGO.transform.getChildTransformNodes());
-        
+
         // nodes.forEach((node) => {
         //     if(GameObject.nodeIsGameObject(node)) {
         //         targetGO.transform!.metadata = { ...sourceGO.metadata };
@@ -306,15 +378,14 @@ export class GameObject {
         return this._components.values();
     }
 
-
     public removeComponent(componentName: string): void {
         this._components.get(componentName).destroy();
         this._components.delete(componentName);
     }
 
-    private _initLocalPos: Vector3 = new Vector3();
+    private _initLocalPos: BABYLON.Vector3 = new BABYLON.Vector3();
     private _initRotation;
-    initScale: Vector3 = Vector3.One();
+    initScale: BABYLON.Vector3 = BABYLON.Vector3.One();
 
 
     // ECS
@@ -329,10 +400,10 @@ export class GameObject {
         const oldId = this._transform.uniqueId;
         this.metadata.gameObjectId = value;
         if (deleteOldId) {
-            if(!GameObject._gameObjects.has(oldId)) {
-                console.error(`GameObject ID ${oldId} not found `); 
-            }else{
-                console.log("delete old id"+oldId);
+            if (!GameObject._gameObjects.has(oldId)) {
+                console.error(`GameObject ID ${oldId} not found `);
+            } else {
+                console.log("delete old id" + oldId);
                 GameObject._gameObjects.delete(oldId);
             }
         }
@@ -352,22 +423,24 @@ export class GameObject {
         // this.onCreated.clear();
         // this.onDelete.clear();
         // this._physicsImpostor?.dispose();
+        this._transform.onAfterWorldMatrixUpdateObservable.remove(this._wmObs);
         this.transform.dispose();
 
-        if(GameObject._instances.has(this)) {
+        if (GameObject._instances.has(this)) {
             GameObject._instances.delete(this);
         }
     }
 
     setParent(newParent: GameObject) {
         this.transform.setParent(newParent?.transform);
-        if(newParent) {
+        this._parent = newParent;
+        if (newParent) {
             this.metadata.parentId = newParent.Id;
             newParent.children.push(this);
-        }else{
+        } else {
             newParent.children.delete(this);
         }
-        
+
         this.onParentChange.notifyObservers(newParent);
     }
 

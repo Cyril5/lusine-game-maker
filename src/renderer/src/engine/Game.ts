@@ -2,12 +2,13 @@ import { Engine } from "@babylonjs/core";
 import { GameObject } from "./GameObject";
 import { Renderer } from "./Renderer";
 import { ProgrammableGameObject } from "./ProgrammableGameObject";
-import InputManager, { KeyCode } from "./InputManager";
+import InputManager , {KeyCode } from "./InputManager";
 import State from "./FSM/State";
 import { Observable, Vector3 } from "babylonjs";
-import DemoTest from "./DemoTest";
+import DemoTest from "./DemoTest/DemoTest";
 import Rigidbody from "./physics/lgm3D.Rigidbody";
 import BoxCollider from "./physics/lgm3D.BoxCollider";
+import Utils from "./lgm3D.Utils";
 
 export class Game {
 
@@ -19,7 +20,7 @@ export class Game {
 
     private static _instance: any;
 
-    private static _deltaTime: Number = 0;
+    private static _deltaTime: number = 0;
     private _engine: Engine | undefined;
     private _isRunning: boolean = false;
 
@@ -48,79 +49,71 @@ export class Game {
     }
 
     // Deltatime in seconds
-    static get deltaTime(): Number {
+    static get deltaTime(): number {
         return Game._deltaTime;
     }
 
+    static get input():InputManager {
+        return InputManager.getInstance();
+    }
 
     public async start() {
 
-
-        this._isRunning = true;
-        console.log("Game started");
-
-
+        
         const scene = Renderer.getInstance().scene;
-
-        InputManager.initKeyboardListeners();
-
+        
         // Interpretation des codes de chaques states de chaques fsm
         const gameObjects = GameObject.gameObjects.values();
-
+        
         let runCodeSuccess = 0;
-
-        //this._demoTest.init(scene);
-
+        
+        this._demoTest.init(scene);
+        
         for (const gameObject of gameObjects) {
-
+            
             //Mis à jour des shapes des rigidbody
-            const rb = gameObject.getComponent<Rigidbody>("Rigidbody");
-            rb?.test();
-
-            const collider = gameObject.getComponent<BoxCollider>("BoxCollider");
-            if (collider) {
-                if (!collider.gameObject.transform.parent) {
-                    collider.updateBodyShape();
-                }
-            }
-
-            if (gameObject instanceof ProgrammableGameObject) {
-
-                const states = gameObject.finiteStateMachines[0].states.length;
-                if (states > 0) {
-                    for (let index = 0; index < states; index++) {
-                        const state = gameObject.finiteStateMachines[0].states[index];
-                        await state.runCode();
+            // const rb = gameObject.getComponent<Rigidbody>(Utils.RB_COMPONENT_TYPE);
+            // //rb?.test(); // NE PAS ENLEVER POUR LE MOMENT
+            
+            // const collider = gameObject.getComponent<BoxCollider>(Utils.BX_COLLIDER_COMPONENT_TYPE);
+            // if (collider) {
+                //     if (!collider.gameObject.transform.parent) {
+                    //         collider.updateBodyShape();
+                    //     }
+                    // }
+                    
+                    if (gameObject instanceof ProgrammableGameObject) {
+                        
+                        const states = gameObject.finiteStateMachines[0].states.length;
+                        if (states > 0) {
+                            for (let index = 0; index < states; index++) {
+                                const state = gameObject.finiteStateMachines[0].states[index];
+                                await state.runCode();
+                            }
+                            if (gameObject.finiteStateMachines[0].currentState) {
+                                console.log(gameObject.finiteStateMachines[0].currentState.onEnterState);
+                                gameObject.finiteStateMachines[0].currentState.onEnterState.notifyObservers();
+                            }
+                        }
                     }
-                    if (gameObject.finiteStateMachines[0].currentState) {
-                        console.log(gameObject.finiteStateMachines[0].currentState.onEnterState);
-                        gameObject.finiteStateMachines[0].currentState.onEnterState.notifyObservers();
-                    }
                 }
+                
+                clearTimeout(this._t);
+                scene.physicsEnabled = true;
+                this.onGameStarted.notifyObservers();
+                this._isRunning = true;
+
+                console.log("Game started");
+                this._demoTest.start();
             }
-        }
-
-        //GameObject.saveAllTransforms();
-
-
-        clearTimeout(this._t);
-
-        scene.physicsEnabled = true;
-
-        this.onGameStarted.notifyObservers();
-
-        this._demoTest.start();
-
-    }
-
-
-
-    private update(deltaTime: Number) {
+            
+            private update(deltaTime: number) {
 
         if (!this._isRunning)
             return;
 
         this.onGameUpdate.notifyObservers();
+        this._demoTest.onGameUpdate();
 
         const gameObjects = GameObject.gameObjects.values();
         for (const go of gameObjects) {
@@ -133,7 +126,6 @@ export class Game {
         }
     }
 
-
     public stop() {
 
         console.log('stop game');
@@ -142,7 +134,6 @@ export class Game {
 
         const scene = Renderer.getInstance().scene;
 
-        InputManager.removeKeyboardListeners();
         this._isRunning = false;
 
         Renderer.getInstance().scene.physicsEnabled = false;
@@ -178,14 +169,10 @@ export class Game {
         const scene = Renderer.getInstance().scene;
         const engine = scene.getEngine();
 
-        engine.runRenderLoop(()=>{
+        scene.onBeforeRenderObservable.add(()=>{            
             if (!this._isRunning)
                 return;
             Game._deltaTime = engine.getDeltaTime() / 1000;
-        })
-        
-        scene.onBeforeRenderObservable.add(()=>{            
-            // appeler tous les start des machine states
             this.update(Game._deltaTime);
         })
     }

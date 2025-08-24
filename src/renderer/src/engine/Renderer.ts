@@ -79,20 +79,16 @@ export class Renderer {
 
     private init = () => {
 
-
         console.log("renderer initializing");
 
         this._gizmoManager = new GizmoManager(this._scene);
         this._gizmoManager.usePointerToAttachGizmos = false;
-
-
 
         this._scene.debugLayer.onSelectionChangedObservable.add((selectedObjects) => {
             //const selectedObject = selectedObjects[0];
             // console.log(selectedObjects);
 
         });
-
 
         this._engine.getRenderingCanvas().addEventListener("wheel", evt => evt.preventDefault());
 

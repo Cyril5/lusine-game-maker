@@ -113,8 +113,6 @@ export default class LGM3DEditor {
             this.states.setShowLoadingModal(false);
 
             this._renderer = Renderer.getInstance();
-
-
         });
 
     }

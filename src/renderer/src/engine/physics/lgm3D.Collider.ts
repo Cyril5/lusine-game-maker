@@ -17,9 +17,6 @@ export default class Collider extends Component {
         return this._hkPlugin;
     }
 
-    _colliderShape : BABYLON.PhysicsShape;
-    _physicsBody : BABYLON.PhysicsBody;
-
     static colliders = new Map<number | string, Collider>();
 
     _boxMesh: BABYLON.Mesh;
@@ -33,12 +30,6 @@ export default class Collider extends Component {
         return this._boxMesh;
     }
 
-    // TEST 
-    get rigidBody() : BABYLON.PhysicsBody {
-        return this._physicsBody;
-    }
-
-
     _isTrigger: boolean = false;
     get isTrigger(): boolean {
         return this._isTrigger;
@@ -48,7 +39,7 @@ export default class Collider extends Component {
         if (this._isTrigger) {
             //ammojs
             //this._boxMesh.physicsImpostor?.dispose();
-            this._colliderShape.isTrigger = true;
+            this._physicsShape.isTrigger = true;
         } else {
             //ammojs
             // this._boxMesh.physicsImpostor = new BABYLON.PhysicsImpostor(this._boxMesh, BABYLON.PhysicsImpostor.BoxImpostor, {
@@ -56,7 +47,7 @@ export default class Collider extends Component {
             //     restitution: 0,
             //     friction: 0,
             // });
-            this._colliderShape.isTrigger = false;
+            this._physicsShape.isTrigger = false;
         }
     }
 
@@ -68,7 +59,7 @@ export default class Collider extends Component {
     
     constructor(owner: GameObject) {
 
-        super();
+        super(owner);
 
         this._hkPlugin = Renderer.getInstance().hk;
          
