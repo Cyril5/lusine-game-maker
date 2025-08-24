@@ -2,7 +2,7 @@ import { Engine } from "@babylonjs/core";
 import { GameObject } from "./GameObject";
 import { Renderer } from "./Renderer";
 import { ProgrammableGameObject } from "./ProgrammableGameObject";
-import InputManager , {KeyCode } from "./InputManager";
+import InputManager, { KeyCode } from "./InputManager";
 import State from "./FSM/State";
 import { Observable, Vector3 } from "babylonjs";
 import DemoTest from "./DemoTest/DemoTest";
@@ -16,7 +16,8 @@ export class Game {
 
     onGameStarted: Observable<void>;
     onGameUpdate: Observable<void>;
-    onGameStoped: Observable<void>;
+    onGameStopped: Observable<void>;
+    onPhysicsDisabled: Observable<void> = new BABYLON.Observable();
 
     private static _instance: any;
 
@@ -53,61 +54,61 @@ export class Game {
         return Game._deltaTime;
     }
 
-    static get input():InputManager {
+    static get input(): InputManager {
         return InputManager.getInstance();
     }
 
     public async start() {
 
-        
+
         const scene = Renderer.getInstance().scene;
-        
+
         // Interpretation des codes de chaques states de chaques fsm
         const gameObjects = GameObject.gameObjects.values();
-        
+
         let runCodeSuccess = 0;
-        
+
         this._demoTest.init(scene);
-        
+
         for (const gameObject of gameObjects) {
-            
+
             //Mis à jour des shapes des rigidbody
             // const rb = gameObject.getComponent<Rigidbody>(Utils.RB_COMPONENT_TYPE);
             // //rb?.test(); // NE PAS ENLEVER POUR LE MOMENT
-            
+
             // const collider = gameObject.getComponent<BoxCollider>(Utils.BX_COLLIDER_COMPONENT_TYPE);
             // if (collider) {
-                //     if (!collider.gameObject.transform.parent) {
-                    //         collider.updateBodyShape();
-                    //     }
-                    // }
-                    
-                    if (gameObject instanceof ProgrammableGameObject) {
-                        
-                        const states = gameObject.finiteStateMachines[0].states.length;
-                        if (states > 0) {
-                            for (let index = 0; index < states; index++) {
-                                const state = gameObject.finiteStateMachines[0].states[index];
-                                await state.runCode();
-                            }
-                            if (gameObject.finiteStateMachines[0].currentState) {
-                                console.log(gameObject.finiteStateMachines[0].currentState.onEnterState);
-                                gameObject.finiteStateMachines[0].currentState.onEnterState.notifyObservers();
-                            }
-                        }
+            //     if (!collider.gameObject.transform.parent) {
+            //         collider.updateBodyShape();
+            //     }
+            // }
+
+            if (gameObject instanceof ProgrammableGameObject) {
+
+                const states = gameObject.finiteStateMachines[0].states.length;
+                if (states > 0) {
+                    for (let index = 0; index < states; index++) {
+                        const state = gameObject.finiteStateMachines[0].states[index];
+                        await state.runCode();
+                    }
+                    if (gameObject.finiteStateMachines[0].currentState) {
+                        console.log(gameObject.finiteStateMachines[0].currentState.onEnterState);
+                        gameObject.finiteStateMachines[0].currentState.onEnterState.notifyObservers();
                     }
                 }
-                
-                clearTimeout(this._t);
-                scene.physicsEnabled = true;
-                this.onGameStarted.notifyObservers();
-                this._isRunning = true;
-
-                console.log("Game started");
-                this._demoTest.start();
             }
-            
-            private update(deltaTime: number) {
+        }
+
+        clearTimeout(this._t);
+        scene.physicsEnabled = true;
+        this.onGameStarted.notifyObservers();
+        this._isRunning = true;
+
+        console.log("Game started");
+        this._demoTest.start();
+    }
+
+    private update(deltaTime: number) {
 
         if (!this._isRunning)
             return;
@@ -136,40 +137,27 @@ export class Game {
 
         this._isRunning = false;
 
-        Renderer.getInstance().scene.physicsEnabled = false;
-
         GameObject.gameObjects.forEach((go: GameObject, key) => {
             if (go instanceof ProgrammableGameObject) {
-                // if(go.rigidbody) {
-                //     const zeroVector = BABYLON.Vector3.Zero();
-                //     go.rigidbody.setAngularVelocity(zeroVector);
-                //     go.rigidbody.setLinearVelocity(zeroVector);
-                //     go.rigidbody.disablePreStep = false; 
-                //     go.rigidbody.transformNode.position.set(0,0,0);
-                //     //car.rotationQuaternion = BABYLON.Quaternion.FromEulerAngles(0,0,0);
-                //     setTimeout(()=>{
-                //         go.rigidbody.disablePreStep = true;
-                //     },3000)
-                // }
             }
         })
 
-        this._demoTest.stop(scene);
-
         this.onGameUpdate.clear();
-        this.onGameStoped.notifyObservers();
-
+        this.onGameStopped.notifyObservers();
+        this._demoTest.stop(scene);
+        Renderer.getInstance().scene.physicsEnabled = false;
+        this.onPhysicsDisabled.notifyObservers();
     }
 
     private constructor() {
         this.onGameStarted = new Observable();
         this.onGameUpdate = new Observable();
-        this.onGameStoped = new Observable();
+        this.onGameStopped = new Observable();
 
         const scene = Renderer.getInstance().scene;
         const engine = scene.getEngine();
 
-        scene.onBeforeRenderObservable.add(()=>{            
+        scene.onBeforeRenderObservable.add(() => {
             if (!this._isRunning)
                 return;
             Game._deltaTime = engine.getDeltaTime() / 1000;

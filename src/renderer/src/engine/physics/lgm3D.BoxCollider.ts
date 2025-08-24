@@ -110,7 +110,7 @@ export default class BoxCollider extends Collider {
         // TODO : enlever cet event quand le collider est supprimé
         Game.getInstance().onGameStarted.add(this.onGameStartedEvent());
 
-        Game.getInstance().onGameStoped.add(this.onGameStopedEvent());
+        Game.getInstance().onGameStopped.add(this.onGameStoppedEvent());
     }
 
 
@@ -328,7 +328,7 @@ export default class BoxCollider extends Collider {
         console.log(`[BoxCollider] Build Static body pour ${node.name}`);
     }
 
-    private onGameStopedEvent() {
+    private onGameStoppedEvent() {
         if (this._body) {
             this._body.setCollisionCallbackEnabled(false);
             this._body.getCollisionObservable().removeCallback(this.detectionCollision);

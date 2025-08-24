@@ -21,7 +21,7 @@ export class Renderer {
 
     private _scene: BABYLON.Scene;
     private _engine: Engine;
-    private _camera: BABYLON.ArcRotateCamera;
+    private _camera: BABYLON.UniversalCamera;
 
     private static instance: Renderer;
 
@@ -31,7 +31,7 @@ export class Renderer {
         return this._scene;
     }
 
-    get camera(): BABYLON.ArcRotateCamera {
+    get camera(): BABYLON.UniversalCamera {
         return this._camera;
     }
 
@@ -95,14 +95,9 @@ export class Renderer {
         //SceneLoader.RegisterPlugin(new FBXLoader());
         //BABYLON.SceneLoader.RegisterPlugin(new FBXLoader());
         // await SceneLoader.ImportMeshAsync(null, 'models/fbxtest/', 'cube.fbx', this._scene);
-
-        this._camera.setPosition(new Vector3(0, 0, -10));
-
         const canvas = this._scene.getEngine().getRenderingCanvas();
 
         this._camera.attachControl(canvas, true);
-        this._camera.panningSensibility = this.CAMERA_PANNING_SENSTIVITY;
-        this._camera.zoomOnFactor = this.CAMERA_ZOOM_SENSTIVITY;
 
         //this._scene.debugLayer.show();
 
@@ -127,14 +122,6 @@ export class Renderer {
         //     cube.parent = model3d;
         // });
 
-
-        // Ajoute une caméra
-        const camera = new BABYLON.FollowCamera("FollowCam", new BABYLON.Vector3(0, 10, -20), this._scene);
-        camera.radius = 30;
-        camera.heightOffset = 10;
-        camera.rotationOffset = 0;
-        camera.cameraAcceleration = 0.05;
-        camera.maxCameraSpeed = 20;
 
         // SceneLoader.ImportMesh("", "https://models.babylonjs.com/", "aerobatic_plane.glb", this._scene, (meshes) => {
 
@@ -191,12 +178,13 @@ export class Renderer {
         console.log("renderer constructor");
         this._engine = engine;
         this._scene = scene;
-        this._camera = new BABYLON.ArcRotateCamera("Camera", 0, 0, 10, BABYLON.Vector3.Zero(), this._scene);
-        this._camera.fieldOfView = 75;
-        this._camera.farPlane = 1000;
-        this._camera.lowerRadiusLimit = 0;
-        this._camera.id = Renderer.CAMERA_ID;
-        this._camera.name = Renderer.CAMERA_ID;
+        // --- FLY FPS CAMERA ---
+        this._camera = new BABYLON.UniversalCamera(Renderer.CAMERA_ID, new BABYLON.Vector3(0, 2, -6), scene);
+        this._camera.minZ = 0.05;
+        this._camera.maxZ = 10000;
+        this._camera.fov = BABYLON.Tools.ToRadians(60);
+        this._camera.inertia = 0; // on gère nous-mêmes l’inertie
+        this._camera.doNotSerialize = true;
         this._camera.doNotSerialize = true;
         this.init();
     }

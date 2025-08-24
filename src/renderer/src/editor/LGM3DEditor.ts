@@ -87,7 +87,7 @@ export default class LGM3DEditor {
         return this._selectedGameObject;
     }
 
-    private _editorCameraManager: EditorCameraManager;
+    private _editorCameraManager!: EditorCameraManager;
 
     constructor(editorStates: EditorComponentStatesType) {
 
@@ -381,19 +381,6 @@ export default class LGM3DEditor {
         scene.physicsEnabled = false;
 
         const ground = BABYLON.MeshBuilder.CreateGround("_EDITOR_GRID_", { width: 1000, height: 1000 }, scene);
-                
-        //scene.createDefaultEnvironment();
-        // const hdrTexture = BABYLON.CubeTexture.CreateFromPrefilteredData(defaultSkyBoxTexture, scene);
-        // scene.environmentTexture = hdrTexture;
-        
-        // Skybox
-        // const skybox = BABYLON.MeshBuilder.CreateBox("skyBox", {size:1000.0}, this._renderer!.scene);
-        // const skyboxMaterial = new BABYLON.PBRMaterial("skyBox", this._renderer!.scene);
-        // skyboxMaterial.backFaceCulling = false;
-        // skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture(defaultSkyBoxTexture, this._renderer!.scene);
-        // skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
-        // skybox.material = skyboxMaterial;
-        // skybox.doNotSerialize = true;
         
         ground.doNotSerialize = true;
         if (!scene.getEngine().isWebGPU) {
