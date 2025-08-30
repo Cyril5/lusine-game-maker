@@ -2,7 +2,7 @@ import ProjectManager from "./ProjectManager";
 import FileManager from "@renderer/engine/FileManager";
 import EditorUtils from "./EditorUtils";
 import { GameObject } from "@renderer/engine/GameObject";
-import { Model3D } from "@renderer/engine/Model3D";
+import { Model3D } from "@renderer/engine/lgm3D.Model3D";
 import { ProgrammableGameObject } from "@renderer/engine/ProgrammableGameObject";
 import StateEditorUtils from "./StateEditorUtils";
 import BoxCollider from "@renderer/engine/physics/lgm3D.BoxCollider";
@@ -101,10 +101,7 @@ export default abstract class GameLoader {
 
         const loadTextures = (materials) => {
 
-
             materials.forEach((mat, index) => {
-
-
                 if (mat.albedoTexture && mat.albedoTexture.metadata) {
                     const sourceFilename = mat.albedoTexture.metadata.source;
                     if(!mat.albedoTexture.metadata.source)
@@ -131,7 +128,6 @@ export default abstract class GameLoader {
 
                     });
                 }
-
             });
 
             //const sourceFilename = materials[0].getActiveTextures()[0].metadata.source;
@@ -163,18 +159,20 @@ export default abstract class GameLoader {
             scene.getNodes().forEach((node: BABYLON.Node) => {
 
                 const nodeData = node.metadata;
-
                 if(!nodeData) {
                     return;
                 }
-
                 let go : GameObject | null = null;
 
                 if (nodeData?.type) {
 
                     if (node.metadata.type === Model3D.name) {
-
                         const model3d: Model3D = Model3D.createEmptyFromNodeData(node);
+                        console.log(nodeData);
+                         if(nodeData.parentId) {
+                            console.log("Put : "+nodeData.gameObjectId);
+                            goLinks.push([nodeData.gameObjectId, nodeData.parentId]);
+                        }
 
                     } else if (node.metadata.type === ProgrammableGameObject.TYPE_NAME) {
 
@@ -198,11 +196,14 @@ export default abstract class GameLoader {
                 }else{
                     if(nodeData?.gameObjectId) {
                         go = GameObject.createFromTransformNodeMetaData(node, scene);
+                        if(nodeData.parentId) {
+                            goLinks.push([nodeData.gameObjectId, nodeData.parentId]);
+                        }
                     }
                     if (nodeData.components) {
                         nodeData.components.forEach(component => {
-                            if (component.type == "BoxCollider") {
-                                const bxcol = go!.addComponent(new BoxCollider(go!), "BoxCollider") as BoxCollider;
+                            if (component.type == Utils.BX_COLLIDER_COMPONENT_TYPE) {
+                                const bxcol = go!.addComponent(Utils.BX_COLLIDER_COMPONENT_TYPE, new BoxCollider(go!)) as BoxCollider;
                                 if(component.isTrigger)
                                     bxcol.isTrigger = component.isTrigger;
                             }
@@ -231,19 +232,14 @@ export default abstract class GameLoader {
                 }
             });
 
-            // goLinks.forEach(el => {
-
-            //     let source = scene.getTransformNodeByUniqueId(el[0]);
-            //     if (!source) {
-            //         source = scene.getMeshByUniqueId(el[0]);
-            //     }
-            //     const target = scene.getTransformNodeByUniqueId(el[1]);
-            //     if (target && source) {
-            //         source.parent = target;
-            //     }
-            //     //console.log('-------------------');
-
-            // });
+            goLinks.forEach(el => {
+                let source = GameObject.getById(el[0]);
+                const target = GameObject.getById(el[1]);
+                if (target && source) {
+                    source.setParent(target);
+                }
+                console.log(`parent ${source.Id} to ${target.Id}`);
+            });
 
             console.log(GameObject.gameObjects);
             editor.setupBaseScene();

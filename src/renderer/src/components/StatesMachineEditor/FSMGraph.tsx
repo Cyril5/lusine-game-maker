@@ -8,7 +8,7 @@ import * as Vis from 'vis-network';
 import 'vis-network/styles/vis-network.min.css';
 
 import State from '@renderer/engine/FSM/State';
-import { FiniteStateMachine } from '@renderer/engine/FSM/FiniteStateMachine';
+import { FiniteStateMachine } from '@renderer/engine/FSM/lgm3D.FiniteStateMachine';
 import EditorUtils from '@renderer/editor/EditorUtils';
 
 

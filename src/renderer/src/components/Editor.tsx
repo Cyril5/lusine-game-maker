@@ -1,6 +1,6 @@
 import { Renderer } from "../engine/Renderer";
 import NavBarEditor from "./NavBarEditor";
-import { Tab, Tabs } from "react-bootstrap";
+import { Button, Tab, Tabs } from "react-bootstrap";
 import LevelEditor from "@renderer/pages/LevelEditor";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import StatesMachineEditor from "@renderer/components/StatesMachineEditor/StatesMachineEditor";
@@ -12,11 +12,8 @@ import { useEffect, useState } from "react";
 import { IStateFile } from "@renderer/engine/FSM/IStateFile";
 import LGM3DEditor, { EditorComponentStatesType, Mode } from "@renderer/editor/LGM3DEditor";
 
-
-
 const Editor = function () {
 
-    
     const [eMode, setMode] = useState(1);
     const [activeTab, setActiveTab] = useState(1);
     const [game, setGame] = useState<any>(null);
@@ -29,14 +26,14 @@ const Editor = function () {
         message: '',
         onCloseCallback: null,
     });
-    
+
     const [showStartupModal, setShowStartupModal] = useState(false);
     const [showLoadingModal, setShowLoadingModal] = useState(true);
     const [gameObjects, setGameObjects] = useState(null);
     const [fsm, setFSM] = useState(null);
     const [stateFiles, setStateFiles] = useState(null);
 
-    const states : EditorComponentStatesType = {
+    const states: EditorComponentStatesType = {
         setMode: setMode,
         setActiveTab: setActiveTab,
         setAlert: setAlert,
@@ -46,22 +43,22 @@ const Editor = function () {
         setFSM: setFSM,
         setStateFiles: setStateFiles,
         setInitStateFile: setInitStateFile,
-        setObjetJeu: setObjetJeu,
+        setSelectedGO: setObjetJeu,
         setGame: setGame
     }
-    
+
     // Initialisation de l'éditeur
     new LGM3DEditor(states);
-    
-    useEffect(()=>{
-    },[]);
-    
-    
-    
-    
-    
-    
-    
+
+    useEffect(() => {
+    }, []);
+
+
+
+
+
+
+
     const showDebugInspector = () => {
         Renderer.getInstance().scene.debugLayer.show();
     }
@@ -269,79 +266,61 @@ const Editor = function () {
     //     return this._gizmoManager;
     // }
 
-    const setTransformMode = (transformMode: string) => {
-
-        const gizmoManager = Renderer.getInstance().gizmoManager;
-        gizmoManager.positionGizmoEnabled = false;
-        gizmoManager.rotationGizmoEnabled = false;
-        gizmoManager.scaleGizmoEnabled = false;
-        gizmoManager.boundingBoxGizmoEnabled = false;
-
-        switch (transformMode) {
-            case "TRANSLATE":
-                gizmoManager.positionGizmoEnabled = true;
-                break;
-            case "ROTATE":
-                gizmoManager.rotationGizmoEnabled = true;
-                gizmoManager.gizmos.rotationGizmo.updateGizmoRotationToMatchAttachedMesh = false;
-                break;
-            case "SCALE":
-                gizmoManager.scaleGizmoEnabled = true;
-                break;
-            case "BOUND_BOX":
-                gizmoManager.boundingBoxGizmoEnabled = true;
-                break;
-        }
+    //     private _selectedGameObject: GameObject | null = null;
+    //     get selectedGameObject(): GameObject | null {
+    //     return this._selectedGameObject;
+    // }
 
 
+
+    const handleAddObject = () => {
+        alert("Utiliser plutôt le bouton représentant un cube avec un +");
+        this.setState({ showAddObjectModal: true });
     }
-    
-//     private _selectedGameObject: GameObject | null = null;
-//     get selectedGameObject(): GameObject | null {
-//     return this._selectedGameObject;
-// }
 
 
+    return (
+        <>
+            <NavBarEditor />
+            <Tabs activeKey={activeTab} onSelect={handleTabChange} >
+                <Tab eventKey={1} title={<span><FontAwesomeIcon icon="ghost" /> Editeur de niveau</span>}>
+                    <LevelEditor objJeu={objetJeu} gameobjectslist={gameObjects} showgameobjectstreemodal={activeTab == 1} />
+                </Tab>
+                <Tab eventKey={2} title={<span><FontAwesomeIcon icon="diagram-project" />
+                    Automates Fini</span>}>
+                    {/* {this.state.activeTab == 2 ? <StatesMachineEditor statefiles={this.state.stateFiles} fsm={this.state.fsm}/> : null} */}
+                    <StatesMachineEditor statefiles={stateFiles} fsm={fsm} />
+                </Tab>
+                <Tab eventKey={3} title={<span><FontAwesomeIcon icon="file-pen" />
+                    Editeur d'état</span>}>
+                    {/* le useEffect sera rappelé */}
+                    <StateEditor statefiles={stateFiles} initStateFile={initStateFile} resizeWorkspace={activeTab == Mode.StatesEditor} />
+                </Tab>
+            </Tabs>
+            {/* <div className="mdiRoot">
+                <DockDesk>
+                    <DockableWindowPanel className="panel" id="hierarchy" title="Hierarchy" initialPlacement={{ mode: "dock", zone: "left" }}>
+                        <GameObjectsTreeModal gameobjectslist={gameObjects} show={false} />
+                    </DockableWindowPanel>
+                    <DockableWindowPanel id="levelEditor" title="Editeur de niveau" initialPlacement={{ mode: "dock", zone: "center" }}>
+                        TEST
+                    </DockableWindowPanel>
+                    <DockableWindowPanel id="fsmEditor" title="Automates Fini" initialPlacement={{ mode: "float"}}>
+                    </DockableWindowPanel>
+                        <DockableWindowPanel id="stateEditor" title="Editeur d'état" initialPlacement={{ mode: "float"}}>
+                    </DockableWindowPanel>
+                    <DockableWindowPanel className="panel" id="BottomPanel" title="BottomPanel" initialPlacement={{ mode: "dock", zone: "bottom" }}>
+                        <ConsoleModal />
+                    </DockableWindowPanel>
+                </DockDesk>
+            </div> */}
 
-const handleAddObject = () => {
-    alert("Utiliser plutôt le bouton représentant un cube avec un +");
-    this.setState({ showAddObjectModal: true });
-}
+            <StartupModal show={showStartupModal} />
+            <LoadingEditorModal show={showLoadingModal} />
+            <EditorAlert show={alertState.show} message={alertState.message} onCloseCallback={alertState.onCloseCallback} />
 
-
-return (
-    <>
-        <EditorAlert show={alertState.show} message={alertState.message} onCloseCallback={alertState.onCloseCallback} />
-
-        <NavBarEditor />
-        {activeTab != Mode.StatesEditor && (
-            <>
-                {/* <CommandModal /> */}
-
-            </>
-        )}
-
-        <LoadingEditorModal show={showLoadingModal} />
-        <StartupModal show={showStartupModal} />
-
-        <Tabs activeKey={activeTab} onSelect={handleTabChange} >
-            <Tab eventKey={1} title={<span><FontAwesomeIcon icon="ghost" /> Editeur de niveau</span>}>
-                <LevelEditor objJeu={objetJeu} gameobjectslist={gameObjects} showgameobjectstreemodal={activeTab==1}/>
-            </Tab>
-            <Tab eventKey={2} title={<span><FontAwesomeIcon icon="diagram-project" />
-                Automates Fini</span>}>
-                {/* {this.state.activeTab == 2 ? <StatesMachineEditor statefiles={this.state.stateFiles} fsm={this.state.fsm}/> : null} */}
-                <StatesMachineEditor statefiles={stateFiles} fsm={fsm} />
-            </Tab>
-            <Tab eventKey={3} title={<span><FontAwesomeIcon icon="file-pen" />
-                Editeur d'état</span>}>
-                {/* le useEffect sera rappelé */}
-                <StateEditor statefiles={stateFiles} initStateFile={initStateFile} resizeWorkspace={activeTab == Mode.StatesEditor} />
-            </Tab>
-        </Tabs>
-
-    </>
-);
+        </>
+    );
 }
 export default Editor
 

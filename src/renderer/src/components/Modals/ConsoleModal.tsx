@@ -25,24 +25,24 @@ const ConsoleModal = (props)=> {
 
         return (
           <>
-            <Button variant="danger" className="console-btn me-2" onClick={() => setShow(true)} style={{ width: '32px' }}>
+            {/* <Button variant="danger" className="console-btn me-2" onClick={() => setShow(true)} style={{ width: '32px' }}>
                 <FontAwesomeIcon icon="terminal" />
                  {(erreurs.length > 0) && (erreurs.length)}
-            </Button>
-             <Offcanvas placement="bottom" scroll backdrop={false} onHide={() => setShow(false)} show={show} {...props}>
+            </Button> */}
+             {/* <Offcanvas placement="bottom" scroll backdrop={false} onHide={() => setShow(false)} show={show} {...props}>
                  <Offcanvas.Header closeButton>
                      <Offcanvas.Title>Sortie d'erreurs<FontAwesomeIcon icon="terminal" /></Offcanvas.Title>
                      <Button variant="secondary" onClick={()=>setErrors([])}>Vider la console</Button>
                  </Offcanvas.Header>
-                 <Offcanvas.Body>
+                 <Offcanvas.Body> */}
                  {erreurs.map((erreur, index) => (
                         <Alert variant='danger' key={index}>
                             <Alert.Heading>{erreur.message}</Alert.Heading>
                             <p>{erreur.sourceId} (line : {erreur.line})</p>
                          </Alert>
                  ))}
-                 </Offcanvas.Body>
-            </Offcanvas>
+                 {/* </Offcanvas.Body>
+            </Offcanvas> */}
           </>
         );
                  }

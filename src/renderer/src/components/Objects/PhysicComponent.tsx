@@ -38,6 +38,7 @@ const PhysicComponent = (gameObjectId) => {
   useEffect(() => {
     const go = LGM3DEditor.getInstance().selectedGameObject;
     if (go) {
+      return;
       rigidbodyRef.current = go.getComponent<Rigidbody>("Rigidbody");
       //setPhysicsEnabled(go.rigidbody != null);
       if (rigidbodyRef.current) {
@@ -113,7 +114,7 @@ const PhysicComponent = (gameObjectId) => {
           </DropdownButton>
           {rigidbodyRef.current.body?.getMotionType() && (
             <>
-            <Form.Group className="mb-3">
+            {/* <Form.Group className="mb-3">
               <Form.Label>Masse (kg)</Form.Label>
               <Form.Control
                 type="number"
@@ -136,7 +137,7 @@ const PhysicComponent = (gameObjectId) => {
                 onChange={handleSetFriction}
                 value={friction}
               />
-            </Form.Group>
+            </Form.Group> */}
   
             <Form.Check
               type="switch"

@@ -16,13 +16,11 @@ import * as Fr from 'blockly/msg/fr';
 import { Button, Col, Container, Dropdown, Offcanvas, Row } from 'react-bootstrap';
 import StateFilesTreeView from '@renderer/components/StateFilesTreeView';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import Editor from '@renderer/components/EditorOld';
 import { EditorAlertType } from '@renderer/components/EditorAlert';
 import FileManager from '@renderer/engine/FileManager';
 import { IStateFile } from '@renderer/engine/FSM/IStateFile';
 import StateEditorUtils from '@renderer/editor/StateEditorUtils';
 import EditorUtils from '@renderer/editor/EditorUtils';
-import { cp } from 'fs';
 import CustomPrompt from '@renderer/components/StatesEditor/CustomPrompt';
 import { pythonGenerator } from 'blockly/python';
 

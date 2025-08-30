@@ -74,14 +74,14 @@ const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
     return (
 
         <div>
-            <Button variant="secondary" onClick={toggleShow} className="me-2 properties-btn">
+            {/* <Button variant="secondary" onClick={toggleShow} className="me-2 properties-btn">
                 <FontAwesomeIcon icon="wrench" />
-            </Button>
-            <Offcanvas className="properties-bar" style={style} placement="end" scroll backdrop={false} show={show} onHide={handleClose} {...props}>
+            </Button> */}
+            {/* <Offcanvas className="properties-bar" style={style} placement="end" scroll backdrop={false} show={show} onHide={handleClose} {...props}>
                 <Offcanvas.Header closeButton>
                     <Offcanvas.Title>Propriétées <FontAwesomeIcon icon="wrench" /></Offcanvas.Title>
                 </Offcanvas.Header>
-                <Offcanvas.Body>
+                <Offcanvas.Body> */}
                     {gameObjectRef.current && (
 
                         
@@ -159,8 +159,8 @@ const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
                         </Accordion>
                     )}
                     <Button>Ajouter composant</Button>
-                </Offcanvas.Body>
-            </Offcanvas>
+                {/* </Offcanvas.Body>
+            </Offcanvas> */}
 
         </div>
     );

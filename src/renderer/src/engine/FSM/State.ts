@@ -3,7 +3,7 @@ import * as terser from 'terser';
 
 import { IStateFile } from './IStateFile';
 
-import { FSMObservable, FiniteStateMachine } from './FiniteStateMachine';
+import { FSMObservable, FiniteStateMachine } from './lgm3D.FiniteStateMachine';
 import { ProgrammableGameObject } from '../ProgrammableGameObject';
 
 // NE PAS RETIRER CES IMPORTS ! (pour l'interprétation du code js avec eval)

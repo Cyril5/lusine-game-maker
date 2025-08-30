@@ -6,13 +6,8 @@ import InputManager, { KeyCode } from "./InputManager";
 import State from "./FSM/State";
 import { Observable, Vector3 } from "babylonjs";
 import DemoTest from "./DemoTest/DemoTest";
-import Rigidbody from "./physics/lgm3D.Rigidbody";
-import BoxCollider from "./physics/lgm3D.BoxCollider";
-import Utils from "./lgm3D.Utils";
 
 export class Game {
-
-    //historyCommand : ICommand;
 
     onGameStarted: Observable<void>;
     onGameUpdate: Observable<void>;

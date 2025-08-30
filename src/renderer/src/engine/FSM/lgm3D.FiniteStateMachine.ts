@@ -46,9 +46,7 @@ export class FiniteStateMachine extends Component {
 
     constructor(gameObject) {
 
-        super();
-        this._gameObject = gameObject;
-
+        super(gameObject);
         this.onStateAdded = new EditorObservable();
         this.onStart = new FSMObservable();
         this.onUpdate = new FSMObservable();
@@ -169,7 +167,7 @@ export class FSMObservable<T> extends Observable<T> {
     constructor() {
         super();
         // nettoyer la liste des méthodes lorsque jeu s'arrête
-        Game.getInstance().onGameStoped.add(() => {
+        Game.getInstance().onGameStopped.add(() => {
             this.clear();
         });
     }

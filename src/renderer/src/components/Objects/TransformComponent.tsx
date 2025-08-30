@@ -47,13 +47,13 @@ const TransformComponent = (gameObjectId) => {
 
 
     const handleSetPosition = (x: number | null = null, y: number | null = null, z: number | null = null) => {
-        const pos = gameObjectRef.current.position;
-        gameObjectRef.current.position = new BABYLON.Vector3(
+        const pos = gameObjectRef.current.localPosition;
+        gameObjectRef.current.setLocalPosition(
             (x ? x : pos.x),
             (y ? y : pos.y),
             (z ? z : pos.z)
         );
-        setGOTransformPos(gameObjectRef.current.position);
+        setGOTransformPos(gameObjectRef.current.localPosition);
     }
 
     const handleSetRotation = (event) => {
@@ -83,11 +83,11 @@ const TransformComponent = (gameObjectId) => {
                 <p className="y-axis">Y <Form.Control type="number" value={goTransformPos.y} onChange={(e) => { handleSetPosition(null, e.target.value, null) }} /></p>
                 <p className="z-axis">Z <Form.Control type="number" value={goTransformPos.z} onChange={(e) => { handleSetPosition(null, null, e.target.value) }} /></p>
             </div>
-            <div className="transform-rotations">
+            {/* <div className="transform-rotations"> */}
                 {/* <p className="x-axis">Rot X</p> <Form.Control type="text" value={goTransformRot.x} onChange={(e) => { handleSetRotation(e.target.value, null, null) }} /> */}
-                <p className="y-axis">Rot Y</p> <Form.Control type="number" onChange={handleSetRotation} />
+                {/* <p className="y-axis">Rot Y</p> <Form.Control type="number" onChange={handleSetRotation} /> */}
                 {/* <p className="z-axis">Rot Z</p> <Form.Control type="text" value={goTransformRot.z} onChange={(e) => { handleSetRotation(null, null, e.target.value) }} /> */}
-            </div>
+            {/* </div> */}
         </>
     )
 }

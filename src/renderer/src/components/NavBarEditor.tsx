@@ -50,6 +50,9 @@ const NavBarEditor = (props: any)=> {
             {/* <Button variant="danger" onClick={editor.stopGame}> <FontAwesomeIcon icon="stop" /> Stop</Button> */}
             {/* <Button variant="warning" disabled> <FontAwesomeIcon icon="reply" /> Restart</Button> */}
 
+            <Button variant='secondary' onClick={()=>editor.undo()} disabled={gameIsRunning}><FontAwesomeIcon icon="undo"/>  Annuler</Button>
+            <Button variant='secondary' onClick={()=>editor.redo()} disabled={gameIsRunning}><FontAwesomeIcon icon="redo"/>  Refaire</Button>
+
             <DropdownButton id="dropdown-basic-button" variant='secondary' title={<span><FontAwesomeIcon icon="gear" /> Options</span>}>
               <Dropdown.Item href="#">Physique</Dropdown.Item>
               <Dropdown.Item onClick={()=>editor.showDebugInspector()}>Show Debug Inspector</Dropdown.Item>

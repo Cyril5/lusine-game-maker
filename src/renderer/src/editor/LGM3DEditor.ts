@@ -1,18 +1,23 @@
 import React from "react";
+import { setGameObjects } from "./EditorStore";
 import EditorCameraManager from "./EditorCameraManager";
 import { Renderer } from "@renderer/engine/Renderer";
 import { GameObject } from "@renderer/engine/GameObject";
 import EditorUtils from "./EditorUtils";
 import GameLoader from "./GameLoader";
 import { EditorAlertType } from "@renderer/components/EditorAlert";
-import { Model3D } from "@renderer/engine/Model3D";
+import { Model3D } from "@renderer/engine/lgm3D.Model3D";
 import BoxCollider from "@renderer/engine/physics/lgm3D.BoxCollider";
 import ProjectManager from "./ProjectManager";
 import { ProgrammableGameObject } from "@renderer/engine/ProgrammableGameObject";
 import { Game } from "@renderer/engine/Game";
 import OriginAxis from "@renderer/editor/OriginAxis";
 import { GridMaterial } from "@babylonjs/materials/grid";
-import defaultSkyBoxTexture from  '@renderer/engine/sanGiuseppeBridge.env?url';
+import defaultSkyBoxTexture from '@renderer/engine/sanGiuseppeBridge.env?url';
+import { snapshotTransform, TransformSnapshot } from "./snapshots/TransformSnapshot";
+import { MoveGOTransformCommand } from "./commands/MoveGOTransformCommand";
+import { commands } from "./CommandsInvoker";
+import Utils from "@renderer/engine/lgm3D.Utils";
 
 export enum Mode {
     LevelEditor = 1,
@@ -24,12 +29,12 @@ export enum Mode {
 type SetterStateEditorType<T> = React.Dispatch<React.SetStateAction<T>>;
 
 export type EditorComponentStatesType = {
-
+    // Use states composant React
     setMode: SetterStateEditorType<number>;
     setActiveTab: SetterStateEditorType<number>;
     setGame: SetterStateEditorType<any>;
     setShowAddObjectModal: SetterStateEditorType<boolean>;
-    setObjetJeu: SetterStateEditorType<any>;
+    setSelectedGO: SetterStateEditorType<any>;
     setInitStateFile: SetterStateEditorType<any>;
     setAlert: SetterStateEditorType<{
         show: false,
@@ -40,7 +45,6 @@ export type EditorComponentStatesType = {
 
     setShowStartupModal: SetterStateEditorType<boolean>;
     setShowLoadingModal: SetterStateEditorType<boolean>;
-    setGameObjects: SetterStateEditorType<any>;
     setFSM: SetterStateEditorType<any>;
     setStateFiles: SetterStateEditorType<any>;
 
@@ -67,10 +71,24 @@ export type EditorComponentStatesType = {
 
 }
 
+export class LGM3D_COMMANDS {
+    parentGOToOther(sourceId : number, destinationID : number) {
+        GameObject.getById(sourceId)?.setParent(GameObject.getById(destinationID));
+    }
+}
+
 
 export default class LGM3DEditor {
 
+
     private static _instance: LGM3DEditor;
+    private _gizmoObservers: Array<{ remove(): void }> = [];
+    private _pendingBefore: TransformSnapshot | null = null;
+    private _snapshotSpace: "world" | "local" = "world"; // adapte selon ton UI
+
+    get gameObjects(): any {
+        return GameObject.gameObjects;
+    }
 
     public static getInstance(): LGM3DEditor {
         return this._instance;
@@ -82,9 +100,9 @@ export default class LGM3DEditor {
 
     eMode: Mode = Mode.LevelEditor;
 
-    private _selectedGameObject: GameObject | null = null;
+    private _selectedGO: GameObject | null = null;
     get selectedGameObject(): GameObject | null {
-        return this._selectedGameObject;
+        return this._selectedGO;
     }
 
     private _editorCameraManager!: EditorCameraManager;
@@ -94,21 +112,26 @@ export default class LGM3DEditor {
         if (!LGM3DEditor._instance)
             LGM3DEditor._instance = this;
 
+        // =====================================================
+        // Permet d'executer des commandes (ne pas activer en prod)
+        window["LGM3DGOS"] = GameObject;
+        window["LGM3D_COMANDS"] = new LGM3D_COMMANDS;
+        //======================================================
+
         this.states!.setMode = editorStates.setMode;
         this.states!.setActiveTab = editorStates.setActiveTab;
         this.states!.setShowLoadingModal = editorStates.setShowLoadingModal;
         this.states!.setShowStartupModal = editorStates.setShowStartupModal;
-        this.states!.setGameObjects = editorStates.setGameObjects;
-        this.states!.setAlert =editorStates.setAlert;
+        this.states!.setAlert = editorStates.setAlert;
         this.states!.setStateFiles = editorStates.setStateFiles;
         this.states!.setFSM = editorStates.setFSM;
         this.states!.setInitStateFile = editorStates.setInitStateFile;
-        this.states!.setObjetJeu = editorStates.setObjetJeu;
+        this.states!.setSelectedGO = editorStates.setSelectedGO;
 
         Renderer.isReadyObservable.addOnce(() => {
 
             console.log("engine ready");
-        
+
             this.states.setShowStartupModal(true);
             this.states.setShowLoadingModal(false);
 
@@ -116,6 +139,18 @@ export default class LGM3DEditor {
         });
 
     }
+
+    undo(): void {
+        commands.undo();
+    }
+
+    get canUndo(): boolean { return commands.canUndo; }
+    get canRedo() { return commands.canRedo };
+
+    redo(): void {
+        commands.redo();
+    }
+
 
     // Supprimer l'objet selectionné de la scene
     deleteSelection = (): void => {
@@ -201,7 +236,7 @@ export default class LGM3DEditor {
     addBoxCollider() {
         const scene = this._renderer!.scene;
         const boxCollider = new GameObject("BoxCollider", scene);
-        boxCollider.addComponent(new BoxCollider(boxCollider), "BoxCollider");
+        boxCollider.addComponent(Utils.BX_COLLIDER_COMPONENT_TYPE, new BoxCollider(boxCollider));
         this.updateObjectsTreeView();
     }
 
@@ -246,43 +281,50 @@ export default class LGM3DEditor {
     }
 
     updateObjectsTreeView = () => {
-        // Création des noeuds pour chaques gameObject
-        const arr: GameObject[] = [];
-        const selectedId = this.selectedGameObject?.Id;
-        for (const [id, gameObject] of GameObject.gameObjects) {
+        // Dossier Racine (visible), non déplaçable
+        const arr: any[] = [{
+            id: "ROOT",
+            parent: 0,
+            droppable: true,
+            text: "Racine",
+            data: { type: "folder", locked: true }
+        }];
 
-            const parent = gameObject.transform.parent?.metadata.gameObjectId | 0;
-            //console.log(selectedId);
+        const selectedId = this.selectedGameObject?.Id;
+
+        // Itère les GameObjects du moteur
+        for (const [id, gameObject] of GameObject.gameObjects) {
+            const parentId = gameObject.parent ? gameObject.parent.Id : "ROOT"; // <- important
+
             arr.push({
-                "id": id,
-                "selected": selectedId == id,
-                "droppable": true,
-                "parent": parent,
-                "text": gameObject.name + " (ID : " + id + ")",
-                "data": {
-                    "type": gameObject.metadata.type,
-                    "chidrenCount": gameObject.transform.getChildren().length,
-                    "instancesCount": GameObject.getInstancesOfType(gameObject)!.length,
+                id,                         // number ou string ok
+                selected: selectedId === id,
+                droppable: true,            // un GO peut contenir des GOs → expander visible
+                parent: parentId,
+                text: `${gameObject.name} (ID : ${id})`,
+                data: {
+                    type: "GameObject",
+                    childrenCount: gameObject.transform.getChildren().length,
+                    instancesCount: GameObject.getInstancesOfType(gameObject)?.length ?? 0,
                 }
             });
         }
-        this.states.setGameObjects(arr);
-
+        setGameObjects(arr); // → pousse dans le store
     }
 
     selectGameObject = (id: number) => {
         const go = GameObject.gameObjects.get(id);
-    
+
         if (!go) {
             console.error(`GameObject Id : ${id} non trouvé`);
             return;
         }
-    
-        this._selectedGameObject = go;
-        this.updateObjetJeu(this._selectedGameObject as GameObject);
-    
-        this._renderer!.camera.target.copyFrom(this._selectedGameObject.position);
-    
+
+        this._selectedGO?.onLocalTransformChanged.removeCallback(this._onLocalTransformGameObjectSelectedChanged);
+        this._selectedGO = go;
+        this.selectedGameObject?.onLocalTransformChanged.add(this._onLocalTransformGameObjectSelectedChanged);
+        this.selectedGameObject?.onWorldTransformChanged.add(this._onWorldTransformGameObjectSelectedChanged);
+        this.updateObjetJeu(this._selectedGO as GameObject);
         this.updateObjectsTreeView();
     }
 
@@ -291,63 +333,138 @@ export default class LGM3DEditor {
         return GameObject.gameObjects.get(id);
     }
 
-    setTransformMode(transformMode: string) {
+    private _clearGizmoObservers() {
+        for (const o of this._gizmoObservers) o.remove();
+        this._gizmoObservers.length = 0;
+    }
 
+    private _wireAxis(axis: any, axisName: string) {
+        // start
+        const startObs = axis.dragBehavior.onDragStartObservable.add(() => {
+            if (!this._selectedGO) return;
+            const go = this._selectedGO!;
+            this._pendingBefore = {
+                space: this._snapshotSpace,
+                position: go.worldPosition.clone(),             
+                rotation: go.worldRotationQuaternion.clone(),   
+                scaling: go.scale.clone(),               
+            };
+        });
+        // end
+        const endObs = axis.dragBehavior.onDragEndObservable.add(() => {
+            if (!this._selectedGO || !this._pendingBefore) return;
+            // au dragEnd :
+            const after = snapshotTransform(this._selectedGO, this._snapshotSpace);
+            // position
+            const samePos = BABYLON.Vector3.DistanceSquared(after.position, this._pendingBefore.position) <= 1e-8;
+            // rotation : q et -q représentent la même rotation → comparer via dot
+            const sameRot = Math.abs(BABYLON.Quaternion.Dot(after.rotation, this._pendingBefore.rotation)) > 1 - 1e-5;
+            // scale
+            const sameScl = BABYLON.Vector3.DistanceSquared(after.scaling, this._pendingBefore.scaling) <= 1e-8;
+
+            const changed = !(samePos && sameRot && sameScl);
+            console.log({ changed, before: this._pendingBefore, after });
+
+            if (changed) {
+                commands.executeCommand(
+                    new MoveGOTransformCommand(this._selectedGO, this._pendingBefore, after)
+                );
+            }
+            this._pendingBefore = null;
+            // console.debug(`[GIZMO] end ${axisName}`);
+        });
+
+        // Collecte les removers pour éviter les doublons à chaque setTransformGizmoMode
+        this._gizmoObservers.push({
+            remove: () => {
+                axis.dragBehavior.onDragStartObservable.remove(startObs);
+                axis.dragBehavior.onDragEndObservable.remove(endObs);
+            }
+        });
+    }
+
+    setTransformGizmoMode(
+        transformMode: "TRANSLATE" | "ROTATE" | "SCALE" | "BOUND_BOX"
+    ) {
         const gizmoManager = this._renderer!.gizmoManager;
+
+        // 1) Désactive tout + nettoie les abonnements précédents
         gizmoManager.positionGizmoEnabled = false;
         gizmoManager.rotationGizmoEnabled = false;
         gizmoManager.scaleGizmoEnabled = false;
         gizmoManager.boundingBoxGizmoEnabled = false;
+        this._clearGizmoObservers();
 
+        // 2) Active le mode demandé et branche axes + drag start/end
         switch (transformMode) {
-            case "TRANSLATE":
+            case "TRANSLATE": {
                 gizmoManager.positionGizmoEnabled = true;
+                const pg = gizmoManager.gizmos.positionGizmo!;
+                [pg.xGizmo, pg.yGizmo, pg.zGizmo].forEach((ax, i) =>
+                    this._wireAxis(ax, `pos-${"xyz"[i]}`)
+                );
                 break;
-            case "ROTATE":
+            }
+            case "ROTATE": {
                 gizmoManager.rotationGizmoEnabled = true;
+                const rg = gizmoManager.gizmos.rotationGizmo!;
+                // utile pour rester en repère monde si besoin
                 gizmoManager.gizmos.rotationGizmo.updateGizmoRotationToMatchAttachedMesh = false;
+                [rg.xGizmo, rg.yGizmo, rg.zGizmo].forEach((ax, i) =>
+                    this._wireAxis(ax, `rot-${"xyz"[i]}`)
+                );
                 break;
-            case "SCALE":
+            }
+            case "SCALE": {
                 gizmoManager.scaleGizmoEnabled = true;
+                const sg = gizmoManager.gizmos.scaleGizmo!;
+                [sg.xGizmo, sg.yGizmo, sg.zGizmo].forEach((ax, i) =>
+                    this._wireAxis(ax, `scl-${"xyz"[i]}`)
+                );
                 break;
-            case "BOUND_BOX":
+            }
+            case "BOUND_BOX": {
                 gizmoManager.boundingBoxGizmoEnabled = true;
+                const bg = gizmoManager.gizmos.boundingBoxGizmo!;
+                // Le boundingBoxGizmo a aussi un dragBehavior (uniform scale/resize)
+                this._wireAxis(bg, "bbox");
                 break;
+            }
         }
     }
-
     updateObjetJeu = (objetJeu: GameObject) => {
 
         if (!objetJeu) {
-            this._renderer.gizmoManager.attachToNode(null);
-            this._renderer.gizmoManager.positionGizmoEnabled = false;
-            // this.setState({
-            //     objetJeu: null,
-            // });
-
-            this.states.setObjetJeu(null);
+            this._renderer!.gizmoManager.attachToNode(null);
+            this._renderer!.gizmoManager.positionGizmoEnabled = false;
+            this.states.setSelectedGO(null);
             return;
         }
-    
+
         let gofsm = null;
         if (objetJeu.finiteStateMachines) {
             if (objetJeu.finiteStateMachines.length > 0) {
                 gofsm = objetJeu.finiteStateMachines[0];
             }
         }
-    
-        this.states.setObjetJeu(objetJeu);
+
+        this.states.setSelectedGO(objetJeu);
         this.states.setFSM(gofsm);
-    
-        this._renderer.gizmoManager.positionGizmoEnabled = true;
-        this._renderer.gizmoManager.attachToNode(objetJeu.transform);
+        this._renderer!.gizmoManager.positionGizmoEnabled = true;
+        this._renderer!.gizmoManager.attachToNode(objetJeu.transform);
     };
-    
-    
+
+    private _onLocalTransformGameObjectSelectedChanged(go: GameObject) {
+        console.log("selected object id :" + go.Id + 'local pos changed');
+    }
+    private _onWorldTransformGameObjectSelectedChanged(go: GameObject) {
+        console.log("selected object id :" + go.Id + 'world pos changed');
+    }
+
     playGame = () => {
         Game.getInstance().start();
     }
-    
+
     stopGame = () => {
         Game.getInstance().stop();
     }
@@ -361,8 +478,6 @@ export default class LGM3DEditor {
         //window.CANNON = cannon;
 
         const scene = this._renderer.scene;
-
-        scene.debugLayer.show();
 
         const camRenderer = this._renderer.camera
         camRenderer.fov = 0.75;
@@ -381,7 +496,7 @@ export default class LGM3DEditor {
         scene.physicsEnabled = false;
 
         const ground = BABYLON.MeshBuilder.CreateGround("_EDITOR_GRID_", { width: 1000, height: 1000 }, scene);
-        
+
         ground.doNotSerialize = true;
         if (!scene.getEngine().isWebGPU) {
             //GRID
@@ -405,9 +520,10 @@ export default class LGM3DEditor {
 
         const axis = new OriginAxis(scene);
         BABYLON.Tags.AddTagsTo({ ground }, EditorUtils.EDITOR_TAG);
+        this.setTransformGizmoMode('TRANSLATE'); //maj du gizmo et de ses events
         return;
 
     }
-    
+
 
 }

@@ -1,4 +1,4 @@
-import { FiniteStateMachine } from "./FSM/FiniteStateMachine";
+import { FiniteStateMachine } from "./FSM/lgm3D.FiniteStateMachine";
 import { Game } from "./Game";
 import { GameObject } from "./GameObject";
 import RotateTowardsBehaviour from "./behaviours/lgm3D.RotateTowardsBehaviour";
@@ -38,30 +38,11 @@ export class ProgrammableGameObject extends GameObject {
         this.type = ProgrammableGameObject.TYPE_NAME;
         this._fsms.push(new FiniteStateMachine(this));
         this._scene = scene;
-        this._rigidbody = new Rigidbody(this as GameObject);
+        this._rigidbody = new Rigidbody(this as GameObject, this._scene);
         this.addComponent(Utils.RB_COMPONENT_TYPE, this._rigidbody);
 
         //Ajout du comportement RotateTowardsBehaviour
-        this.rotateTowardsBehaviour = this.addComponent(new RotateTowardsBehaviour(), "LGM3D_RotateTowardsBehaviour");
-    }
-
-    get position(): BABYLON.Vector3 {
-        return super.position;
-    }
-    set position(newPosition: BABYLON.Vector3) {
-        this.transform.position = newPosition;
-
-        if (Game.getInstance().isRunning) {
-            if (!this._rigidbody) {
-                return;
-            }
-            this._rigidbody?.body?.setTargetTransform(this.transform.absolutePosition, this.transform.rotationQuaternion);
-        }
-    }
-
-    setEulerRotation(x: number, y: number, z: number) {
-        this.transform.rotationQuaternion = BABYLON.Quaternion.FromEulerAngles(x, y, z);
-        this._rigidbody?.body?.setTargetTransform(this.transform.absolutePosition, this.transform.rotationQuaternion);
+        this.rotateTowardsBehaviour = this.addComponent("LGM3D_RotateTowardsBehaviour", new RotateTowardsBehaviour());
     }
 
     move(axis: BABYLON.Vector3, speed: number, space: BABYLON.Space): void {

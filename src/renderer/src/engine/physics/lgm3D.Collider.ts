@@ -1,6 +1,6 @@
 import { Game } from "../Game";
 import { GameObject } from "../GameObject";
-import { FiniteStateMachine } from "../FSM/FiniteStateMachine";
+import { FiniteStateMachine } from "../FSM/lgm3D.FiniteStateMachine";
 import { ProgrammableGameObject } from "../ProgrammableGameObject";
 import Component from "../lgm3D.Component";
 import { Renderer } from "../Renderer";

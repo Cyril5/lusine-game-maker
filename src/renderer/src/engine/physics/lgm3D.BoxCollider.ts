@@ -1,6 +1,6 @@
 import { Game } from "../Game";
 import { GameObject } from "../GameObject";
-import { FiniteStateMachine } from "../FSM/FiniteStateMachine";
+import { FiniteStateMachine } from "../FSM/lgm3D.FiniteStateMachine";
 import { ProgrammableGameObject } from "../ProgrammableGameObject";
 import Collider from "./lgm3D.Collider";
 import { ColliderMetaData, GameObjectComponentMetaData } from "../structs/ComponentsMetaData";
@@ -78,12 +78,11 @@ export default class BoxCollider extends Collider {
 
         if (!BoxCollider.COLLIDER_MAT) {
             BoxCollider.COLLIDER_MAT = new BABYLON.StandardMaterial("_EDITOR_COLLIDER_MAT_", this._scene);
-            //BoxCollider.COLLIDER_MAT.wireframe = true;
+            BoxCollider.COLLIDER_MAT.wireframe = true;
             BoxCollider.COLLIDER_MAT.doNotSerialize = true;
         }
         // Appliquer le matériau au cube
         this._boxMesh.material = BoxCollider.COLLIDER_MAT;
-        //this._boxMesh.renderOutline = true;
         this._boxMesh.renderOverlay = true;
         this._boxMesh.outlineWidth = 0.5;
         this._boxMesh.overlayColor = BABYLON.Color3.Green();

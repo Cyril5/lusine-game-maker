@@ -162,6 +162,7 @@ export class Rigidbody extends Component {
   }
 
   public setGravity(enabled: boolean) {
+    // TODO : A Améliorer 
     this.body.disablePreStep = !enabled;
   }
 

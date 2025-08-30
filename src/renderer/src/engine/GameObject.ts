@@ -1,8 +1,6 @@
 import Component from "./lgm3D.Component";
 import { Observable } from "babylonjs";
-import { BoxColliderTest } from "./DemoTest/BoxColliderTest";
 import Utils from "./lgm3D.Utils";
-
 
 export class GameObject {
 
@@ -73,13 +71,17 @@ export class GameObject {
         this._transform.position = value;
         console.warn('gameObject.position = value : Vector3 est obsolète. Utilisez plutôt setLocalPosition');
     }
-    /**
-     * Obsolète
-    */
-    get position() {
-        console.warn('gameObject.position est obsolète. Utilisez plutôt localPosition');
-        return this._transform.position;
+
+    get worldPosition() {
+        return this._transform.getAbsolutePosition();
     }
+    setWorldPosition(v : BABYLON.Vector3) {
+        if(!Utils.vector3Equals(this._transform.absolutePosition, v)) {
+            this._transform.setAbsolutePosition(v);
+            this.onWorldTransformChanged.notifyObservers(this);
+        }
+    }
+
     get localPosition() {
         return this._transform.position;
     }
@@ -111,6 +113,8 @@ export class GameObject {
         this._transform.rotation.copyFrom(v);
         this.onLocalTransformChanged.notifyObservers(this);
     }
+
+    get worldRotationQuaternion() {return this._transform.absoluteRotationQuaternion}
 
     // --- Rotation (Quaternion local) ---
     get rotationQuaternion() { return this._transform.rotationQuaternion; }
@@ -510,6 +514,7 @@ export class GameObject {
     public save(): any {
         this.metadata.type = this.type;
         this.metadata.gameObjectId = this.Id;
+        this.metadata.parentId = (this.parent ? this.parent.Id : null);
         this.metadata["components"] = [];
         this._components.forEach((component, key) => {
             this.metadata.components.push(component.toJson());
