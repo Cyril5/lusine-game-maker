@@ -4,114 +4,150 @@ import { GameObject } from "../GameObject";
 import BoxCollider from "../physics/lgm3D.BoxCollider";
 import Utils from "../lgm3D.Utils";
 import { Rigidbody } from "../physics/lgm3D.Rigidbody";
+import { Game } from "../Game";
+
+function clamp01(v: number) { return v < 0 ? 0 : v > 1 ? 1 : v; }
 
 export class Tank extends GameObject {
-  // visuels
-  chassis: BABYLON.Mesh;
-  turret: BABYLON.Mesh;
-  barrel: BABYLON.Mesh;
-  firePoint: BABYLON.TransformNode;
-
-  // components
   rb: Rigidbody;
   isPlayer: boolean;
   input?: InputManager;
 
-  // params
-  private turnSpeed = 2.5;  // rad/s
-  private maxSpeed  = 7;    // m/s
-  private cooldown  = 0.25; // s
-  private cdLeft    = 0;
+  private accelFwd = 18;
+  private accelRev = 10;
+  private brakeAccel = 28;
+  private drag = 1.5;
+  private maxSpeedFwd = 14;
+  private maxSpeedRev = 6;
 
-  constructor(
-    scene: BABYLON.Scene,
-    isPlayer: boolean,
-    startPos: BABYLON.Vector3
-  ) {
-    super(isPlayer ? "TankPlayer" : "TankEnemy", scene);
+  private steerMax = 2.6;
+  private steerRefSpeed = 8;
+  private minSpeedToSteer = 0.35;
+
+  private cam?: BABYLON.UniversalCamera;
+  private camDistance = 2;
+  private camHeight   = 0.5;
+  private camLookAhead = 2.5;
+  private camLerp      = 0.12;
+
+  constructor(scene: BABYLON.Scene, isPlayer: boolean, startPos: BABYLON.Vector3) {
+    super(isPlayer ? "CarPlayer" : "CarEnemy", scene);
     this.isPlayer = isPlayer;
-
-    // --- root position (spawn un peu en l'air)
     this.transform.position.copyFrom(startPos);
     if (this.transform.position.y < 5) this.transform.position.y = 5;
 
-    // --- visuels
-    const mat = new BABYLON.StandardMaterial("tankMat", scene);
-    mat.diffuseColor = isPlayer ? BABYLON.Color3.FromHexString("#4aa3ff") : BABYLON.Color3.FromHexString("#66bb66");
+    const bodyMesh = GameObject.getById(210);
+    bodyMesh.setParent(this);
+    bodyMesh.setLocalPosition(0,0,0);
 
-    this.chassis = BABYLON.MeshBuilder.CreateBox("TankChassis", { width: 1.4, height: 0.6, depth: 2.0 }, scene);
-    this.chassis.position.y = 0.3;
-    this.chassis.material = mat;
-    this.chassis.parent = this.transform;
+    this.rb = this.addComponent(Utils.RB_COMPONENT_TYPE,
+      new Rigidbody(this, scene, BABYLON.PhysicsMotionType.DYNAMIC, 12));
 
-    this.turret = BABYLON.MeshBuilder.CreateCylinder("Turret", { diameter: 0.9, height: 0.2 }, scene);
-    this.turret.rotationQuaternion = BABYLON.Quaternion.FromEulerAngles(Math.PI / 2, 0, 0);
-    this.turret.position.set(0, 0.55, 0);
-    this.turret.material = mat;
-    this.turret.parent = this.transform;
-
-    this.barrel = BABYLON.MeshBuilder.CreateBox("Barrel", { width: 0.15, height: 0.15, depth: 1.0 }, scene);
-    this.barrel.position.set(0, 0.65, 0.9);
-    this.barrel.material = mat;
-    this.barrel.parent = this.transform;
-
-    this.firePoint = new BABYLON.TransformNode("FirePoint", scene);
-    this.firePoint.parent = this.transform;
-    this.firePoint.position.set(0, 0.65, 1.2);
-
-    // --- Rigidbody sur le ROOT (container pour les shapes)
-    this.rb = this.addComponent(Utils.RB_COMPONENT_TYPE, new Rigidbody(this, scene, BABYLON.PhysicsMotionType.DYNAMIC, /*mass*/ 12));
-
-    // --- Enfant "Collider" avec BoxCollider (s’enregistre dans le container du RB)
     const colliderGO = new GameObject("Collider", scene);
-    colliderGO.setParent(this);
-    colliderGO.setLocalPosition(0, 0.3, 0); // centre local de la box
-    // taille de la hitbox : même que chassis
     colliderGO.addComponent(Utils.BX_COLLIDER_COMPONENT_TYPE, new BoxCollider(colliderGO));
+    colliderGO.setParent(this);
+    colliderGO.setLocalPosition(0, 0, 0);
+    colliderGO.setScale(new BABYLON.Vector3(0.54,0.52,1));
 
     if (this.isPlayer) {
       this.input = new InputManager();
+      this.cam = new BABYLON.UniversalCamera("CarCam",
+        this.transform.position.add(new BABYLON.Vector3(0, this.camHeight, -this.camDistance)),
+        scene
+      );
+      this.cam.minZ = 0.1;
+      this.cam.maxZ = 2000;
+      this.cam.fov = 1.0;
+      this.cam.inputs.clear();
+      this.cam.inertia = 0;
+      Game.getInstance().onGameStarted.add(()=>{
+        scene.activeCamera = this.cam!;
+      });
     }
+
+    try { (this.rb.body as any)?.setLinearDamping?.(0.05); } catch {}
+    try { (this.rb.body as any)?.setAngularDamping?.(0.35); } catch {}
   }
 
   update() {
-    // --- inputs
-    let turn = 0, thrust = 0, shoot = false;
+    const dt = this.transform.getScene().getEngine().getDeltaTime() * 0.001;
+
+    let turn = 0, thrust = 0;
     if (this.isPlayer && this.input) {
-      turn   = (this.input.isDown("d") ? 1 : 0) + (this.input.isDown("q") ? -1 : 0);                      // yaw
-      thrust = (this.input.isDown("w") || this.input.isDown("z") ? 1 : 0) + (this.input.isDown("s") ? -1 : 0); // avant/arrière
-      shoot  = this.input.isDown(" ") || this.input.isDown("enter");
+      turn   = (this.input.isDown("d") ? 1 : 0) + (this.input.isDown("q") ? -1 : 0);
+      thrust = (this.input.isDown("w") || this.input.isDown("z") ? 1 : 0) + (this.input.isDown("s") ? -1 : 0);
     }
 
-    // --- 1) rotation via angularVelocity (libre sur Y, bloqué sur X/Z ailleurs)
-    const ang = new BABYLON.Vector3();
-    this.rb.body.getAngularVelocityToRef(ang);
-    ang.y = turn * this.turnSpeed;
-    ang.x = 0; ang.z = 0;
-    this.rb.body.setAngularVelocity(ang);
+    if (thrust !== 0 || turn !== 0) (this.rb.body as any)?.wakeUp?.();
 
-    // --- 2) translation : avancer/reculer dans le forward du ROOT
-    // ne pas toucher à Y -> gravité
     const fwd = this.transform.getDirection(BABYLON.Vector3.Forward());
     fwd.y = 0; fwd.normalize();
 
     const lin = new BABYLON.Vector3();
     this.rb.body.getLinearVelocityToRef(lin);
-    lin.x = fwd.x * thrust * this.maxSpeed;
-    lin.z = fwd.z * thrust * this.maxSpeed;
+
+    const horiz = new BABYLON.Vector3(lin.x, 0, lin.z);
+    let speed = horiz.length();
+
+    let dirSign = 0;
+    if (speed > 1e-6) {
+      const vDir = horiz.scale(1 / speed);
+      dirSign = BABYLON.Vector3.Dot(vDir, fwd) >= 0 ? 1 : -1;
+    }
+
+    if (thrust > 0) {
+      if (dirSign >= 0) {
+        speed = Math.min(this.maxSpeedFwd, speed + this.accelFwd * dt);
+      } else {
+        speed -= this.brakeAccel * dt;
+        if (speed < 0) { speed = 0; dirSign = 0; }
+      }
+    } else if (thrust < 0) {
+      if (dirSign <= 0) {
+        speed = Math.min(this.maxSpeedRev, speed + this.accelRev * dt);
+      } else {
+        speed -= this.brakeAccel * dt;
+        if (speed < 0) { speed = 0; dirSign = 0; }
+      }
+    } else {
+      if (speed > 0) speed = Math.max(0, speed - this.drag * dt);
+    }
+
+    // >>> FIX : si bloqué, prend le signe de l’intention
+    if (speed > 0 && dirSign === 0 && thrust !== 0) {
+      dirSign = (thrust > 0) ? 1 : -1;
+    }
+
+    let moveDir: BABYLON.Vector3;
+    if (speed <= 1e-6) {
+      moveDir = fwd.clone();
+      dirSign = thrust < 0 ? -1 : 1;
+    } else {
+      moveDir = dirSign >= 0 ? fwd : fwd.scale(-1);
+    }
+
+    const targetHoriz = moveDir.scale(speed * (dirSign >= 0 ? 1 : -1));
+    lin.x = targetHoriz.x;
+    lin.z = targetHoriz.z;
     this.rb.body.setLinearVelocity(lin);
 
-    // --- 3) tir
-    // this.cdLeft -= dt;
-    // if (shoot && this.cdLeft <= 0) {
-    //   this.cdLeft = this.cooldown;
+    const ang = new BABYLON.Vector3();
+    this.rb.body.getAngularVelocityToRef(ang);
 
-    //   const origin = this.firePoint.getAbsolutePosition();
-    //   const dir = fwd.clone();
-    //   const speed = 20;
-    //   const vel = dir.scale(speed);
+    const steerFactor = clamp01((speed - this.minSpeedToSteer) / Math.max(0.0001, (this.steerRefSpeed - this.minSpeedToSteer)));
+    const canSteer = steerFactor > 0;
+    const steerDir = (dirSign >= 0) ? 1 : -1;
+    ang.y = canSteer ? (turn * this.steerMax * steerFactor * steerDir) : 0;
+    ang.x = 0; ang.z = 0;
+    this.rb.body.setAngularVelocity(ang);
 
-    //   projectiles.push(new Projectile(this.scene, plugin, origin, vel, this.rb.body));
-    // }
+    if (this.cam) {
+      const target = this.transform.getAbsolutePosition().add(fwd.scale(this.camLookAhead));
+      const localAnchor = new BABYLON.Vector3(0, this.camHeight, -this.camDistance);
+      const desiredPos = BABYLON.Vector3.TransformCoordinates(localAnchor, this.transform.getWorldMatrix());
+
+      this.cam.position = BABYLON.Vector3.Lerp(this.cam.position, desiredPos, this.camLerp);
+      this.cam.setTarget(BABYLON.Vector3.Lerp(this.cam.getTarget(), target, this.camLerp));
+    }
   }
 }

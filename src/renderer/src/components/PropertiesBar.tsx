@@ -113,10 +113,8 @@ const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
                                     <TransformComponent gameObjectId={id} />
                                 </Accordion.Body>
                             </Accordion.Item>
-
-                            {Array.from(gameObjectRef.current.getAllComponents()).map((component, index) => {
+                            {/* {Array.from(gameObjectRef.current.getAllComponents()).map((component, index) => {
                                 const InspectorComponent = (component as any).inspectorComponent;
-                                console.log(index);
                                 //TODO : voir si c'est plus performant d'utiliser l'id du component du gameObject au lieu de le passer dans la prop 
                                 if (InspectorComponent) {
                                     return<>
@@ -125,9 +123,8 @@ const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
                                     </Accordion.Item>
                                     </>
                                 }
-                            })}
+                            })} */}
 
-                            
                             {fsms && fsms.length > 0 && (
                             <Accordion.Item eventKey="2">
                                 <Accordion.Header>Automates Finis</Accordion.Header>

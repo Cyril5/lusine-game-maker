@@ -33,7 +33,7 @@ export default class DemoTest {
         ground.material = gmat;
         new BABYLON.PhysicsAggregate(ground, BABYLON.PhysicsShapeType.BOX, { mass: 0, friction: 0.9, restitution: 0 }, scene);
         this.tankA = new Tank(scene, true,  new BABYLON.Vector3(-6, 0, -6)); // joueur
-        this.tankB = new Tank(scene, false, new BABYLON.Vector3( 6, 0,  6)); // cible statique
+        //this.tankB = new Tank(scene, false, new BABYLON.Vector3( 6, 0,  6)); // cible statique
     }
 
     onGameUpdate() {

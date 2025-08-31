@@ -72,8 +72,11 @@ export type EditorComponentStatesType = {
 }
 
 export class LGM3D_COMMANDS {
-    parentGOToOther(sourceId : number, destinationID : number) {
+    parentGOToOther(sourceId: number, destinationID: number) {
         GameObject.getById(sourceId)?.setParent(GameObject.getById(destinationID));
+    }
+    getGoMetadata(goId) {
+        GameObject.getById(goId).metadata;
     }
 }
 
@@ -184,6 +187,9 @@ export default class LGM3DEditor {
     load = () => {
         console.log("ready load game");
         GameLoader.load(this._renderer!.scene);
+        Game.getInstance().onGameStopped.add(() => {
+            this._renderer?.scene.setActiveCameraByName("_RENDERER_CAMERA_");
+        });
     }
 
     save = () => {
@@ -345,9 +351,9 @@ export default class LGM3DEditor {
             const go = this._selectedGO!;
             this._pendingBefore = {
                 space: this._snapshotSpace,
-                position: go.worldPosition.clone(),             
-                rotation: go.worldRotationQuaternion.clone(),   
-                scaling: go.scale.clone(),               
+                position: go.worldPosition.clone(),
+                rotation: go.worldRotationQuaternion.clone(),
+                scaling: go.scale.clone(),
             };
         });
         // end

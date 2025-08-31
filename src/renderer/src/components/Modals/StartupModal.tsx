@@ -3,7 +3,7 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 
 import '../../assets/css/startup-modal.scss'; 
-import logo from '../../assets/logo.png';
+import logo from '../../assets/logo2025.png';
 import ProjectManager from '@renderer/editor/ProjectManager';
 import EditorUtils from '@renderer/editor/EditorUtils';
 

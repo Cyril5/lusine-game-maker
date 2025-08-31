@@ -9,13 +9,7 @@ export class ProgrammableGameObject extends GameObject {
 
     // Another constructor
     static createEmptyFromNodeData(node: BABYLON.Node) {
-        const pgo = new ProgrammableGameObject(node.name, node.getScene());
-        pgo.transform.dispose();
-        GameObject.gameObjects.delete(pgo.Id);
-        pgo._transform = node;
-        pgo.setUId(node.metadata.gameObjectId, false);
-        pgo.name = node.name;
-        return pgo
+        return new ProgrammableGameObject(node.name, node.getScene());
     }
 
     static readonly TYPE_NAME = "PROG_GO";
@@ -35,11 +29,15 @@ export class ProgrammableGameObject extends GameObject {
     constructor(name: string, scene: BABYLON.Scene) {
         super(name, scene);
         this._fsms = new Array<FiniteStateMachine>();
-        this.type = ProgrammableGameObject.TYPE_NAME;
         this._fsms.push(new FiniteStateMachine(this));
         this._scene = scene;
-        this._rigidbody = new Rigidbody(this as GameObject, this._scene);
-        this.addComponent(Utils.RB_COMPONENT_TYPE, this._rigidbody);
+        const rbFound = this.getComponent<Rigidbody>("Rigidbody");
+        if(!rbFound)
+            this._rigidbody = this.addComponent(Utils.RB_COMPONENT_TYPE, new Rigidbody(this, scene));
+        else
+            this._rigidbody = rbFound;
+        
+        console.log("Créer un objet programmable");
 
         //Ajout du comportement RotateTowardsBehaviour
         this.rotateTowardsBehaviour = this.addComponent("LGM3D_RotateTowardsBehaviour", new RotateTowardsBehaviour());

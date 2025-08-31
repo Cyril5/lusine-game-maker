@@ -56,6 +56,9 @@ export class GameObject {
     get metadata(): {} {
         return this._transform.metadata;
     }
+    set metadata(meta) {
+        this._transform.metadata = meta;
+    }
 
     set name(value) {
         this._transform.name = value;
@@ -136,7 +139,7 @@ export class GameObject {
     }
 
     set type(value) {
-        this.metadata.type = value;
+        this.metadata["type"] = value;
     }
     get type(): string {
         return this.metadata.type;
@@ -152,35 +155,20 @@ export class GameObject {
         return this._transform;
     }
 
-    static buildFromTransformNode(node: BABYLON.TransformNode) {
-
-        if (!node.getScene())
-            throw "No scene found";
-
-        const go = new GameObject(node.name, node.getScene());
-        GameObject._gameObjects.delete(go.Id);
-        go._transform.dispose(); //supprimer le transform crée par le gameObject avant de le remplacer
-        go._transform = node;
-        go.setUId(node.metadata.gameObjectId);
-        return go;
-    }
-
     constructor(name: string, scene: BABYLON.Scene, transformNode?: BABYLON.TransformNode) {
 
         this._transform = !transformNode ? new BABYLON.TransformNode(name, scene) : transformNode;
 
-        if (!transformNode)
-            this._transform.rotationQuaternion = BABYLON.Quaternion.Identity();
-        else
+        if (transformNode) {
             this._transform.rotationQuaternion = transformNode.rotationQuaternion;
-
-        this._transform.metadata = {};
+        }
+        else{
+            this._transform.metadata = {};
+            this._transform.rotationQuaternion = BABYLON.Quaternion.Identity();
+        }
 
         this._scene = scene;
-
         this._components = new Map<string, Component>();
-
-        //this._physicsRootMesh.setParent(this);
 
         // L'accès direct au renderer provoque une erreur
         //        this._transform = new TransformComponent(this, name, scene);
@@ -190,14 +178,15 @@ export class GameObject {
 
         if (!GameObject._gameObjects.has(this._transform.uniqueId)) {
             GameObject._gameObjects.set(this._transform.uniqueId, this);
+            console.log("Ajout de l'id "+this._transform.uniqueId);
             // this.onCreated.notifyObservers();
         } else {
             const newId = this.scene.getUniqueId();
             console.warn("L'objet ayant l'id :" + this._transform.uniqueId + " existe déjà. Nouvel id : " + newId);
+            if(!transformNode)
+                this.transform.metadata = { gameObjectId: this._transform.uniqueId, parentId: null }
             this.setUId(newId, false);
-            return;
         }
-        this.transform.metadata = { gameObjectId: this._transform.uniqueId, parentId: null }
     }
 
     private _onAfterWorldMatrixUpdate() {
@@ -402,7 +391,7 @@ export class GameObject {
 
     setUId(value: number, deleteOldId = true) {
         const oldId = this._transform.uniqueId;
-        this.metadata.gameObjectId = value;
+        this.metadata["gameObjectId"] = value;
         if (deleteOldId) {
             if (!GameObject._gameObjects.has(oldId)) {
                 console.error(`GameObject ID ${oldId} not found `);
@@ -413,7 +402,6 @@ export class GameObject {
         }
         this._transform.uniqueId = value;
         GameObject._gameObjects.set(this._transform.uniqueId, this);
-        //console.log(GameObject._gameObjects);
     }
 
     /**

@@ -1,9 +1,10 @@
-import { RigidbodyTest } from "./lgm3D.Rigidbody";
 import { Game } from "../Game";
 import { GameObject } from "../GameObject";
 import BoxCollider from "./lgm3D.BoxCollider";
+import { Rigidbody } from "./lgm3D.Rigidbody";
 
 export class ColliderSystem {
+
   private static collidersByGO = new Map<GameObject, Set<BoxCollider>>();
   private static dirtyGOs = new Set<GameObject>();
   private static _installed = false;
@@ -14,6 +15,7 @@ export class ColliderSystem {
   private static readonly EPS_ANG = (0.5 * Math.PI) / 180; // 0.5°
 
   // Caches
+  private static _lastParent = new Map<GameObject, BABYLON.Node | null>();
   private static _lastLocal = new Map<GameObject, {
     pos: BABYLON.Vector3, rot: BABYLON.Quaternion, scl: BABYLON.Vector3
   }>();
@@ -28,9 +30,11 @@ export class ColliderSystem {
     if (!this.collidersByGO.has(go)) {
       this.collidersByGO.set(go, new Set());
 
-      // Un seul handler : on écoute la MAJ de worldMatrix,
-      // puis on teste le DELTA *LOCAL* (pos/rot/scal).
       const tn = go.transform;
+
+      // NEW: mémoriser le parent courant
+      this._lastParent.set(go, tn.parent ?? null);
+
       tn.onAfterWorldMatrixUpdateObservable.add(() => {
         if (this._hasSignificantLocalDelta(go)) {
           this.markDirty(go);
@@ -45,7 +49,10 @@ export class ColliderSystem {
     const set = this.collidersByGO.get(c.gameObject);
     if (!set) return;
     set.delete(c);
-    if (set.size === 0) this.collidersByGO.delete(c.gameObject);
+    if (set.size === 0) {
+      this.collidersByGO.delete(c.gameObject);
+      this._lastParent.delete(c.gameObject); // NEW
+    }
   }
 
   static markDirty(go: GameObject) {
@@ -69,7 +76,26 @@ export class ColliderSystem {
     });
   }
 
+  static markDirtySubtree(root: GameObject) {
+    // Marque tous les colliders sous 'root' comme dirty
+    for (const go of this.collidersByGO.keys()) {
+      let cur: GameObject | undefined = go;
+      while (cur) {
+        if (cur === root) { this.markDirty(go); break; }
+        cur = cur.parent ?? undefined;
+      }
+    }
+  }
+
+
   private static _process(_scene: BABYLON.Scene) {
+
+    // En tête de _process(scene)
+    if (!_scene.getPhysicsEngine()) {
+      this._tickCooldowns();
+      return; // on attend que la physique soit activée
+    }
+
     if (this.dirtyGOs.size === 0) {
       this._tickCooldowns();
       return;
@@ -84,7 +110,7 @@ export class ColliderSystem {
     this.dirtyGOs.clear();
 
     // 2) regrouper par RB
-    const perRb = new Map<RigidbodyTest | undefined, BoxCollider[]>();
+    const perRb = new Map<Rigidbody | undefined, BoxCollider[]>();
     for (const c of dirtyCols) {
       const rb = c.findRigidbody();
       (perRb.get(rb) ?? perRb.set(rb, []).get(rb)!).push(c);
@@ -121,6 +147,15 @@ export class ColliderSystem {
   private static _hasSignificantLocalDelta(go: GameObject): boolean {
     const t = go.transform;
 
+    // NEW: détection d’un changement de parent
+    const parentNow = t.parent ?? null;
+    const parentLast = this._lastParent.get(go);
+    if (parentLast !== parentNow) {
+      this._lastParent.set(go, parentNow);
+      return true; // parent différent → rebuild requis
+    }
+
+    // ... puis tes tests pos/rot/scale existants
     const pos = t.position?.clone() ?? BABYLON.Vector3.Zero();
     const scl = t.scaling?.clone() ?? BABYLON.Vector3.One();
     const rot = t.rotationQuaternion
@@ -132,10 +167,9 @@ export class ColliderSystem {
     if (!last) return true;
 
     if (BABYLON.Vector3.Distance(last.pos, pos) > this.EPS_POS) return true;
-
     if (Math.abs(last.scl.x - scl.x) > this.EPS_SCL ||
-        Math.abs(last.scl.y - scl.y) > this.EPS_SCL ||
-        Math.abs(last.scl.z - scl.z) > this.EPS_SCL) return true;
+      Math.abs(last.scl.y - scl.y) > this.EPS_SCL ||
+      Math.abs(last.scl.z - scl.z) > this.EPS_SCL) return true;
 
     const dot = Math.min(1, Math.max(-1, BABYLON.Quaternion.Dot(last.rot, rot)));
     const ang = 2 * Math.acos(Math.abs(dot));

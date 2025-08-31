@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Form } from "react-bootstrap";
+import { Button, Form } from "react-bootstrap";
 import LGM3DEditor from "@renderer/editor/LGM3DEditor";
 
 const TransformComponent = (gameObjectId) => {
@@ -78,6 +78,8 @@ const TransformComponent = (gameObjectId) => {
 
     return (
         <>
+            <Button variant="danger" size="sm" onClick={()=>gameObjectRef.current.setLocalPosition(0,0,0)}>Réinitialiser la position locale</Button>
+            <Button variant="danger" size="sm" onClick={()=>gameObjectRef.current.setRotationQuaternion(BABYLON.Quaternion.FromEulerVector(new BABYLON.Vector3(0,0,0)))}>Réinitialiser la rotation locale</Button>
             <div className="transform-positions">
                 <p className="x-axis">X <Form.Control type="number" value={goTransformPos.x} onChange={(e) => { handleSetPosition(e.target.value, null, null) }} /></p>
                 <p className="y-axis">Y <Form.Control type="number" value={goTransformPos.y} onChange={(e) => { handleSetPosition(null, e.target.value, null) }} /></p>

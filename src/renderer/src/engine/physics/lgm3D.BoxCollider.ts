@@ -68,7 +68,7 @@ export default class BoxCollider extends Collider {
             mesh.setPositionWithLocalVector(new BABYLON.Vector3(0, 0, 0));
         }
         this._boxMesh = mesh;
-        this._boxMesh.doNotSerialize = false;
+        //this._boxMesh.doNotSerialize = false;
 
         this._boxMesh.isVisible = true;
         this._boxMesh.visibility = 0.5;
@@ -220,7 +220,7 @@ export default class BoxCollider extends Collider {
             Math.abs(baseLocalSize.y * meshS.y),
             Math.abs(baseLocalSize.z * meshS.z)
         );
-        sizeWorld.scaleInPlace(this.PHYSICS_MARGIN); 
+        sizeWorld.scaleInPlace(this.PHYSICS_MARGIN);
 
         // --- OFFSET & ROTATION (root space) ---
         const rootWM = rootNode.getWorldMatrix();
@@ -257,16 +257,16 @@ export default class BoxCollider extends Collider {
 
     public findRigidbody(): RigidbodyTest | undefined {
         let current: GameObject | undefined = this.gameObject;
-        // Remonte la hiérarchie des parents
         while (current) {
             const rb = current.getComponent<RigidbodyTest>(Utils.RB_COMPONENT_TYPE);
             if (rb) {
-                return rb; // trouvé !
+                // 👇 Dès qu’on en trouve un → forcer rebuild au prochain cycle
+                ColliderSystem.markDirty(this.gameObject);
+                return rb;
             }
-            current = current.parent; // next parent (null si racine)
+            current = current.parent;
         }
-
-        return undefined; // aucun Rigidbody trouvé
+        return undefined;
     }
 
     public buildStatic() {

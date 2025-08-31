@@ -1,6 +1,8 @@
 import { Game } from "../Game";
 import { GameObject } from "../GameObject";
 import Component from "../lgm3D.Component";
+import Utils from "../lgm3D.Utils";
+import ColliderSystem from "./lgm3D.ColliderSystem";
 
 export class Rigidbody extends Component {
 
@@ -47,7 +49,12 @@ export class Rigidbody extends Component {
       this.body.setMassProperties({ mass });
     }
 
+    // 🔸 NEW: quand le RB existe, (re)demande la reconstruction des colliders descendants
+    ColliderSystem.markDirtySubtree(this._gameObject);
+
     Game.getInstance().onGameStarted.add(() => {
+      // 🔸 NEW: assure un 2e passage juste après l’activation physique
+      ColliderSystem.markDirtySubtree(this._gameObject);
       // Capture poses initiales au démarrage
       this._captureInitialPose();
       const scene = this._gameObject.scene;
@@ -57,6 +64,7 @@ export class Rigidbody extends Component {
         this._syncBodyToCurrentOnStart();
       });
     });
+
     // Reset à l’arrêt du jeu
     Game.getInstance().onGameStopped.add(() => this._resetToInitial());
   }
@@ -172,6 +180,12 @@ export class Rigidbody extends Component {
     this.body.shape = this._shapeContainer;
     contribute(); // chaque collider appelle addShape(...)
   }
+
+  public toJson() {
+      this.metaData.type = Utils.RB_COMPONENT_TYPE;
+      return this.metaData;
+  }
+
 }
 
 

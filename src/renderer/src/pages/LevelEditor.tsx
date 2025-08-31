@@ -1,6 +1,6 @@
 import RendererComponent from "../components/RendererComponent";
 
-import { Button, ButtonGroup, ButtonToolbar, Col, Container, Row } from 'react-bootstrap';
+import { Button, ButtonGroup, ButtonToolbar, Col, Container, Row, Tab, Tabs } from 'react-bootstrap';
 import PropertiesBar from '../components/PropertiesBar';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -13,6 +13,7 @@ import { GameObject } from "@renderer/engine/GameObject";
 import { DockDesk } from "@renderer/components/DockDesk";
 import { DockableWindowPanel } from "@renderer/components/DockableWindowPanel";
 import { DemoTreeView } from "@renderer/components/TreeViewObjects";
+import MaterialsList from "@renderer/components/MaterialsList";
 
 
 const LevelEditor = (props) => {
@@ -64,9 +65,9 @@ const LevelEditor = (props) => {
                 <div className="mdiRoot">
                     <DockDesk>
                         <DockableWindowPanel className="panel" id="hierarchy" title="Hierarchy" initialPlacement={{ mode: "dock", zone: "left" }}>
-                        <div className="treeViewObjects">
-                            <GameObjectsTreeModal gameobjectslist={gameObjects} show={false} />
-                        </div>
+                            <div className="treeViewObjects">
+                                <GameObjectsTreeModal gameobjectslist={gameObjects} show={false} />
+                            </div>
                         </DockableWindowPanel>
 
                         <DockableWindowPanel id="inspector" title="Inspector" initialPlacement={{ mode: "dock", zone: "right" }}>
@@ -78,6 +79,19 @@ const LevelEditor = (props) => {
                         </DockableWindowPanel>
                         <DockableWindowPanel id="renderer" title="renderer" initialPlacement={{ mode: "dock", zone: "center" }}>
                             <RendererComponent />
+                        </DockableWindowPanel>
+                        <DockableWindowPanel id="assets" title="Assets" initialPlacement={{ mode: "dock", zone: "bottom" }}>
+                            <Tabs activeKey={1}>
+                                <Tab eventKey={1} title={<span><FontAwesomeIcon icon="cube" /> Materiaux</span>}>
+                                    <MaterialsList></MaterialsList>
+                                </Tab>
+                                <Tab eventKey={2} title={<span><FontAwesomeIcon icon="diagram-project" />
+                                    Modèles</span>}>
+                                </Tab>
+                                <Tab eventKey={3} title={<span><FontAwesomeIcon icon="image" />
+                                    Textures</span>}>
+                                </Tab>
+                            </Tabs>
                         </DockableWindowPanel>
                     </DockDesk>
                 </div>

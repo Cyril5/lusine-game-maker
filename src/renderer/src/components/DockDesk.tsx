@@ -200,7 +200,7 @@ const ZoneStack: React.FC<{ ids: string[]; registry: Map<string, PanelRegistrati
 // Simple docked panel chrome
 const DockedShell: React.FC<{ id: string; title: string; api: DockAPI; children: React.ReactNode }> = ({ id, title, api, children }) => {
     return (
-        <div className="dv-panel" style={{ background: "#121214", color: "#e6e6e6", border: "1px solid #71518bff", borderRadius: 10, display: "flex", flexDirection: "column", minHeight: 0 }}>
+        <div className="dv-panel" style={{ background: "#121214", color: "#e6e6e6", border: "1px solid #47434bff", borderRadius: 10, display: "flex", flexDirection: "column", minHeight: 0 }}>
             <div className="dv-header" style={{ height: 32, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 8px", background: "linear-gradient(180deg,#1a1b1f,#15161a)", borderBottom: "1px solid #23242a" }}>
                 <span style={{ fontSize: 12, opacity: .9 }}>{title}</span>
                 <div style={{ display: "flex", gap: 6 }}>
