@@ -17,7 +17,7 @@ import { Button, Col, Container, Dropdown, Offcanvas, Row } from 'react-bootstra
 import StateFilesTreeView from '@renderer/components/StateFilesTreeView';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { EditorAlertType } from '@renderer/components/EditorAlert';
-import FileManager from '@renderer/engine/FileManager';
+import FileManager from '@renderer/engine/lgm3D.FileManager';
 import { IStateFile } from '@renderer/engine/FSM/IStateFile';
 import StateEditorUtils from '@renderer/editor/StateEditorUtils';
 import EditorUtils from '@renderer/editor/EditorUtils';

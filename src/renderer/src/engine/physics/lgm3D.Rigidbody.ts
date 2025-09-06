@@ -1,7 +1,7 @@
 import { Game } from "../Game";
 import { GameObject } from "../GameObject";
 import Component from "../lgm3D.Component";
-import Utils from "../lgm3D.Utils";
+import Utils from "../utils/lgm3D.Utils";
 import ColliderSystem from "./lgm3D.ColliderSystem";
 
 export class Rigidbody extends Component {

@@ -37,6 +37,7 @@
     "@fortawesome/free-brands-svg-icons": "^6.2.1",
     "@fortawesome/free-solid-svg-icons": "^6.2.1",
     "@fortawesome/react-fontawesome": "^0.2.0",
+    "@gltf-transform/core": "^4.2.1",
     "@minoru/react-dnd-treeview": "^3.5.2",
     "@types/cannon": "^0.1.8",
     "@uiw/codemirror-theme-darcula": "^4.19.7",

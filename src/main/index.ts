@@ -2,6 +2,7 @@ import { app, shell, BrowserWindow, dialog} from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import { registerGlbIpcHandlers } from './extractGlbTextures';
 
 require('@electron/remote/main').initialize();
 
@@ -81,7 +82,7 @@ app.whenReady().then(() => {
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
-
+  registerGlbIpcHandlers();
   createWindow();
 
 

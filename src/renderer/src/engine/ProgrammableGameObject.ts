@@ -2,7 +2,7 @@ import { FiniteStateMachine } from "./FSM/lgm3D.FiniteStateMachine";
 import { Game } from "./Game";
 import { GameObject } from "./GameObject";
 import RotateTowardsBehaviour from "./behaviours/lgm3D.RotateTowardsBehaviour";
-import Utils from "./lgm3D.Utils";
+import Utils from "./utils/lgm3D.Utils";
 import { Rigidbody } from "./physics/lgm3D.Rigidbody";
 
 export class ProgrammableGameObject extends GameObject {

@@ -1,3 +1,5 @@
+import ProjectManager from "@renderer/editor/ProjectManager";
+
 export default class AssetsManager {
 
     public static textures : Map<string,BABYLON.Texture> = new Map<string,BABYLON.Texture>();
@@ -10,6 +12,15 @@ export default class AssetsManager {
             console.warn(`${material.name} existe déjà dans le projet et la copie à été supprimé`);
             material.dispose();
         }
+    }
+
+    // TODO : remplacer par un getter
+    static getModelsDirectory(): string {
+        return ProjectManager.getFilePath(ProjectManager._currentProjectDir!, 'Models');
+    }
+
+    static getTexturesDirectory():string {
+        return ProjectManager.getFilePath(ProjectManager._currentProjectDir!,'Textures');
     }
 
 }

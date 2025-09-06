@@ -17,7 +17,9 @@ import defaultSkyBoxTexture from '@renderer/engine/sanGiuseppeBridge.env?url';
 import { snapshotTransform, TransformSnapshot } from "./snapshots/TransformSnapshot";
 import { MoveGOTransformCommand } from "./commands/MoveGOTransformCommand";
 import { commands } from "./CommandsInvoker";
-import Utils from "@renderer/engine/lgm3D.Utils";
+import Utils from "@renderer/engine/utils/lgm3D.Utils";
+import FileManager from "@renderer/engine/lgm3D.FileManager";
+import AssetsManager from "@renderer/engine/lgm3D.AssetsManager";
 
 export enum Mode {
     LevelEditor = 1,
@@ -82,7 +84,6 @@ export class LGM3D_COMMANDS {
 
 
 export default class LGM3DEditor {
-
 
     private static _instance: LGM3DEditor;
     private _gizmoObservers: Array<{ remove(): void }> = [];
@@ -246,39 +247,40 @@ export default class LGM3DEditor {
         this.updateObjectsTreeView();
     }
 
+    importModelToProject(filename: any) {
+
+        const modelsDirectory = AssetsManager.getModelsDirectory();
+        const ext = EditorUtils.path.extname(filename).toLowerCase();
+        const baseName = EditorUtils.path.basename(filename, ext);
+        const targetDirectory = modelsDirectory + '/' + baseName;
+        FileManager.createDir(targetDirectory);
+        FileManager.copyFileToDir(filename, targetDirectory);
+    }
+
     addModel3DObject(filename: string, options = null, callback: (model: Model3D) => void | null) {
 
-        // const os = require('os');
-        // const path = require('path');
-        // const documentsPath = os.homedir() + '\\Documents\\Lusine Game Maker\\MonProjet';
-        // let modelsDirectory = path.resolve(documentsPath, 'Models');
-
-        const modelsDirectory = ProjectManager.getModelsDirectory();
-
-        //const model = new Model3D("https://models.babylonjs.com/", "aerobatic_plane.glb", this._renderer!.scene);
-        const model = Model3D.createFromModel(modelsDirectory, filename, options, this._renderer!.scene);
+        const modelsDirectory = AssetsManager.getModelsDirectory();
+        const model = Model3D.createFromModel(modelsDirectory, filename, {extractTextures: true}, this._renderer!.scene);
+        //FileManager.createDir(modelsDirectory+'/'+filename.split[ext]);
 
         // quand je clic sur un mesh je peux le sélectionner dans l'éditeur
         // Créer un action manager pour le parentNode
         // Abonnement à l'événement onModelLoaded
         model.onLoaded.add((model3d) => {
+            // const children = model.transform.getChildren();
+            // children.forEach((child) => {
 
-            const children = model.transform.getChildren();
-            children.forEach((child) => {
-
-                child.actionManager = new BABYLON.ActionManager(this._renderer!.scene);
-                // Ajouter une action de clic pour le mesh et ses enfants
-                child.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger, (evt) => {
-                    // Votre code ici
-                    // const pog: ProgrammableGameObject = model.getObjectOfTypeInParent<GameObject>(GameObject);
-                    // this.selectGameObject(pog.Id);
-                }));
-            });
-
+            //     child.actionManager = new BABYLON.ActionManager(this._renderer!.scene);
+            //     // Ajouter une action de clic pour le mesh et ses enfants
+            //     child.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger, (evt) => {
+            //         // Votre code ici
+            //         // const pog: ProgrammableGameObject = model.getObjectOfTypeInParent<GameObject>(GameObject);
+            //         // this.selectGameObject(pog.Id);
+            //     }));
+            // });
             if (callback) {
                 callback(model);
             }
-
             // Raffraichir la treeview des gameObjects
             this.updateObjectsTreeView();
 

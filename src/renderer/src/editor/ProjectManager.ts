@@ -1,4 +1,4 @@
-import FileManager from "@renderer/engine/FileManager";
+import FileManager from "@renderer/engine/lgm3D.FileManager";
 import EditorUtils from "./EditorUtils"
 import StateEditorUtils from "./StateEditorUtils";
 import LGM3DEditor from "./LGM3DEditor";
@@ -6,22 +6,13 @@ import LGM3DEditor from "./LGM3DEditor";
 export default class ProjectManager {
 
     private static _projectName: string | null = null;
-    private static _currentProjectDir = null;
+    static _currentProjectDir = null;
 
     // Créer un nom de chemin complet depuis le répertoire du projet
     public static getFilePath(directory: string, file?: string): string {
         const projDir = ProjectManager._currentProjectDir;
         const path = EditorUtils.path.resolve(projDir, directory);
         return EditorUtils.path.resolve(path, file);
-    }
-
-    // TODO : remplacer par un getter
-    static getModelsDirectory(): string {
-        return ProjectManager.getFilePath(ProjectManager._currentProjectDir, 'Models');
-    }
-
-    static getTexturesDirectory():string {
-        return ProjectManager.getFilePath(ProjectManager._currentProjectDir,'Textures');
     }
 
     // TODO : remplacer par un getter

@@ -2,7 +2,7 @@
 import InputManager from "../InputManager";
 import { GameObject } from "../GameObject";
 import BoxCollider from "../physics/lgm3D.BoxCollider";
-import Utils from "../lgm3D.Utils";
+import Utils from "../utils/lgm3D.Utils";
 import { Rigidbody } from "../physics/lgm3D.Rigidbody";
 import { Game } from "../Game";
 
@@ -25,8 +25,8 @@ export class Tank extends GameObject {
   private minSpeedToSteer = 0.35;
 
   private cam?: BABYLON.UniversalCamera;
-  private camDistance = 2;
-  private camHeight   = 0.5;
+  private camDistance = 10;
+  private camHeight   = 5;
   private camLookAhead = 2.5;
   private camLerp      = 0.12;
 
@@ -36,9 +36,9 @@ export class Tank extends GameObject {
     this.transform.position.copyFrom(startPos);
     if (this.transform.position.y < 5) this.transform.position.y = 5;
 
-    const bodyMesh = GameObject.getById(210);
-    bodyMesh.setParent(this);
-    bodyMesh.setLocalPosition(0,0,0);
+    const car = GameObject.getById(106);
+    car.setParent(this);
+    car.setLocalPosition(0,0,0);
 
     this.rb = this.addComponent(Utils.RB_COMPONENT_TYPE,
       new Rigidbody(this, scene, BABYLON.PhysicsMotionType.DYNAMIC, 12));

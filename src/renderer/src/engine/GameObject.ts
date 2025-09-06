@@ -1,6 +1,6 @@
 import Component from "./lgm3D.Component";
 import { Observable } from "babylonjs";
-import Utils from "./lgm3D.Utils";
+import Utils from "./utils/lgm3D.Utils";
 
 export class GameObject {
 
@@ -157,17 +157,27 @@ export class GameObject {
 
     constructor(name: string, scene: BABYLON.Scene, transformNode?: BABYLON.TransformNode) {
 
+        this._scene = scene;
+        const metadataId = transformNode?.metadata.gameObjectId;
+        console.warn("FOUND ? "+metadataId+" "+GameObject._gameObjects.get(metadataId));
         this._transform = !transformNode ? new BABYLON.TransformNode(name, scene) : transformNode;
 
         if (transformNode) {
             this._transform.rotationQuaternion = transformNode.rotationQuaternion;
+            if(!GameObject._gameObjects.has(metadataId)) {
+                GameObject._gameObjects.set(metadataId, this);
+                this.setUId(metadataId);
+            }
+            else
+                console.error(`GameObjectId ${metadataId} already exists`);
         }
         else{
             this._transform.metadata = {};
             this._transform.rotationQuaternion = BABYLON.Quaternion.Identity();
+            //GameObject._gameObjects.set(this.Id, this);
+            this.setUId(this.Id,false);
         }
 
-        this._scene = scene;
         this._components = new Map<string, Component>();
 
         // L'accès direct au renderer provoque une erreur
@@ -176,17 +186,17 @@ export class GameObject {
         // Capte TOUT (gizmos / code / physique) mais filtre via matrice relative
         this._wmObs = this.transform.onAfterWorldMatrixUpdateObservable.add(()=>this._onAfterWorldMatrixUpdate());
 
-        if (!GameObject._gameObjects.has(this._transform.uniqueId)) {
-            GameObject._gameObjects.set(this._transform.uniqueId, this);
-            console.log("Ajout de l'id "+this._transform.uniqueId);
-            // this.onCreated.notifyObservers();
-        } else {
-            const newId = this.scene.getUniqueId();
-            console.warn("L'objet ayant l'id :" + this._transform.uniqueId + " existe déjà. Nouvel id : " + newId);
-            if(!transformNode)
-                this.transform.metadata = { gameObjectId: this._transform.uniqueId, parentId: null }
-            this.setUId(newId, false);
-        }
+        // if (!GameObject._gameObjects.has(this._transform.uniqueId)) {
+        //     GameObject._gameObjects.set(this._transform.uniqueId, this);
+        //     console.log("Ajout de l'id "+this._transform.uniqueId);
+        //     // this.onCreated.notifyObservers();
+        // } else {
+        //     const newId = this.scene.getUniqueId();
+        //     console.warn("L'objet ayant l'id :" + this._transform.uniqueId + " existe déjà. Nouvel id : " + newId);
+        //     if(!transformNode)
+        //         this.transform.metadata = { gameObjectId: this._transform.uniqueId, parentId: null }
+        //     this.setUId(newId, false);
+        // }
     }
 
     private _onAfterWorldMatrixUpdate() {
@@ -289,10 +299,7 @@ export class GameObject {
     }
 
     public static createFromTransformNodeMetaData(node: BABYLON.TransformNode, scene: BABYLON.Scene): GameObject {
-        const nodeId = node.metadata.gameObjectId;
-        const go = new GameObject(node.name, scene, node);
-        go.setUId(nodeId);
-        return go;
+        return new GameObject(node.name, scene, node);
     }
 
 

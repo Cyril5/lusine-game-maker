@@ -1,19 +1,20 @@
 import ProjectManager from "./ProjectManager";
-import FileManager from "@renderer/engine/FileManager";
+import FileManager from "@renderer/engine/lgm3D.FileManager";
 import EditorUtils from "./EditorUtils";
 import { GameObject } from "@renderer/engine/GameObject";
 import { Model3D } from "@renderer/engine/lgm3D.Model3D";
 import { ProgrammableGameObject } from "@renderer/engine/ProgrammableGameObject";
 import StateEditorUtils from "./StateEditorUtils";
 import BoxCollider from "@renderer/engine/physics/lgm3D.BoxCollider";
-import AssetsManager from "../engine/AssetsManager";
-import { Observable } from "babylonjs";
-import Utils from "@renderer/engine/lgm3D.Utils";
+import AssetsManager from "../engine/lgm3D.AssetsManager";
+import { Material, Observable } from "babylonjs";
+import Utils from "@renderer/engine/utils/lgm3D.Utils";
 import LGM3DEditor from "./LGM3DEditor";
 import { SceneSerializer } from "@babylonjs/core";
 import "@babylonjs/serializers";
 import { Rigidbody } from "@renderer/engine/physics/lgm3D.Rigidbody";
 import { FiniteStateMachine } from "@renderer/engine/FSM/lgm3D.FiniteStateMachine";
+import { copyTexProps, loadMaterialTexturesFromMetadata, rebindMaterialsFromMetadataAndCleanup } from "@renderer/engine/utils/MaterialUtils";
 
 //import logo from "../assets/logo.png";
 
@@ -51,9 +52,26 @@ export default abstract class GameLoader {
         //Enlever les transformNodes de l'editeur
         const editorNodes = serializedScene.transformNodes as any[];
         const meshes = serializedScene.meshes as any[];
-        const materials = serializedScene.materials as any[];
+        const materialsJSON = serializedScene.materials as any[];
 
-        [editorNodes, meshes, materials, serializedScene.cameras].forEach((arr, index) => {
+        // Supprime récursivement toute clé "base64String" du JSON sérialisé
+        const stripAllBase64 = (obj: any) => {
+            if (!obj || typeof obj !== "object") return;
+            if (Array.isArray(obj)) {
+                for (const it of obj) stripAllBase64(it);
+                return;
+            }
+            if ("base64String" in obj) {
+                delete obj.base64String; // ← on supprime complètement la clé
+            }
+            for (const k of Object.keys(obj)) {
+                stripAllBase64(obj[k]);
+            }
+        }
+
+        stripAllBase64(serializedScene);
+
+        [editorNodes, meshes, materialsJSON, serializedScene.cameras].forEach((arr, index) => {
             let tags: string;
             for (let i = arr.length - 1; i >= 0; i--) {
                 let element = arr[i];
@@ -90,6 +108,11 @@ export default abstract class GameLoader {
                 try {
                     BABYLON.SceneLoader.AppendAsync("", projectFile, scene).then(() => {
                         loadTextures(scene.materials);
+                        // if (!scene.environmentTexture) {
+                        //     const env = BABYLON.CubeTexture.CreateFromPrefilteredData("textures/environment.env", scene);
+                        //     scene.environmentTexture = env;
+                        //     scene.createDefaultSkybox(env, true, 1000);
+                        // }
                         processNodes(scene);
                     });
                 }
@@ -103,38 +126,38 @@ export default abstract class GameLoader {
 
         const loadTextures = (materials) => {
 
-            materials.forEach((mat, index) => {
-                if (mat.albedoTexture && mat.albedoTexture.metadata) {
-                    const sourceFilename = mat.albedoTexture.metadata.source;
-                    if (!mat.albedoTexture.metadata.source)
-                        return;
-                    const filePath = ProjectManager.getFilePath(ProjectManager.getTexturesDirectory(), sourceFilename);
-                    FileManager.readFile(filePath, (data) => {
-                        // if (err) {
-                        //     console.error('Erreur lors de la lecture du fichier :', err);
-                        //     return;
-                        // }
-                        const url = Utils.convertImgToBase64URL(data, 'png');
+            rebindMaterialsFromMetadataAndCleanup(scene.materials, scene);
 
-                        // Ajout de la texture au projet
-                        const texture = new BABYLON.Texture(url, scene, { invertY: false });
-                        texture.name = sourceFilename;
-                        if (!AssetsManager.textures.has(sourceFilename)) {
-                            AssetsManager.textures.set(sourceFilename, texture);
-                        }
-                        mat.albedoTexture.name += ' (old)';
-                        // Enlever l'anciene texture
-                        mat.albedoTexture.dispose();
+            // materials.forEach((mat, index) => {
+            //     if (mat.albedoTexture && mat.albedoTexture.metadata) {
+            //         const sourceFilename = mat.albedoTexture.metadata.sourceImg;
+            //         if (!sourceFilename)
+            //             return;
+            //         const filePath = ProjectManager.getFilePath(AssetsManager.getTexturesDirectory(), sourceFilename);
+            //         FileManager.readFile(filePath, (data) => {
+            //             // if (err) {
+            //             //     console.error('Erreur lors de la lecture du fichier :', err);
+            //             //     return;
+            //             // }
+            //             const url = Utils.convertImgToBase64URL(data, 'png');
 
-                        mat.albedoTexture = AssetsManager.textures.get(sourceFilename);
+            //             // Ajout de la texture au projet
+            //             const texture = new BABYLON.Texture(url, scene, { invertY: false });
+            //             texture.name = sourceFilename;
+            //             if (!AssetsManager.textures.has(sourceFilename)) {
+            //                 AssetsManager.textures.set(sourceFilename, texture);
+            //             }
+            //             mat.albedoTexture.name += ' (old)';
+            //             // Enlever l'anciene texture
+            //             mat.albedoTexture.dispose();
 
-                    });
-                }
-            });
+            //             mat.albedoTexture = AssetsManager.textures.get(sourceFilename);
+
+            //         });
+            //     }
+            // });
 
             //const sourceFilename = materials[0].getActiveTextures()[0].metadata.source;
-
-            console.log(materials);
         }
 
 
@@ -160,6 +183,8 @@ export default abstract class GameLoader {
 
             scene.getNodes().forEach((node: BABYLON.Node) => {
 
+                let goCreated = false;
+
                 const nodeData = node.metadata;
                 if (!nodeData) {
                     return;
@@ -175,18 +200,21 @@ export default abstract class GameLoader {
                             console.log("Put : " + nodeData.gameObjectId);
                             goLinks.push([nodeData.gameObjectId, nodeData.parentId]);
                         }
-                    } 
+                    }
                 } else {
-                    
+
                 }
                 if (nodeData?.gameObjectId) {
+
                     go = GameObject.createFromTransformNodeMetaData(node, scene);
                     if (nodeData.parentId) {
                         goLinks.push([nodeData.gameObjectId, nodeData.parentId]);
                     }
+                    goCreated = true;
+
                     //FSM
                     node.metadata.finiteStateMachines?.forEach((fsmData, index) => {
-                        const fsm = go?.addComponent("FiniteStateMachine"+index, new FiniteStateMachine(go!));
+                        const fsm = go?.addComponent("FiniteStateMachine" + index, new FiniteStateMachine(go!));
                         fsm!.name = fsmData.name;
                         fsmData.states.forEach((stateData, index) => {
                             const state = fsm.states[index];
@@ -245,5 +273,135 @@ export default abstract class GameLoader {
         }
 
     }
+
+    // ─── Méthode principale ─────────────────────────────────────────────────────
+    static sanitizeMaterialForSave(mat: BABYLON.Material | any): void {
+
+        // ─── Helpers ────────────────────────────────────────────────────────────────
+        function _toNoExt(relPath: string): string {
+            const p = FileManager.path;
+            const norm = relPath.replace(/\\/g, "/");                 // URL-friendly
+            return norm.slice(0, norm.length - p.extname(norm).length);
+        }
+
+        function _wipeTex(t?: BABYLON.BaseTexture | null) {
+            if (!t) return;
+            const any = t as any;
+            //if ("url" in any) any.url = null;
+            if ("base64String" in any) any.base64String = null;
+        }
+
+        function _applyNameFromMetaNoExt(t?: BABYLON.BaseTexture | null, relWithExt?: string) {
+            if (!t || !relWithExt) return;
+            t.name = _toNoExt(relWithExt); // ex: "Models/MyModel/texture0"
+        }
+
+        // Détection de type sans dépendre d'instanceof/getClassName.
+        function _kindOfMaterial(mat: any): "pbr" | "standard" | "multi" | "node" | "unknown" {
+            const cn = mat?.getClassName?.();
+            if (typeof cn === "string") {
+                const k = cn.toLowerCase();
+                if (k.includes("pbr")) return "pbr";
+                if (k.includes("standard")) return "standard";
+                if (k.includes("multi")) return "multi";
+                if (k.includes("node")) return "node";
+            }
+            if (mat?.subMaterials) return "multi";
+            if ("albedoTexture" in (mat || {})) return "pbr";
+            if ("diffuseTexture" in (mat || {})) return "standard";
+            return "unknown";
+        }
+
+        if (!mat) return;
+
+        // Si c'est un MultiMaterial : traiter récursivement.
+        if (_kindOfMaterial(mat) === "multi") {
+            for (const sm of (mat.subMaterials as BABYLON.Material[] | undefined) || []) {
+                if (sm) GameLoader.sanitizeMaterialForSave(sm);
+            }
+            return;
+        }
+
+        // Chemins (avec extension) attendus dans mat.metadata.textures.*
+        const texMeta: Record<string, string> | undefined = (mat.metadata as any)?.textures;
+        return;
+        switch (_kindOfMaterial(mat)) {
+            case "pbr": {
+                const m = mat as BABYLON.PBRMaterial;
+
+                // Albedo / BaseColor
+                _wipeTex(m.albedoTexture);
+                _applyNameFromMetaNoExt(m.albedoTexture, texMeta?.albedo);
+
+                // Normal / Bump
+                const n = (m.normalTexture ?? m.bumpTexture) as BABYLON.BaseTexture | null;
+                _wipeTex(n);
+                _applyNameFromMetaNoExt(n, texMeta?.normal);
+
+                // MetallicRoughness (ORM)
+                _wipeTex(m.metallicTexture);
+                _applyNameFromMetaNoExt(m.metallicTexture, texMeta?.metallicRoughness);
+
+                // AO / Emissive / Opacity / Reflection / Lightmap (si présents en metadata)
+                _wipeTex(m.ambientTexture);
+                _applyNameFromMetaNoExt(m.ambientTexture, texMeta?.occlusion);
+
+                _wipeTex(m.emissiveTexture);
+                _applyNameFromMetaNoExt(m.emissiveTexture, texMeta?.emissive);
+
+                _wipeTex(m.opacityTexture);
+                _applyNameFromMetaNoExt(m.opacityTexture, texMeta?.opacity);
+
+                _wipeTex(m.reflectionTexture);
+                _applyNameFromMetaNoExt(m.reflectionTexture, texMeta?.reflection);
+
+                _wipeTex(m.lightmapTexture);
+                _applyNameFromMetaNoExt(m.lightmapTexture, texMeta?.lightmap);
+                break;
+            }
+
+            case "standard": {
+                const m = mat as BABYLON.StandardMaterial;
+
+                _wipeTex(m.diffuseTexture);
+                _applyNameFromMetaNoExt(m.diffuseTexture, texMeta?.diffuse ?? texMeta?.albedo);
+
+                _wipeTex(m.bumpTexture);
+                _applyNameFromMetaNoExt(m.bumpTexture, texMeta?.normal ?? texMeta?.bump);
+
+                _wipeTex(m.specularTexture);
+                _applyNameFromMetaNoExt(m.specularTexture, texMeta?.specular);
+
+                _wipeTex(m.emissiveTexture);
+                _applyNameFromMetaNoExt(m.emissiveTexture, texMeta?.emissive);
+
+                _wipeTex(m.opacityTexture);
+                _applyNameFromMetaNoExt(m.opacityTexture, texMeta?.opacity);
+
+                _wipeTex(m.ambientTexture);
+                _applyNameFromMetaNoExt(m.ambientTexture, texMeta?.ambient ?? texMeta?.occlusion);
+
+                _wipeTex(m.reflectionTexture);
+                _applyNameFromMetaNoExt(m.reflectionTexture, texMeta?.reflection);
+
+                _wipeTex(m.refractionTexture);
+                _applyNameFromMetaNoExt(m.refractionTexture, texMeta?.refraction);
+                break;
+            }
+
+            default: {
+                // Matériaux non gérés (NodeMaterial, custom…) : on allège sans renommer.
+                const keys = [
+                    "albedoTexture", "baseTexture", "diffuseTexture", "normalTexture", "bumpTexture",
+                    "metallicTexture", "roughnessTexture", "ambientTexture", "emissiveTexture",
+                    "opacityTexture", "reflectionTexture", "lightmapTexture", "specularTexture",
+                    "refractionTexture"
+                ] as const;
+                for (const k of keys) _wipeTex((mat as any)[k]);
+                break;
+            }
+        }
+    }
+
 
 }

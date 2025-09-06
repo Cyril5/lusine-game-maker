@@ -6,7 +6,7 @@ import Collider from "./lgm3D.Collider";
 import { ColliderMetaData, GameObjectComponentMetaData } from "../structs/ComponentsMetaData";
 import BoxColliderInspector, { InspectorComponent } from "@renderer/components/Objects/BoxColliderComponentInspector";
 import Component from "../lgm3D.Component";
-import Utils from "../lgm3D.Utils";
+import Utils from "../utils/lgm3D.Utils";
 import { RigidbodyTest } from "./lgm3D.Rigidbody";
 import { ColliderSystem } from "./lgm3D.ColliderSystem";
 import Rigidbody from "./lgm3D.Rigidbody";

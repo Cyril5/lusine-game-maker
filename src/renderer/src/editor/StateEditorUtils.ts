@@ -2,7 +2,7 @@ import { IStateFile } from "@renderer/engine/FSM/IStateFile";
 import { Game } from "@renderer/engine/Game";
 import Editor from "../components/EditorOld";
 import BaseStateFile from '@renderer/assets/BaseStateFile.xml?raw';
-import FileManager from "@renderer/engine/FileManager";
+import FileManager from "@renderer/engine/lgm3D.FileManager";
 import EditorUtils from "./EditorUtils";
 import ProjectManager from "./ProjectManager";
 import LGM3DEditor from "./LGM3DEditor";

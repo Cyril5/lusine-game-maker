@@ -9,7 +9,7 @@ import { ProgrammableGameObject } from '../ProgrammableGameObject';
 // NE PAS RETIRER CES IMPORTS ! (pour l'interprétation du code js avec eval)
 
 import InputManager, { KeyCode } from '../InputManager';
-import FileManager from '../FileManager';
+import FileManager from '../lgm3D.FileManager';
 import { Game } from '../Game';
 import { GameObject } from '../GameObject';
 

@@ -2,7 +2,7 @@
 import InputManager from "../InputManager";
 import { GameObject } from "../GameObject";
 import BoxCollider from "../physics/lgm3D.BoxCollider";
-import Utils from "../lgm3D.Utils";
+import Utils from "../utils/lgm3D.Utils";
 import { Rigidbody } from "../physics/lgm3D.Rigidbody";
 
 export class Tank extends GameObject {

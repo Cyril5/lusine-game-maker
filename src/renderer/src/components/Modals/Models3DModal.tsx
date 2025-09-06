@@ -6,6 +6,8 @@ import Modal from 'react-bootstrap/Modal';
 import ProjectManager from '@renderer/editor/ProjectManager';
 import EditorUtils from '@renderer/editor/EditorUtils';
 import LGM3DEditor from '@renderer/editor/LGM3DEditor';
+import FileManager from '@renderer/engine/lgm3D.FileManager';
+import AssetsManager from '@renderer/engine/lgm3D.AssetsManager';
 
 // import modelsDirectory from '../public/projects/MonProjet/models?url';
 
@@ -26,65 +28,61 @@ const Models3DModal = (props: any) => {
 
     const [modelfiles, setFiles] = useState([]);
 
-    let modelsDirectory = ProjectManager.getModelsDirectory();
+    let modelsDirectory = AssetsManager.getModelsDirectory();
 
     const readModelsFiles = () => {
-        fs.readdir(modelsDirectory, (err, files) => {
+        fs.readdir(modelsDirectory, { withFileTypes: true }, (err, entries) => {
             if (err) {
                 console.error("Erreur lors de la lecture du répertoire :", err);
                 return;
             }
 
-            // Filtrer les fichiers avec les extensions .obj, .fbx et .glb
-            const filteredFiles = files.filter(file => {
-                const ext = EditorUtils.path.extname(file).toLowerCase();
-                return ext == '.glb' || ext == '.gltf';
-                //return ext === '.obj' || ext === '.fbx' || ext === '.glb';
-            });
+            let collectedFiles: string[] = [];
 
-            setFiles(filteredFiles);
+            entries.forEach(entry => {
+                if (entry.isFile()) {
+                    // Vérifie l’extension
+                    const ext = EditorUtils.path.extname(entry.name).toLowerCase();
+                    if (ext === '.glb' || ext === '.gltf') {
+                        collectedFiles.push(entry.name);
+                    }
+                } else if (entry.isDirectory()) {
+                    // Lire uniquement le PREMIER niveau de sous-dossiers
+                    const subDir = EditorUtils.path.join(modelsDirectory, entry.name);
+                    try {
+                        const subFiles = fs.readdirSync(subDir);
+                        subFiles.forEach(file => {
+                            const ext = EditorUtils.path.extname(file).toLowerCase();
+                            if (ext === '.glb' || ext === '.gltf') {
+                                // On ajoute le chemin relatif pour savoir d’où ça vient
+                                collectedFiles.push(EditorUtils.path.join(entry.name, file));
+                            }
+                        });
+                    } catch (subErr) {
+                        console.error("Erreur lors de la lecture du sous-dossier :", subErr);
+                    }
+                }
+            });
+            setFiles(collectedFiles);
         });
-    }
+    };
 
     // Récupérer la liste de tous les modèles dans le dossier Models du projet
     useEffect(() => {
-
-        modelsDirectory = ProjectManager.getModelsDirectory();
-
-        console.log(modelsDirectory);
-
+        modelsDirectory = AssetsManager.getModelsDirectory();
         readModelsFiles();
-
     }, []);
 
-    useEffect(()=>{
+    useEffect(() => {
         setShow(props.show);
-    },[props.show])
-
+    }, [props.show])
 
     // Importation nouveau modèle dans le projet 
     const handleFileChange = async (event) => {
-
         const input = event.target;
         const file = input.files[0];
-        //setSelectedFile(file);
-
         try {
-            const readStream = fs.createReadStream(file.path);
-            const writeStream = fs.createWriteStream(modelsDirectory + "/" + file.name);
-
-            readStream.on("data", chunk => {
-                console.log(chunk.length);
-                setProgress(prevProgress => prevProgress + chunk.length);
-            });
-            // copier le fichier dans le répértoire Models du projet
-            readStream.pipe(writeStream);
-
-            await new Promise((resolve, reject) => {
-                writeStream.on("finish", resolve);
-                writeStream.on("error", reject);
-            });
-
+            LGM3DEditor.getInstance().importModelToProject(file.path);
             readModelsFiles();
 
         } catch (error) {
@@ -139,8 +137,8 @@ const Models3DModal = (props: any) => {
                     <Container fluid>
                         <Row>
                             <Stack direction="vertical">
-                                {modelfiles.map((file,key) => (
-                                        <Button key={key} variant='secondary' onClick={() => handleSelectModel(file)}>{file}</Button>
+                                {modelfiles.map((file, key) => (
+                                    <Button key={key} variant='secondary' onClick={() => handleSelectModel(file)}>{file}</Button>
                                 ))}
                             </Stack>
                         </Row>

@@ -25,13 +25,11 @@ export default class DemoTest {
             return;
         DemoTest.init = false;
 
-        // TANK movement test
-          // ground + murs (comme avant)
-        const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 40, height: 40 }, scene);
-        const gmat = new BABYLON.StandardMaterial("g", scene);
-        gmat.diffuseColor = BABYLON.Color3.FromHexString("#3b3b3b");
-        ground.material = gmat;
-        new BABYLON.PhysicsAggregate(ground, BABYLON.PhysicsShapeType.BOX, { mass: 0, friction: 0.9, restitution: 0 }, scene);
+        //ROAD
+        const road = this.scene.getMeshByUniqueID(445);
+        if(road) {
+            new BABYLON.PhysicsAggregate(road, BABYLON.PhysicsShapeType.MESH, { mass: 0, friction: 0.9, restitution: 0 });
+        }
         this.tankA = new Tank(scene, true,  new BABYLON.Vector3(-6, 0, -6)); // joueur
         //this.tankB = new Tank(scene, false, new BABYLON.Vector3( 6, 0,  6)); // cible statique
     }
