@@ -13,6 +13,7 @@ Ce projet est le successeur de : https://github.com/Cyril5/clight-game-maker
 Site officiel : https://cyrilleger9.wixsite.com/lusinegamemaker
 
 Version actuelle : Alpha 0.1.2 (10 Septembre 2023)
+Version en développement (branche dev) : Alpha 0.2.6 (Septembre 2025)
 
 
 ## Installation
