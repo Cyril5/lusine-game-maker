@@ -7,16 +7,25 @@ import { ProgrammableGameObject } from "@renderer/engine/ProgrammableGameObject"
 import StateEditorUtils from "./StateEditorUtils";
 import BoxCollider from "@renderer/engine/physics/lgm3D.BoxCollider";
 import AssetsManager from "../engine/lgm3D.AssetsManager";
-import { Material, Observable } from "babylonjs";
 import Utils from "@renderer/engine/utils/lgm3D.Utils";
 import LGM3DEditor from "./LGM3DEditor";
 import { SceneSerializer } from "@babylonjs/core";
+
+// ESM uniquement
+import { Material, Observable, SceneLoader } from "@babylonjs/core";
+import "@babylonjs/core/Loading/Plugins/babylonFileLoader";   // plugin .babylon
+import "@babylonjs/core/Materials/standardMaterial";          // Standard
+import "@babylonjs/core/Materials/PBR/pbrMaterial";           // PBR
+import "@babylonjs/core/Materials/PBR/pbrMetallicRoughnessMaterial"; // pour __GLTFLoader._default si présent
 import "@babylonjs/serializers";
+
 import { Rigidbody } from "@renderer/engine/physics/lgm3D.Rigidbody";
 import { FiniteStateMachine } from "@renderer/engine/FSM/lgm3D.FiniteStateMachine";
-import { copyTexProps, loadMaterialTexturesFromMetadata, rebindMaterialsFromMetadataAndCleanup } from "@renderer/engine/utils/MaterialUtils";
+import { rebindMaterialsFromMetadataAndCleanup } from "@renderer/engine/utils/MaterialUtils";
 
-//import logo from "../assets/logo.png";
+import ShortUniqueId from "short-unique-id";
+import { TransformsAnalyzer } from "@renderer/engine/utils/lgm3D.TransformsAnalyzer";
+const uid = new ShortUniqueId({ length: 10 });
 
 export default abstract class GameLoader {
 
@@ -38,6 +47,192 @@ export default abstract class GameLoader {
     //     }
     // };
 
+    public static saveV2(scene: BABYLON.Scene) {
+
+        /* ───────────────────────── Helpers ───────────────────────── */
+
+        function sanitizeRuntimeBeforeSave(scene: BABYLON.Scene) {
+            // A) Détacher/retirer PostProcesses (caméras)
+            for (const cam of scene.cameras) {
+                const pps = (cam as any)._postProcesses?.slice() ?? [];
+                for (const pp of pps) {
+                    try { (cam as any).detachPostProcess(pp); } catch { }
+                    try { pp.dispose?.(); } catch { }
+                }
+            }
+
+            // B) Retirer les render pipelines
+            try {
+                const mgr: any = (scene as any).postProcessRenderPipelineManager;
+                const pipelines = Object.values(mgr?._renderPipelines ?? {});
+                for (const pl of pipelines as any[]) {
+                    try { mgr.detachCamerasFromRenderPipeline(pl.name, scene.cameras); } catch { }
+                    try { mgr.removeRenderPipeline(pl.name); } catch { }
+                    try { pl.dispose?.(); } catch { }
+                }
+            } catch { }
+
+            // C) Layers (Glow/Highlight)
+            for (const l of (scene as any).effectLayers?.slice() ?? []) {
+                try { l.dispose?.(); } catch { }
+            }
+
+            // D) Physique (en éditeur, on n’embarque rien)
+            try { (scene as any).disablePhysicsEngine?.(); } catch { }
+
+            // E) Corriger textures “fantômes” (url:null) ou invalides
+            fixTextures(scene);
+
+            // F) Dédupliquer les matériaux proprement (incl. MultiMaterial)
+            autoReuseMaterialsSafe(scene);
+
+            // G) Respecter doNotSerialize sur les helpers d’éditeur
+            for (const node of scene.getNodes()) {
+                if (node?.doNotSerialize) continue;
+                if (typeof node.name === "string" && node.name.startsWith("_EDITOR_")) {
+                    (node as any).doNotSerialize = true;
+                }
+            }
+        }
+
+        function fixTextures(scene: BABYLON.Scene) {
+            const texProps = [
+                "albedoTexture", "diffuseTexture", "emissiveTexture", "opacityTexture",
+                "bumpTexture", "normalTexture", "ambientTexture", "metallicTexture", "roughnessTexture"
+            ];
+
+            for (const mat of scene.materials) {
+                const anyMat = mat as any;
+                for (const tname of texProps) {
+                    const tex = anyMat[tname] as BABYLON.Texture | null | undefined;
+                    if (tex && (tex as any).url == null) {
+                        const metaUrl = mat.metadata?.textures?.[tname.replace("Texture", "")] as (string | undefined);
+                        if (metaUrl && (tex as any).updateURL) {
+                            try { (tex as any).updateURL(metaUrl); } catch { anyMat[tname] = null; }
+                        } else {
+                            anyMat[tname] = null;
+                        }
+                    }
+                }
+            }
+        }
+
+        function autoReuseMaterialsSafe(scene: BABYLON.Scene) {
+            // 1) Choisir un “keeper” par nom (ou id à défaut)
+            const keepByKey = new Map<string, BABYLON.Material>();
+            const dups: BABYLON.Material[] = [];
+
+            for (const mat of scene.materials) {
+                // ne touche pas aux spéciaux
+                if (mat.name === "__GLTFLoader._default") continue;
+                const key = mat.name || mat.id;
+                if (!key) continue;
+
+                if (!keepByKey.has(key)) keepByKey.set(key, mat);
+                else dups.push(mat);
+            }
+
+            if (dups.length === 0) return;
+
+            // 2) Réassigner toutes les références (mesh.material et MultiMaterial.subMaterials)
+            const reassignInMultiMaterial = (mm: BABYLON.MultiMaterial) => {
+                for (let i = 0; i < mm.subMaterials.length; i++) {
+                    const sm = mm.subMaterials[i];
+                    if (!sm) continue;
+                    const key = sm.name || sm.id;
+                    const keeper = key ? keepByKey.get(key) : undefined;
+                    if (keeper && keeper !== sm) mm.subMaterials[i] = keeper;
+                }
+            };
+
+            for (const mesh of scene.meshes) {
+                // Mat simple
+                const m = mesh.material;
+                if (m) {
+                    const key = m.name || m.id;
+                    const keeper = key ? keepByKey.get(key) : undefined;
+                    if (keeper && keeper !== m) mesh.material = keeper;
+                }
+                // MultiMaterial éventuel
+                if (mesh.material && mesh.material.getClassName?.() === "MultiMaterial") {
+                    reassignInMultiMaterial(mesh.material as BABYLON.MultiMaterial);
+                }
+            }
+
+            // 3) Supprimer les doublons (hors itération de scene.materials)
+            for (const mat of dups) {
+                try { scene.removeMaterial?.(mat); } catch { }
+                try { mat.dispose(); } catch { }
+            }
+        }
+
+        function postSanitizeSerializedJSON(data: any) {
+            // A) Pas d’envMap dans le .lgm d’éditeur
+            data.environmentTexture = null;
+
+            // B) Vider postFX/pipelines/layers et cam.postProcesses
+            data.postprocesses = [];
+            data.postProcessRenderPipelines = [];
+            data.layers = [];
+            if (Array.isArray(data.cameras)) {
+                for (const c of data.cameras) c.postProcesses = [];
+            }
+
+            // C) Physique off et champs supprimés
+            data.physicsEnabled = false;
+            delete data.physicsEngine;
+            delete data.physicsGravity;
+
+            // D) Retirer tous les plugins de matériaux (sécurité)
+            if (Array.isArray(data.materials)) {
+                for (const m of data.materials) delete m.plugins;
+            }
+
+            // E) Enlever base64 et labels internes partout
+            (function strip(o: any) {
+                if (!o || typeof o !== "object") return;
+                if (Array.isArray(o)) return o.forEach(strip);
+                if ("base64String" in o) delete o.base64String;
+                if ("internalTextureLabel" in o) delete o.internalTextureLabel;
+                for (const k of Object.keys(o)) strip(o[k]);
+            })(data);
+
+            if (data.geometries) {
+                data.geometries.vertexData = [];
+                data.geometries.geometries = [];
+            }
+        }
+
+        console.log("[SAVE] start");
+
+        // 1) Laisse chaque GO snapshotter ses metadata si ton moteur le fait
+        try {
+            // Si GameObject n'est pas accessible ici, commente cette ligne.
+            GameObject.gameObjects?.forEach((go) => go.save?.());
+        } catch (e) {
+            console.warn("[SAVE] GameObject.save pass:", e);
+        }
+
+        // 2) Nettoyage runtime pour éviter d’embarquer des objets “exécution”
+        sanitizeRuntimeBeforeSave(scene);
+
+        // 3) Sérialisation
+        const serialized = BABYLON.SceneSerializer.Serialize(scene);
+
+        // 4) Post-sanitize du JSON (retraits défensifs)
+        postSanitizeSerializedJSON(serialized);
+
+        // 5) Écriture du fichier
+        const out = JSON.stringify(serialized); // tu peux mettre ", null, 2" si tu veux indenter
+        const filePath = ProjectManager.getFilePath("", "game.lgm");
+        FileManager.writeInFile(filePath, out, () => {
+            EditorUtils.showInfoMsg("Projet sauvegardé !");
+            console.log("[SAVE] wrote:", filePath);
+        });
+    }
+
+
+
     public static save(scene: BABYLON.Scene) {
         console.log("saving");
 
@@ -53,6 +248,8 @@ export default abstract class GameLoader {
         const editorNodes = serializedScene.transformNodes as any[];
         const meshes = serializedScene.meshes as any[];
         const materialsJSON = serializedScene.materials as any[];
+        serializedScene.environmentTexture = null; // désactiver la texture d'environment
+
 
         // Supprime récursivement toute clé "base64String" du JSON sérialisé
         const stripAllBase64 = (obj: any) => {
@@ -70,6 +267,10 @@ export default abstract class GameLoader {
         }
 
         stripAllBase64(serializedScene);
+        // vider les vertex data de la scène
+        serializedScene.geometries.vertexData = [];
+        // ne pas sauvegarder le post processing car il est ajouté pour le moment automatiquement
+        serializedScene.postProcesses = [];
 
         [editorNodes, meshes, materialsJSON, serializedScene.cameras].forEach((arr, index) => {
             let tags: string;
@@ -104,73 +305,39 @@ export default abstract class GameLoader {
                 return;
             } else {
                 editor.clearScene(scene);
-                let nodes: BABYLON.Node[] | null = null;
                 try {
-                    BABYLON.SceneLoader.AppendAsync("", projectFile, scene).then(() => {
-                        loadTextures(scene.materials);
-                        // if (!scene.environmentTexture) {
-                        //     const env = BABYLON.CubeTexture.CreateFromPrefilteredData("textures/environment.env", scene);
-                        //     scene.environmentTexture = env;
-                        //     scene.createDefaultSkybox(env, true, 1000);
-                        // }
-                        processNodes(scene);
+
+                    FileManager.readFile(projectFile, async (text: string) => {
+                        try {
+                            // On passe FileManager pour la lecture/écriture
+                            const result = await TransformsAnalyzer.appendWithTNGuards(
+                                projectFile,
+                                scene,
+                                FileManager,
+                                {
+                                    forceGuidAll: false,   // → true si tu veux que TOUS les TN aient un GUID
+                                    guidLength: 8,         // taille du GUID
+                                    keepOriginalName: true // garder les noms d’origine pour l’UI
+                                }
+                            );
+                            rebindMaterialsFromMetadataAndCleanup(scene.materials, scene);
+                            processNodes(scene);
+                            console.log("[GameLoader] Scene chargée avec succès", result);
+
+                        } catch (err) {
+                            console.error("[GameLoader] Erreur fatale de chargement", err);
+                            EditorUtils.showErrorMsg?.(String(err?.message ?? err));
+                        }
                     });
                 }
                 catch (error) {
-                    EditorUtils.showErrorMsg(error);
+                    console.error(error);
+                    //EditorUtils.showErrorMsg(error);
                 }
             }
 
             editor.states.setShowStartupModal(false);
         });
-
-        const loadTextures = (materials) => {
-
-            rebindMaterialsFromMetadataAndCleanup(scene.materials, scene);
-
-            // materials.forEach((mat, index) => {
-            //     if (mat.albedoTexture && mat.albedoTexture.metadata) {
-            //         const sourceFilename = mat.albedoTexture.metadata.sourceImg;
-            //         if (!sourceFilename)
-            //             return;
-            //         const filePath = ProjectManager.getFilePath(AssetsManager.getTexturesDirectory(), sourceFilename);
-            //         FileManager.readFile(filePath, (data) => {
-            //             // if (err) {
-            //             //     console.error('Erreur lors de la lecture du fichier :', err);
-            //             //     return;
-            //             // }
-            //             const url = Utils.convertImgToBase64URL(data, 'png');
-
-            //             // Ajout de la texture au projet
-            //             const texture = new BABYLON.Texture(url, scene, { invertY: false });
-            //             texture.name = sourceFilename;
-            //             if (!AssetsManager.textures.has(sourceFilename)) {
-            //                 AssetsManager.textures.set(sourceFilename, texture);
-            //             }
-            //             mat.albedoTexture.name += ' (old)';
-            //             // Enlever l'anciene texture
-            //             mat.albedoTexture.dispose();
-
-            //             mat.albedoTexture = AssetsManager.textures.get(sourceFilename);
-
-            //         });
-            //     }
-            // });
-
-            //const sourceFilename = materials[0].getActiveTextures()[0].metadata.source;
-        }
-
-
-        // materials.forEach((material) => {
-        //     AssetsManager.addMaterial(material);
-        //     if(material.albedoTexture){
-        //         AssetsManager.textures.set(material.albedoTexture.name,material.albedoTexture);
-        //         AssetsManager.textures.forEach(()=>{
-        //         });
-        //     }
-        // });
-        // console.log(AssetsManager._materials);
-        // console.log(AssetsManager.textures);
 
         const processNodes = (scene: BABYLON.Scene) => {
 
@@ -204,7 +371,7 @@ export default abstract class GameLoader {
                 } else {
 
                 }
-                if (nodeData?.gameObjectId) {
+                if (nodeData?.gameObjectId && !nodeData?.type) {
 
                     go = GameObject.createFromTransformNodeMetaData(node, scene);
                     if (nodeData.parentId) {
@@ -272,6 +439,131 @@ export default abstract class GameLoader {
             GameLoader.onLevelLoaded.notifyObservers(scene);
         }
 
+    }
+
+    private static _validateTN(n: any) {
+        const probs: string[] = [];
+        const id = n.id ?? n.name ?? "<no-id>";
+
+        // Type Babylon only (on garde le type custom en metadata)
+        if (n.customType && n.customType !== "BABYLON.TransformNode") {
+            probs.push(`customType non Babylon: ${n.customType}`);
+        }
+
+        // Champs obligatoires basiques
+        if (!n.id && !n.name) probs.push("missing id & name");
+
+        // Position/Rotation/Scaling
+        const isNum = (x: any) => typeof x === "number" && isFinite(x);
+        const isVec3 = (v: any) => Array.isArray(v) && v.length === 3 && v.every(isNum);
+        const isQuat = (q: any) => Array.isArray(q) && q.length === 4 && q.every(isNum);
+        if (n.position && !isVec3(n.position)) probs.push("position invalide");
+        if (n.scaling && !isVec3(n.scaling)) probs.push("scaling invalide");
+        if (n.rotation && !isVec3(n.rotation)) probs.push("rotation invalide");
+        if (n.rotationQuaternion && !isQuat(n.rotationQuaternion)) probs.push("rotationQuaternion invalide");
+        if (n.rotation && n.rotationQuaternion) probs.push("rotation & rotationQuaternion présents");
+
+        // Matrix vs TRS
+        if (n._matrix) {
+            const m = n._matrix;
+            const ok = Array.isArray(m) && m.length === 16 && m.every(isNum);
+            if (!ok) probs.push("matrix invalide (16 nombres attendus)");
+        }
+
+        // Parent
+        if (n.parentId != null && typeof n.parentId !== "string") probs.push("parentId non string");
+
+        // Junk runtime qui peut gêner
+        if (n.plugins) probs.push("plugins présent");
+        if ("physics" in n || "physicsImpostor" in n) probs.push("physics présent");
+        if ("stencil" in n) probs.push("stencil présent");
+
+        return { id, probs };
+    }
+
+    private static _fixTransformNodesIdsAndParents(data: any, forAll = false) {
+        const tns = Array.isArray(data.transformNodes) ? data.transformNodes : [];
+        if (!tns.length) return { renamed: 0 };
+
+        const oldToNew = new Map<string, string>();
+        const seen = new Map<string, number>();
+
+        // 1) générer des IDs uniques
+        for (const n of tns) {
+            let id = (n.id ?? n.name) as string | undefined;
+            if (!id || !id.trim()) id = uid.rnd(); // si rien, on met un GUID
+
+            const base = id.trim();
+            const count = (seen.get(base) ?? 0) + 1;
+            seen.set(base, count);
+
+            const needsGuid = forAll || count > 1;
+            const newId = needsGuid ? uid.rnd() : base;
+
+            if (newId !== id) oldToNew.set(id, newId);
+            n.id = newId;
+
+            // garder le name lisible (on évite les collisions visuelles)
+            if (!n.name || n.name === id) n.name = n.name || id;
+
+            // 2) standardiser le type + nettoyer le “junk”
+            if (n.customType && n.customType !== "BABYLON.TransformNode") {
+                n.metadata = n.metadata || {};
+                n.metadata.lgmCustomType = n.customType;
+            }
+            n.customType = "BABYLON.TransformNode";
+            delete n.plugins;
+            delete n.physicsImpostor;
+            delete n.physics;
+            delete n.stencil;
+        }
+
+        if (!oldToNew.size) return { renamed: 0 };
+
+        // helper
+        const patchParent = (obj: any) => {
+            if (obj && typeof obj.parentId === "string" && oldToNew.has(obj.parentId)) {
+                obj.parentId = oldToNew.get(obj.parentId);
+            }
+        };
+
+        // 3) mettre à jour toutes les références parentId
+        for (const n of tns) patchParent(n);
+        for (const m of (Array.isArray(data.meshes) ? data.meshes : [])) patchParent(m);
+        for (const c of (Array.isArray(data.cameras) ? data.cameras : [])) patchParent(c);
+        for (const l of (Array.isArray(data.lights) ? data.lights : [])) patchParent(l);
+
+        return { renamed: oldToNew.size };
+    }
+
+    private static _scanTransformNodesRaw(json: any) {
+        const issues: string[] = [];
+        const seen = new Set<string>();
+        const tns = Array.isArray(json.transformNodes) ? json.transformNodes : [];
+
+        tns.forEach((n: any, i: number) => {
+            const key = (n.id ?? n.name) || "";
+            if (!key) issues.push(`❌ Missing id/name at transformNodes[${i}]`);
+            else if (seen.has(key)) issues.push(`❌ Dup ID/Name "${key}" at transformNodes[${i}]`);
+            else seen.add(key);
+
+            const ct = n.customType;
+            if (ct && ct !== "BABYLON.TransformNode") {
+                issues.push(`❌ customType non-Babylon "${ct}" at transformNodes[${i}] (${key})`);
+            }
+            if (n.plugins) issues.push(`⚠️ plugins present at transformNodes[${i}] (${key})`);
+            if ("physicsImpostor" in n || "physics" in n) issues.push(`⚠️ physics* present at transformNodes[${i}] (${key})`);
+            if ("stencil" in n) issues.push(`⚠️ stencil present at transformNodes[${i}] (${key})`);
+        });
+
+        if (issues.length) {
+            console.groupCollapsed(`[scanTransformNodes] ${issues.length} issue(s)`);
+            for (const m of issues) console.warn(m);
+            console.groupEnd();
+        } else {
+            console.log("[scanTransformNodes] no obvious issues.");
+        }
+        return { issuesCount: issues.length, tnsCount: (json.transformNodes ?? []).length };
     }
 
     // ─── Méthode principale ─────────────────────────────────────────────────────

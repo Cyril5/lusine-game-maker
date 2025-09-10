@@ -334,6 +334,7 @@ export class Model3D extends GameObject {
 
                 //enlever le mesh root "__root__"
                 meshes[0].dispose();
+                
                 //mergedMesh!.setParent(this.transform);
                 materialsToDispose.forEach((mat) => {
                     console.log(mat);

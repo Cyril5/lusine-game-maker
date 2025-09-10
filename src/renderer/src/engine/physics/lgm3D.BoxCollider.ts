@@ -68,7 +68,7 @@ export default class BoxCollider extends Collider {
             mesh.setPositionWithLocalVector(new BABYLON.Vector3(0, 0, 0));
         }
         this._boxMesh = mesh;
-        //this._boxMesh.doNotSerialize = false;
+        this._boxMesh.doNotSerialize = true;
 
         this._boxMesh.isVisible = true;
         this._boxMesh.visibility = 0.5;

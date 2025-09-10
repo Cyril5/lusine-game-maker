@@ -158,12 +158,14 @@ export class GameObject {
     constructor(name: string, scene: BABYLON.Scene, transformNode?: BABYLON.TransformNode) {
 
         this._scene = scene;
-        const metadataId = transformNode?.metadata.gameObjectId;
+        let metadataId = transformNode?.metadata.gameObjectId;
         console.warn("FOUND ? "+metadataId+" "+GameObject._gameObjects.get(metadataId));
         this._transform = !transformNode ? new BABYLON.TransformNode(name, scene) : transformNode;
 
         if (transformNode) {
             this._transform.rotationQuaternion = transformNode.rotationQuaternion;
+            if(!metadataId)
+                metadataId = scene.getUniqueId();
             if(!GameObject._gameObjects.has(metadataId)) {
                 GameObject._gameObjects.set(metadataId, this);
                 this.setUId(metadataId);
@@ -174,8 +176,8 @@ export class GameObject {
         else{
             this._transform.metadata = {};
             this._transform.rotationQuaternion = BABYLON.Quaternion.Identity();
-            //GameObject._gameObjects.set(this.Id, this);
-            this.setUId(this.Id,false);
+            GameObject._gameObjects.set(this.Id, this);
+            this.setUId(this.Id, false);
         }
 
         this._components = new Map<string, Component>();
@@ -401,13 +403,14 @@ export class GameObject {
         this.metadata["gameObjectId"] = value;
         if (deleteOldId) {
             if (!GameObject._gameObjects.has(oldId)) {
-                console.error(`GameObject ID ${oldId} not found `);
+                console.log(`GameObject ID ${oldId} not found `);
             } else {
                 console.log("delete old id" + oldId);
                 GameObject._gameObjects.delete(oldId);
             }
         }
         this._transform.uniqueId = value;
+        console.log(`NEW GameObject ID ${value} `);
         GameObject._gameObjects.set(this._transform.uniqueId, this);
     }
 
