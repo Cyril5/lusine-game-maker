@@ -5,6 +5,7 @@ import AssetsManager from "./lgm3D.AssetsManager";
 import FileManager from "./lgm3D.FileManager";
 import { NodeIO } from '@gltf-transform/core';
 import { assignToMatchingSlot, copyTexProps } from "./utils/MaterialUtils";
+import { TransformsAnalyzer } from "./utils/lgm3D.TransformsAnalyzer";
 
 export class Model3D extends GameObject {
 
@@ -236,6 +237,19 @@ export class Model3D extends GameObject {
                     return;
                 }
 
+                if(!arg.options.autoReuseMaterials) { // si on est pas en import auto                    
+                    TransformsAnalyzer.sanitizeImportedNodes(
+                        this.scene,
+                        meshes,
+                        (meshes as any).transformNodes ?? [], // selon ta version, ImportMeshAsync renvoie tns
+                        {
+                            forceGuidAll: false,   // mets true si tu veux GUID pour tous les TN/meshes
+                            guidLength: 10,
+                            keepOriginalName: true // conserve les "name" du GLB pour l’UI
+                        }
+                    );
+                }
+
                 const materialsToDispose = new Set<BABYLON.Material>();
                 const importedMats = this._getAllMaterialsFromMeshes(meshes);
 
@@ -261,7 +275,7 @@ export class Model3D extends GameObject {
                             const idx = normalized.indexOf("Models");
                             let location = normalized;
                             if (idx !== -1) {
-                                location = normalized.substring(idx); 
+                                location = normalized.substring(idx);
                             }
 
                             console.log(location);
@@ -334,7 +348,7 @@ export class Model3D extends GameObject {
 
                 //enlever le mesh root "__root__"
                 meshes[0].dispose();
-                
+
                 //mergedMesh!.setParent(this.transform);
                 materialsToDispose.forEach((mat) => {
                     console.log(mat);

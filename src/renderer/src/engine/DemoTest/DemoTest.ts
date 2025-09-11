@@ -20,6 +20,7 @@ export default class DemoTest {
     }
 
     init = (scene: BABYLON.Scene) => {
+        return; // Juste pour le test de l'éditeur
 
         if (!DemoTest.init)
             return;
@@ -35,7 +36,7 @@ export default class DemoTest {
     }
 
     onGameUpdate() {
-        this.tankA.update();
+        this.tankA?.update();
         //this.tankB.update();
     }
     

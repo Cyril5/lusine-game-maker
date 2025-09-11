@@ -3,16 +3,13 @@ import FileManager from "@renderer/engine/lgm3D.FileManager";
 import EditorUtils from "./EditorUtils";
 import { GameObject } from "@renderer/engine/GameObject";
 import { Model3D } from "@renderer/engine/lgm3D.Model3D";
-import { ProgrammableGameObject } from "@renderer/engine/ProgrammableGameObject";
 import StateEditorUtils from "./StateEditorUtils";
 import BoxCollider from "@renderer/engine/physics/lgm3D.BoxCollider";
-import AssetsManager from "../engine/lgm3D.AssetsManager";
 import Utils from "@renderer/engine/utils/lgm3D.Utils";
 import LGM3DEditor from "./LGM3DEditor";
-import { SceneSerializer } from "@babylonjs/core";
 
 // ESM uniquement
-import { Material, Observable, SceneLoader } from "@babylonjs/core";
+import { Material, Observable} from "@babylonjs/core";
 import "@babylonjs/core/Loading/Plugins/babylonFileLoader";   // plugin .babylon
 import "@babylonjs/core/Materials/standardMaterial";          // Standard
 import "@babylonjs/core/Materials/PBR/pbrMaterial";           // PBR
@@ -36,16 +33,6 @@ export default abstract class GameLoader {
         this._scene = scene;
         GameLoader.onLevelLoaded = new Observable();
     }
-
-    // private static onProgressSceneLoader(event : BABYLON.ISceneLoaderProgressEvent) {
-    //     let loadedPercent = 0;
-    //     if (event.lengthComputable) {
-    //         loadedPercent = (event.loaded * 100 / event.total).toFixed();
-    //     } else {
-    //         var dlCount = event.loaded / (1024 * 1024);
-    //         loadedPercent = Math.floor(dlCount * 100.0) / 100.0;
-    //     }
-    // };
 
     public static saveV2(scene: BABYLON.Scene) {
 
@@ -231,8 +218,6 @@ export default abstract class GameLoader {
         });
     }
 
-
-
     public static save(scene: BABYLON.Scene) {
         console.log("saving");
 
@@ -301,7 +286,6 @@ export default abstract class GameLoader {
 
             if (isEmpty) {
                 editor.setupBaseScene();
-                //EditorUtils.showErrorMsg("Projet invalide !");
                 return;
             } else {
                 editor.clearScene(scene);
@@ -439,131 +423,6 @@ export default abstract class GameLoader {
             GameLoader.onLevelLoaded.notifyObservers(scene);
         }
 
-    }
-
-    private static _validateTN(n: any) {
-        const probs: string[] = [];
-        const id = n.id ?? n.name ?? "<no-id>";
-
-        // Type Babylon only (on garde le type custom en metadata)
-        if (n.customType && n.customType !== "BABYLON.TransformNode") {
-            probs.push(`customType non Babylon: ${n.customType}`);
-        }
-
-        // Champs obligatoires basiques
-        if (!n.id && !n.name) probs.push("missing id & name");
-
-        // Position/Rotation/Scaling
-        const isNum = (x: any) => typeof x === "number" && isFinite(x);
-        const isVec3 = (v: any) => Array.isArray(v) && v.length === 3 && v.every(isNum);
-        const isQuat = (q: any) => Array.isArray(q) && q.length === 4 && q.every(isNum);
-        if (n.position && !isVec3(n.position)) probs.push("position invalide");
-        if (n.scaling && !isVec3(n.scaling)) probs.push("scaling invalide");
-        if (n.rotation && !isVec3(n.rotation)) probs.push("rotation invalide");
-        if (n.rotationQuaternion && !isQuat(n.rotationQuaternion)) probs.push("rotationQuaternion invalide");
-        if (n.rotation && n.rotationQuaternion) probs.push("rotation & rotationQuaternion présents");
-
-        // Matrix vs TRS
-        if (n._matrix) {
-            const m = n._matrix;
-            const ok = Array.isArray(m) && m.length === 16 && m.every(isNum);
-            if (!ok) probs.push("matrix invalide (16 nombres attendus)");
-        }
-
-        // Parent
-        if (n.parentId != null && typeof n.parentId !== "string") probs.push("parentId non string");
-
-        // Junk runtime qui peut gêner
-        if (n.plugins) probs.push("plugins présent");
-        if ("physics" in n || "physicsImpostor" in n) probs.push("physics présent");
-        if ("stencil" in n) probs.push("stencil présent");
-
-        return { id, probs };
-    }
-
-    private static _fixTransformNodesIdsAndParents(data: any, forAll = false) {
-        const tns = Array.isArray(data.transformNodes) ? data.transformNodes : [];
-        if (!tns.length) return { renamed: 0 };
-
-        const oldToNew = new Map<string, string>();
-        const seen = new Map<string, number>();
-
-        // 1) générer des IDs uniques
-        for (const n of tns) {
-            let id = (n.id ?? n.name) as string | undefined;
-            if (!id || !id.trim()) id = uid.rnd(); // si rien, on met un GUID
-
-            const base = id.trim();
-            const count = (seen.get(base) ?? 0) + 1;
-            seen.set(base, count);
-
-            const needsGuid = forAll || count > 1;
-            const newId = needsGuid ? uid.rnd() : base;
-
-            if (newId !== id) oldToNew.set(id, newId);
-            n.id = newId;
-
-            // garder le name lisible (on évite les collisions visuelles)
-            if (!n.name || n.name === id) n.name = n.name || id;
-
-            // 2) standardiser le type + nettoyer le “junk”
-            if (n.customType && n.customType !== "BABYLON.TransformNode") {
-                n.metadata = n.metadata || {};
-                n.metadata.lgmCustomType = n.customType;
-            }
-            n.customType = "BABYLON.TransformNode";
-            delete n.plugins;
-            delete n.physicsImpostor;
-            delete n.physics;
-            delete n.stencil;
-        }
-
-        if (!oldToNew.size) return { renamed: 0 };
-
-        // helper
-        const patchParent = (obj: any) => {
-            if (obj && typeof obj.parentId === "string" && oldToNew.has(obj.parentId)) {
-                obj.parentId = oldToNew.get(obj.parentId);
-            }
-        };
-
-        // 3) mettre à jour toutes les références parentId
-        for (const n of tns) patchParent(n);
-        for (const m of (Array.isArray(data.meshes) ? data.meshes : [])) patchParent(m);
-        for (const c of (Array.isArray(data.cameras) ? data.cameras : [])) patchParent(c);
-        for (const l of (Array.isArray(data.lights) ? data.lights : [])) patchParent(l);
-
-        return { renamed: oldToNew.size };
-    }
-
-    private static _scanTransformNodesRaw(json: any) {
-        const issues: string[] = [];
-        const seen = new Set<string>();
-        const tns = Array.isArray(json.transformNodes) ? json.transformNodes : [];
-
-        tns.forEach((n: any, i: number) => {
-            const key = (n.id ?? n.name) || "";
-            if (!key) issues.push(`❌ Missing id/name at transformNodes[${i}]`);
-            else if (seen.has(key)) issues.push(`❌ Dup ID/Name "${key}" at transformNodes[${i}]`);
-            else seen.add(key);
-
-            const ct = n.customType;
-            if (ct && ct !== "BABYLON.TransformNode") {
-                issues.push(`❌ customType non-Babylon "${ct}" at transformNodes[${i}] (${key})`);
-            }
-            if (n.plugins) issues.push(`⚠️ plugins present at transformNodes[${i}] (${key})`);
-            if ("physicsImpostor" in n || "physics" in n) issues.push(`⚠️ physics* present at transformNodes[${i}] (${key})`);
-            if ("stencil" in n) issues.push(`⚠️ stencil present at transformNodes[${i}] (${key})`);
-        });
-
-        if (issues.length) {
-            console.groupCollapsed(`[scanTransformNodes] ${issues.length} issue(s)`);
-            for (const m of issues) console.warn(m);
-            console.groupEnd();
-        } else {
-            console.log("[scanTransformNodes] no obvious issues.");
-        }
-        return { issuesCount: issues.length, tnsCount: (json.transformNodes ?? []).length };
     }
 
     // ─── Méthode principale ─────────────────────────────────────────────────────

@@ -12,5 +12,3 @@ if errorlevel 1 (
 ) else (
     echo HavokPhysics.wasm OK!
 )
-
-pause
