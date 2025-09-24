@@ -320,6 +320,7 @@ export class Model3D extends GameObject {
                         }
                     } else {
                         mat.name = this._getUniqueMaterialName(arg.scene, originalName);
+                        AssetsManager.addMaterial(mat);
                     }
                 });
 

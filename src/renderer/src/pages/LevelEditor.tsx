@@ -22,6 +22,7 @@ const LevelEditor = (props) => {
 
     const [objetJeu, setObjetJeu] = useState<GameObject | null>(null);
     const [gameObjects, setGameObjects] = useState(null);
+    const [key, setKey] = useState(1);
 
     // Cela permet de simplifier la syntaxe lorsque vous voulez accéder à une propriété d'un objet. Au lieu d'écrire props.gameObjects à plusieurs endroits, vous pouvez simplement écrire gameObjects.
     const { gameobjectslist, showgameobjectstreemodal } = props;
@@ -66,6 +67,7 @@ const LevelEditor = (props) => {
                     <DockDesk>
                         <DockableWindowPanel className="panel" id="hierarchy" title="Hierarchy" initialPlacement={{ mode: "dock", zone: "left" }}>
                             <div className="treeViewObjects">
+                                
                                 <GameObjectsTreeModal gameobjectslist={gameObjects} show={false} />
                             </div>
                         </DockableWindowPanel>
@@ -80,16 +82,13 @@ const LevelEditor = (props) => {
                         <DockableWindowPanel id="renderer" title="renderer" initialPlacement={{ mode: "dock", zone: "center" }}>
                             <RendererComponent />
                         </DockableWindowPanel>
-                        <DockableWindowPanel id="assets" title="Assets" initialPlacement={{ mode: "dock", zone: "bottom" }}>
-                            <Tabs activeKey={1}>
-                                <Tab eventKey={1} title={<span><FontAwesomeIcon icon="cube" /> Materiaux</span>}>
+                        <DockableWindowPanel id="south-panel" title="" initialPlacement={{ mode: "dock", zone: "bottom" }}>
+                            <Tabs activeKey={key} onSelect={(k) => setKey(k)}>
+                                <Tab eventKey={1} title={<span><FontAwesomeIcon icon="cube" />  Materiaux</span>}>
                                     <MaterialsList></MaterialsList>
                                 </Tab>
-                                <Tab eventKey={2} title={<span><FontAwesomeIcon icon="diagram-project" />
-                                    Modèles</span>}>
-                                </Tab>
-                                <Tab eventKey={3} title={<span><FontAwesomeIcon icon="image" />
-                                    Textures</span>}>
+                                <Tab eventKey={2} title={<span><FontAwesomeIcon icon="terminal" />  Console</span>}>
+                                    <ConsoleModal></ConsoleModal>
                                 </Tab>
                             </Tabs>
                         </DockableWindowPanel>

@@ -22,6 +22,7 @@ import { rebindMaterialsFromMetadataAndCleanup } from "@renderer/engine/utils/Ma
 
 import ShortUniqueId from "short-unique-id";
 import { TransformsAnalyzer } from "@renderer/engine/utils/lgm3D.TransformsAnalyzer";
+import AssetsManager from "@renderer/engine/lgm3D.AssetsManager";
 const uid = new ShortUniqueId({ length: 10 });
 
 export default abstract class GameLoader {
@@ -306,6 +307,10 @@ export default abstract class GameLoader {
                             );
                             rebindMaterialsFromMetadataAndCleanup(scene.materials, scene);
                             processNodes(scene);
+                            scene.materials.forEach(mat => {
+                                AssetsManager.addMaterial(mat);
+                            });
+
                             console.log("[GameLoader] Scene chargée avec succès", result);
 
                         } catch (err) {

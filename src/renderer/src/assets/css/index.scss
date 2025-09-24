@@ -20,6 +20,19 @@
   width: 100%;
 }
 
+.materialsList {
+  display: flex;
+  border: 1px solid #ff0000c4;
+  flex-wrap: wrap;
+  height: 100%;
+  width: 100%;
+  margin-right: 256px;
+
+  .materialItem {
+    margin: 5px;
+  }
+}
+
 #loadingScreen {
   position: absolute;
   left: 0;

@@ -1,12 +1,10 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useEffect, useRef, useState } from 'react';
-import { Card, Col, Container, Form, ProgressBar, Row, Stack } from 'react-bootstrap';
+import { Container, Form, ProgressBar, Row, Stack } from 'react-bootstrap';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
-import ProjectManager from '@renderer/editor/ProjectManager';
 import EditorUtils from '@renderer/editor/EditorUtils';
 import LGM3DEditor from '@renderer/editor/LGM3DEditor';
-import FileManager from '@renderer/engine/lgm3D.FileManager';
 import AssetsManager from '@renderer/engine/lgm3D.AssetsManager';
 
 // import modelsDirectory from '../public/projects/MonProjet/models?url';

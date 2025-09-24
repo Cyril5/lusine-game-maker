@@ -1,5 +1,5 @@
 import React from "react";
-import { setGameObjects } from "./EditorStore";
+import { setGameObjects, setMaterialIds} from "./EditorStore";
 import EditorCameraManager from "./EditorCameraManager";
 import { Renderer } from "@renderer/engine/Renderer";
 import { GameObject } from "@renderer/engine/GameObject";
@@ -81,9 +81,9 @@ export class LGM3D_COMMANDS {
         GameObject.getById(goId).metadata;
     }
 
-    getChildOf(goId, indexChild) : BABYLON.Node | null {
+    getChildOf(goId, indexChild): BABYLON.Node | null {
         const children = GameObject.getById(goId).transform.getChildren();
-        if(children.length === 0) {
+        if (children.length === 0) {
             console.warn('This object has not any children');
             return null;
         }
@@ -150,7 +150,15 @@ export default class LGM3DEditor {
 
             this._renderer = Renderer.getInstance();
         });
+        AssetsManager.onMaterialsListChanged.add(this.onMaterialsListChangedEvent);
 
+    }
+
+    onMaterialsListChangedEvent() {
+        // Récupère les IDs uniques des matériaux de l’AssetManager
+        const ids = Array.from(AssetsManager._materials.values()).map(m => m.uniqueId);
+        // Envoie la liste d’IDs au store
+        setMaterialIds(ids);
     }
 
     undo(): void {
@@ -338,6 +346,7 @@ export default class LGM3DEditor {
         }
 
         this._selectedGO?.onLocalTransformChanged.removeCallback(this._onLocalTransformGameObjectSelectedChanged);
+        this._selectedGO?.onWorldTransformChanged.removeCallback(this._onWorldTransformGameObjectSelectedChanged);
         this._selectedGO = go;
         this.selectedGameObject?.onLocalTransformChanged.add(this._onLocalTransformGameObjectSelectedChanged);
         this.selectedGameObject?.onWorldTransformChanged.add(this._onWorldTransformGameObjectSelectedChanged);
@@ -449,6 +458,7 @@ export default class LGM3DEditor {
             }
         }
     }
+
     updateObjetJeu = (objetJeu: GameObject) => {
 
         if (!objetJeu) {
