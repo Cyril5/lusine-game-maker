@@ -53,7 +53,7 @@ export default class EditorCameraManager {
         this._yaw = this._targetYaw = Math.atan2(f.x, f.z);
         this._pitch = this._targetPitch = Math.asin(clamp(f.y, -1, 1));
 
-        Game.getInstance().onGameStarted.add(()=>{
+        Game.getInstance().onGameStarted.add(() => {
             this._camera.inputs.attached.mouse.detachControl();
             this._camera.inputs.attached.keyboard.detachControl();
         });
@@ -63,16 +63,26 @@ export default class EditorCameraManager {
 
         scene.onPointerObservable.add(pi => {
 
-            if(Game.getInstance().isRunning) return;
-            
+            if (Game.getInstance().isRunning) return;
+
             if (pi.type === BABYLON.PointerEventTypes.POINTERWHEEL) this._onWheel(pi.event as WheelEvent);
             if (pi.type === BABYLON.PointerEventTypes.POINTERDOWN) this._onPointerDown(pi.event as PointerEvent);
             if (pi.type === BABYLON.PointerEventTypes.POINTERUP) this._onPointerUp(pi.event as PointerEvent);
             if (pi.type === BABYLON.PointerEventTypes.POINTERMOVE) this._onPointerMove(pi.event as PointerEvent);
         });
 
-        window.addEventListener("keydown", e => this._onKey(e, true));
-        window.addEventListener("keyup", e => this._onKey(e, false));
+        // rendre le canvas focusable
+        if (!this._canvas.hasAttribute("tabindex")) {
+            this._canvas.tabIndex = 0;
+        }
+
+        // quand on clique dans la viewport → focus clavier
+        this._canvas.addEventListener("pointerdown", () => {
+            this._canvas.focus();
+        });
+
+        this._canvas.addEventListener("keydown", e => this._onKey(e, true));
+        this._canvas.addEventListener("keyup", e => this._onKey(e, false));
         this._scene.onBeforeRenderObservable.add(() => this._update());
     }
 
@@ -191,7 +201,7 @@ export default class EditorCameraManager {
     // ====== Update ======
     private _update() {
 
-        if(Game.getInstance().isRunning) return;
+        if (Game.getInstance().isRunning) return;
 
         const dt = this._scene.getEngine().getDeltaTime() / 1000;
 

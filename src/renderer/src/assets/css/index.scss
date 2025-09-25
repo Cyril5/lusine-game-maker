@@ -1,4 +1,3 @@
-
 .mdiRoot {
   height: 100vh;
   width: 100%;
@@ -22,21 +21,27 @@
 
 .materialsList {
   display: flex;
-  border: 1px solid #ff0000c4;
+  // border: 1px solid #ff0000c4;
   flex-wrap: wrap;
   height: 100%;
   width: 100%;
   margin-right: 256px;
+    transition: width 0.3s ease-in-out; /* anime le width */
+
 
   .materialItem {
     margin: 5px;
   }
 }
 
+.materialsList.shrinked {
+  width: calc(100% - 300px); /* réduit de 300px (largeur approx de l’Offcanvas) */
+}
+
 #loadingScreen {
   position: absolute;
   left: 0;
-  top	: 0;
+  top: 0;
   display: none;
   align-items: center;
   justify-content: center;
@@ -48,10 +53,13 @@
   background-color: rgba(30, 27, 36, 100%);
   z-index: 1054;
   opacity: 1;
-  transition: opacity 2s ease; /* Transition sur l'opacité */
+  transition: opacity 2s ease;
+
+  /* Transition sur l'opacité */
   .hide {
     display: none;
-    opacity: 0; /* Assure que la div est invisible lorsqu'elle est cachée */
+    opacity: 0;
+    /* Assure que la div est invisible lorsqu'elle est cachée */
   }
 
   .havok {
@@ -60,20 +68,23 @@
     bottom: 50px;
     display: flex;
     height: 45px;
-    p{
+
+    p {
       font-size: 0.8rem;
       margin-right: 10px;
     }
+
     img {
       margin-top: 5px;
       height: 100%;
     }
   }
-  
+
   @keyframes rotateYAnimation {
     from {
       transform: rotateY(0deg);
     }
+
     to {
       transform: rotateY(360deg);
     }
@@ -83,8 +94,10 @@
 .div3d {
   width: 100%;
   height: 100%;
-  transform-style: preserve-3d; /* Indique que les enfants doivent être positionnés dans un espace 3D */
+  transform-style: preserve-3d;
+  /* Indique que les enfants doivent être positionnés dans un espace 3D */
   animation: rotateYAnimation 2s linear infinite;
+
   img {
     width: 50%;
     padding-bottom: 25px;
@@ -107,16 +120,17 @@
 
 .properties-btn {
   position: absolute;
-  top:215px;
+  top: 215px;
   right: 0;
   width: 32px;
   height: 150px;
   writing-mode: vertical-rl;
   text-orientation: upright;
 }
+
 .console-btn {
   position: absolute;
-  top:365px;
+  top: 365px;
   right: 0;
   width: 32px;
   height: 150px;
@@ -158,6 +172,7 @@
     left: 0;
     top: 0;
   }
+
   .resize-handle-e {
     width: 3px;
     height: 100vh;
@@ -194,8 +209,9 @@
 
 
 body {
-// background-color: #242424;
-//   color: rgba(255, 255, 255, 0.87);
+
+  // background-color: #242424;
+  //   color: rgba(255, 255, 255, 0.87);
   ul {
     list-style: none;
     padding-left: 16px;
@@ -272,4 +288,3 @@ body {
 //     background-color: #f9f9f9;
 //   }
 // }
-

@@ -1,6 +1,49 @@
 import ProjectManager from "@renderer/editor/ProjectManager";
-import FileManager from "../lgm3D.FileManager";
-import AssetsManager from "../lgm3D.AssetsManager";
+
+export type MaterialMeta = {
+  textures?: {
+    albedo?: string;
+    normal?: string;
+    metallicRoughness?: string;
+    emissive?: string;
+    opacity?: string;
+    [k: string]: any;
+  };
+  [k: string]: any;
+};
+
+/** S'assure que mat.metadata existe et possède un objet textures. Retourne la ref metadata. */
+export function ensureMaterialTexturesMeta(mat: BABYLON.Material): MaterialMeta {
+  const anyMat = mat as BABYLON.Material & { metadata?: MaterialMeta };
+  if (!anyMat.metadata) anyMat.metadata = {};
+  if (!anyMat.metadata.textures || typeof anyMat.metadata.textures !== "object") {
+    anyMat.metadata.textures = {};
+  }
+  return anyMat.metadata;
+}
+
+/** Écrit un chemin de texture dans metadata.textures[slot] (normalisé en project-relative) */
+export function setMaterialTexturePath(
+  mat: BABYLON.Material,
+  slot: keyof NonNullable<MaterialMeta["textures"]>,
+  path: string
+) {
+  const meta = ensureMaterialTexturesMeta(mat);
+  meta.textures![slot as string] = toProjectRelative(path.trim());
+}
+
+function toProjectRelative(path: string): string {
+  const root = (ProjectManager._currentProjectDir || "").replace(/\\/g, "/");
+  const p = path.replace(/\\/g, "/");
+  if (root && p.startsWith(root + "/")) return p.slice(root.length + 1);
+  return p;
+}
+
+/** Lit un chemin de texture (project-relative) depuis metadata.textures[slot] */
+export function getMaterialTexturePath(mat: BABYLON.Material, slot: keyof NonNullable<MaterialMeta["textures"]>): string | undefined {
+  const meta = (mat as any).metadata as MaterialMeta | undefined;
+  return meta?.textures?.[slot as string];
+}
 
 export function copyTexProps(dst: BABYLON.Texture, src: BABYLON.BaseTexture) {
     const s = src as BABYLON.Texture;

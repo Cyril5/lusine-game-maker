@@ -47,7 +47,8 @@ function createWindow(): void {
         message: 'Erreur : '+message,
         detail: `${sourceId} : ${line}`};
 
-        dialog.showMessageBox(null, options);
+        //dialog.showMessageBox(null, options);
+         mainWindow.webContents.send('console-error', { level, message, line, sourceId });
     }
   });
 

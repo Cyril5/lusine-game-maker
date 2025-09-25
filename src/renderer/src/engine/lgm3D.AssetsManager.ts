@@ -2,6 +2,10 @@ import ProjectManager from "@renderer/editor/ProjectManager";
 
 export default class AssetsManager {
 
+    static getMaterialById(matId: Number) {
+        return this._materials.get(matId);
+    }
+
     public static textures : Map<string,BABYLON.Texture> = new Map<string,BABYLON.Texture>();
     static _materials : Map<Number,BABYLON.Material> = new Map<Number,BABYLON.Material>();
     public static onMaterialsListChanged: BABYLON.Observable<void> = new BABYLON.Observable();
