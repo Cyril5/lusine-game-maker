@@ -17,7 +17,7 @@ import "@babylonjs/core/Materials/PBR/pbrMetallicRoughnessMaterial"; // pour __G
 import "@babylonjs/serializers";
 
 import { Rigidbody } from "@renderer/engine/physics/lgm3D.Rigidbody";
-import { FiniteStateMachine } from "@renderer/engine/FSM/lgm3D.FiniteStateMachine";
+import { FiniteStateMachine } from "@renderer/engine/FSM/lgm3D.FiniteStateMachineOLD";
 import { rebindMaterialsFromMetadataAndCleanup } from "@renderer/engine/utils/MaterialUtils";
 
 import ShortUniqueId from "short-unique-id";

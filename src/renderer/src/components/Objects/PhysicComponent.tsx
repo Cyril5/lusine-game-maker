@@ -39,7 +39,7 @@ const PhysicComponent = (gameObjectId) => {
     const go = LGM3DEditor.getInstance().selectedGameObject;
     if (go) {
       return;
-      rigidbodyRef.current = go.getComponent<Rigidbody>("Rigidbody");
+      rigidbodyRef.current = go.getComponentOfType<Rigidbody>("Rigidbody");
       //setPhysicsEnabled(go.rigidbody != null);
       if (rigidbodyRef.current) {
         setMotionTypeTitle(rigidbodyRef.current.options.type);

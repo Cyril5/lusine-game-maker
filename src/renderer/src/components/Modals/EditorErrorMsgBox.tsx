@@ -96,6 +96,9 @@ export default function ErrorCenter() {
     () => (
       <>
         Erreurs <Badge bg="danger">{count}</Badge>
+        <Button variant="outline-danger" size="sm" onClick={() => dispatch({ type: "CLEAR" })}>
+          Clear all
+        </Button>
       </>
     ),
     [count]
@@ -165,9 +168,7 @@ export default function ErrorCenter() {
           <Button variant="outline-secondary" size="sm" onClick={() => dispatch({ type: "SHOW", value: false })}>
             Masquer
           </Button>
-          <Button variant="outline-danger" size="sm" onClick={() => dispatch({ type: "CLEAR" })}>
-            Clear all
-          </Button>
+
         </div>
       </Offcanvas.Body>
     </Offcanvas>

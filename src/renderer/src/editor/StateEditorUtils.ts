@@ -1,4 +1,4 @@
-import { IStateFile } from "@renderer/engine/FSM/IStateFile";
+import { IStateFile } from "@renderer/engine/FSM/IStateFileOld";
 import { Game } from "@renderer/engine/Game";
 import Editor from "../components/EditorOld";
 import BaseStateFile from '@renderer/assets/BaseStateFile.xml?raw';

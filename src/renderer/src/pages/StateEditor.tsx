@@ -7,22 +7,23 @@ import '../assets/css/states-editor.scss';
 
 import Blockly from 'blockly';
 import { TypedVariableModal } from '@blockly/plugin-typed-variable-modal';
-import toolboxXml from '../assets/blocks/toolbox.xml?raw'; // ?raw to import as string
+//import toolboxXml from '../assets/blocks/toolbox.xml?raw'; // ?raw to import as string
 import LusineBlocksDarkTheme from '../engine/blocks/themes/lusine-gm-dark'
-import '../engine/blocks/blocksDefs';
+//import '../engine/blocks/blocksDefs';
 import { javascriptGenerator } from 'blockly/javascript';
 //import '@blockly/block-plus-minus';
 import * as Fr from 'blockly/msg/fr';
 import { Button, Col, Container, Dropdown, Offcanvas, Row } from 'react-bootstrap';
-import StateFilesTreeView from '@renderer/components/StateFilesTreeView';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { EditorAlertType } from '@renderer/components/EditorAlert';
 import FileManager from '@renderer/engine/lgm3D.FileManager';
-import { IStateFile } from '@renderer/engine/FSM/IStateFile';
+import { IStateFile } from '@renderer/engine/FSM/IStateFileOld';
 import StateEditorUtils from '@renderer/editor/StateEditorUtils';
 import EditorUtils from '@renderer/editor/EditorUtils';
 import CustomPrompt from '@renderer/components/StatesEditor/CustomPrompt';
-import { pythonGenerator } from 'blockly/python';
+import { buildToolboxDom } from '@renderer/editor/ToolboxBlocksBuilder';
+import { RigidbodyManifest, registerRigidbodyBlocks } from "lgm3d-rigidbody-blocks";
+
 
 //const serializer: Blockly.serialization.blocks.BlockSerializer = new Blockly.serialization.blocks.BlockSerializer();
 
@@ -30,7 +31,7 @@ const StateEditor = (statefiles = StateEditorUtils.getStatesFiles(), resizeWorks
 
 
     const [currentStateFile, setCurrentStateFile] = useState<IStateFile>(props.initStateFile); // IStateFile
-    const [mapStateFiles, setMapStateFiles] = useState<Map<string,IStateFile> | null>(null);
+    const [mapStateFiles, setMapStateFiles] = useState<Map<string, IStateFile> | null>(null);
     const [showOutputCodeModal, setShowOutputCodeModal] = useState(false);
 
     const blocklyDivRef = useRef(null);
@@ -87,20 +88,19 @@ const StateEditor = (statefiles = StateEditorUtils.getStatesFiles(), resizeWorks
 
         console.log("use effect state editor");
 
+        registerRigidbodyBlocks();
+
+        const toolboxDom = buildToolboxDom(
+            [RigidbodyManifest],
+            {
+                // prependXml/appendXml si tu veux ajouter des catégories custom à la main
+                // include: (cat, manifest) => true // pour filtrer globalement
+            }
+        );
+
         workspaceRef.current = Blockly.inject(blocklyDivRef.current, {
             theme: LusineBlocksDarkTheme,
-            // toolbox: `
-            //   <xml>
-            //     <block type="controls_if"></block>
-            //     <block type="controls_repeat_ext"></block>
-            //     <block type="logic_compare"></block>
-            //     <block type="math_number"></block>
-            //     <block type="math_arithmetic"></block>
-            //     <block type="text"></block>
-            //     <block type="text_print"></block>
-            //   </xml>
-            // `
-            toolbox: toolboxXml,
+            toolbox: toolboxDom,
             grid: {
                 spacing: 25,
                 length: 3,
@@ -155,11 +155,15 @@ const StateEditor = (statefiles = StateEditorUtils.getStatesFiles(), resizeWorks
             // }
         }
 
-        workspaceRef.current.addChangeListener(onChangeWorkspace);
-        const typedVarModal = new TypedVariableModal(workspaceRef.current, 'callbackName', [["Nombre", "Number"], ["Texte", "String"], ["Booléen", "Boolean"]]);
-        typedVarModal.init();
-
-        workspaceRef.current.registerToolboxCategoryCallback('CREATE_TYPED_VARIABLE', createFlyout);
+        if (workspaceRef.current) {
+            //workspaceRef.current.updateToolbox(toolboxDom);
+            workspaceRef.current.addChangeListener(onChangeWorkspace);
+            const typedVarModal = new TypedVariableModal(workspaceRef.current, 'callbackName', [["Nombre", "Number"], ["Texte", "String"], ["Booléen", "Boolean"]]);
+            typedVarModal.init();
+            workspaceRef.current.registerToolboxCategoryCallback('CREATE_TYPED_VARIABLE', createFlyout);
+        } else {
+            console.error("workspace blocks is null");
+        }
 
 
         /** Override Blockly.dialog.setPrompt() with custom implementation. 
@@ -206,11 +210,11 @@ const StateEditor = (statefiles = StateEditorUtils.getStatesFiles(), resizeWorks
 
     const updateCodeFromCodeEditor = () => {
         //javascriptGenerator.addReservedWords('code');
-        const lang : string = 'javascript'; // ou 'python'
-        
+        const lang: string = 'javascript'; // ou 'python'
+
         const code: string = javascriptGenerator.workspaceToCode(workspaceRef.current);
         //const code = pythonGenerator.workspaceToCode(workspaceRef.current);
-        
+
         if (lang == 'javascript' && code !== "") {
             //setCode(currentStateFile.outputCode);
             const updatedCode = code.replace(/\bvar\b/g, 'let'); // Remplacez toutes les occurrences de "var" par "let"
@@ -288,8 +292,6 @@ const StateEditor = (statefiles = StateEditorUtils.getStatesFiles(), resizeWorks
     const newWorkspace = (): void => {
 
         if (currentStateFile) {
-            const { dialog } = require('@electron/remote');
-
             const options = {
                 type: 'warning',
                 title: `Confirmation avant création fichier d'état`,
@@ -474,7 +476,7 @@ const StateEditor = (statefiles = StateEditorUtils.getStatesFiles(), resizeWorks
 
         if (confirm === 0) {
             FileManager.deleteFile(currentStateFile.codeFilename, () => {
-                
+
                 FileManager.deleteFile(currentStateFile.filename, () => {
                     StateEditorUtils.removeStateFile(currentStateFile.name);
                     setMapStateFiles(StateEditorUtils.getStatesFiles());

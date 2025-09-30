@@ -1,8 +1,12 @@
 import Component from "./lgm3D.Component";
 import { Observable } from "babylonjs";
 import Utils from "./utils/lgm3D.Utils";
+import ShortUniqueId from "short-unique-id";
+
+const uid = new ShortUniqueId({ length: 6 });
 
 export class GameObject {
+
 
     private _parent?: GameObject;
     private _wmObs: BABYLON.Observer<BABYLON.TransformNode>;
@@ -78,8 +82,8 @@ export class GameObject {
     get worldPosition() {
         return this._transform.getAbsolutePosition();
     }
-    setWorldPosition(v : BABYLON.Vector3) {
-        if(!Utils.vector3Equals(this._transform.absolutePosition, v)) {
+    setWorldPosition(v: BABYLON.Vector3) {
+        if (!Utils.vector3Equals(this._transform.absolutePosition, v)) {
             this._transform.setAbsolutePosition(v);
             this.onWorldTransformChanged.notifyObservers(this);
         }
@@ -117,7 +121,7 @@ export class GameObject {
         this.onLocalTransformChanged.notifyObservers(this);
     }
 
-    get worldRotationQuaternion() {return this._transform.absoluteRotationQuaternion}
+    get worldRotationQuaternion() { return this._transform.absoluteRotationQuaternion }
 
     // --- Rotation (Quaternion local) ---
     get rotationQuaternion() { return this._transform.rotationQuaternion; }
@@ -159,21 +163,21 @@ export class GameObject {
 
         this._scene = scene;
         let metadataId = transformNode?.metadata.gameObjectId;
-        console.warn("FOUND ? "+metadataId+" "+GameObject._gameObjects.get(metadataId));
+        console.warn("FOUND ? " + metadataId + " " + GameObject._gameObjects.get(metadataId));
         this._transform = !transformNode ? new BABYLON.TransformNode(name, scene) : transformNode;
 
         if (transformNode) {
             this._transform.rotationQuaternion = transformNode.rotationQuaternion;
-            if(!metadataId)
+            if (!metadataId)
                 metadataId = scene.getUniqueId();
-            if(!GameObject._gameObjects.has(metadataId)) {
+            if (!GameObject._gameObjects.has(metadataId)) {
                 GameObject._gameObjects.set(metadataId, this);
                 this.setUId(metadataId);
             }
             else
                 console.error(`GameObjectId ${metadataId} already exists`);
         }
-        else{
+        else {
             this._transform.metadata = {};
             this._transform.rotationQuaternion = BABYLON.Quaternion.Identity();
             GameObject._gameObjects.set(this.Id, this);
@@ -186,7 +190,7 @@ export class GameObject {
         //        this._transform = new TransformComponent(this, name, scene);
 
         // Capte TOUT (gizmos / code / physique) mais filtre via matrice relative
-        this._wmObs = this.transform.onAfterWorldMatrixUpdateObservable.add(()=>this._onAfterWorldMatrixUpdate());
+        this._wmObs = this.transform.onAfterWorldMatrixUpdateObservable.add(() => this._onAfterWorldMatrixUpdate());
 
         // if (!GameObject._gameObjects.has(this._transform.uniqueId)) {
         //     GameObject._gameObjects.set(this._transform.uniqueId, this);
@@ -243,17 +247,13 @@ export class GameObject {
         return GameObject._gameObjects;
     }
 
-    public addComponent<T extends Component>(componentName: string, component: T): Component {
-
-        if (this._components.has(componentName)) {
-            console.error("Component already exists in gameObject");
-            return null;
+    addComponent<T extends Component>(componentName: string, c: T): T {
+        let key = componentName;
+        while (this._components.has(key)) {
+            key = `${componentName}#${uid.rnd()}`;
         }
-
-        this._components.set(componentName, component);
-        component.name = componentName;
-        component._gameObject = this;
-        return component;
+        this._components.set(key, c);
+        return c;
     }
 
     /**
@@ -367,7 +367,10 @@ export class GameObject {
         return GameObject.gameObjects.get(id);
     }
 
-    public getComponent<T extends Component>(componentName: string): T | null {
+    /**
+    * @deprecated Obsolète utilisez plutôt getComponent 
+    */
+    public getComponentOfType<T extends Component>(componentName: string): T | null {
         const component = this._components.get(componentName);
         if (component) {
             return component as T;
@@ -375,13 +378,35 @@ export class GameObject {
             return null;
         }
     }
+    /**
+    * Récupère le premier composant de type T dans le gameObject
+    */
+    getComponent<T extends Component>(ctor: new (...args: any[]) => T): T | null {
+        for (const comp of this._components.values()) {
+            if (comp instanceof ctor) return comp as T;
+        }
+        return null;
+    }
+
+    getComponents<T>(ctor: new (...args: any[]) => T): T[] {
+        const result: T[] = [];
+        for (const comp of this._components.values()) {
+            if (comp instanceof ctor) result.push(comp as T);
+        }
+        return result;
+    }
 
     public getAllComponents() {
         return this._components.values();
     }
 
     public removeComponent(componentName: string): void {
-        this._components.get(componentName).destroy();
+        const c = this._components.get(componentName);
+        if (!c) {
+            console.error(`${componentName} component key not found`);
+            return;
+        }
+        c.destroy();
         this._components.delete(componentName);
     }
 

@@ -9,7 +9,7 @@ import EditorAlert from "./EditorAlert";
 import StartupModal from "./Modals/StartupModal";
 import LoadingEditorModal from "./Modals/LoadingEditorModal";
 import { useEffect, useState } from "react";
-import { IStateFile } from "@renderer/engine/FSM/IStateFile";
+import { IStateFile } from "@renderer/engine/FSM/IStateFileOld";
 import LGM3DEditor, { EditorComponentStatesType, Mode } from "@renderer/editor/LGM3DEditor";
 import EditorErrorMsgBox from "./Modals/EditorErrorMsgBox";
 

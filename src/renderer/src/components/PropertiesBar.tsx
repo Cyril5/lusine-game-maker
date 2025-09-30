@@ -37,7 +37,7 @@ const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
         console.log(gameObjectRef.current);
         if (gameObjectRef.current) {
             setName(gameObjectRef.current.name);
-            console.log(gameObjectRef.current.getComponent<BoxCollider>("BoxCollider"));
+            console.log(gameObjectRef.current.getComponentOfType<BoxCollider>("BoxCollider"));
         } else {
             handleClose();
         }
@@ -135,7 +135,7 @@ const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
                             )}
 
 
-                            {gameObjectRef.current.getComponent<BoxCollider>("BoxCollider") && (
+                            {gameObjectRef.current.getComponentOfType<BoxCollider>("BoxCollider") && (
                                 <Accordion.Item eventKey="3">
                                     <Accordion.Header>Collision</Accordion.Header>
                                     <Accordion.Body>
@@ -144,7 +144,7 @@ const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
                                 </Accordion.Item>
                             )}
 
-                            {gameObjectRef.current.getComponent<Rigidbody>("Rigidbody") && (
+                            {gameObjectRef.current.getComponentOfType<Rigidbody>("Rigidbody") && (
                             <Accordion.Item eventKey="4">
                                 <Accordion.Header>Physique</Accordion.Header>
                                 <Accordion.Body>

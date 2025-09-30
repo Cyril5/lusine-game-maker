@@ -1,0 +1,23 @@
+{
+  "name": "lgm3d-core-blocks",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "blockly": "^10.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}

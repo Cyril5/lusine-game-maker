@@ -1,0 +1,20 @@
+Option A
+
+npm run -w lgm3d-rigidbody-blocks build
+
+----
+Option B 
+
+Dans package.json =>
+{
+  "name": "lgm3d-rigidbody-blocks",
+  "private": true,
+  "type": "module",
+  "exports": { ".": { "types": "./src/index.d.ts", "default": "./src/index.js" } },
+  "types": "./src/index.d.ts",
+  "files": ["src"]
+}
+
+puis installer le package avec npm install
+
+“Quand quelqu’un fait import … from "lgm3d-rigidbody-blocks", le programme ira chercher directement dans src/”.

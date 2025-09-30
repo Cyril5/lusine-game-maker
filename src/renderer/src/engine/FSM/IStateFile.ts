@@ -1,24 +1,8 @@
 export class IStateFile {
-
-    name : string | null;
-    filename : string | null = null;
-    /**
-    * Fichier du code JavaScript de l'état.
-    */
-    codeFilename : string | null = null;
-
-    /**
-    * Le code sera chargé depuis le fichier JavaScript (.state) ?.
-    */
-    needToLoad : boolean = false;
-
-    outputCode : string = "";// = 'console.log(this.gameObject); console.log(this.test);';
-    
-    constructor(name :string) {
-        this.name = name;
-    }
-
-    // getFileName() {
-    //     return filename;
-    // }
+  clsName: string | null; // Nom de la classe
+  filename: string | null = null; // fichier du workspace de blocks 
+  codeFilename: string | null = null; // fichier du script; 
+  outputCode: string = "";     // contiendra le TypeScript complet du state
+  language: "ts" | "js" = "ts";
+  constructor(name: string) { this.clsName = name; }
 }

@@ -3,9 +3,10 @@ import { GameObject } from "./GameObject";
 import { Renderer } from "./Renderer";
 import { ProgrammableGameObject } from "./ProgrammableGameObject";
 import InputManager, { KeyCode } from "./InputManager";
-import State from "./FSM/State";
+import State from "./FSM/StateOld";
 import { Observable, Vector3 } from "babylonjs";
 import DemoTest from "./DemoTest/DemoTest";
+import { FiniteStateMachine } from "./FSM/lgm3D.FiniteStateMachine";
 
 export class Game {
 
@@ -19,6 +20,7 @@ export class Game {
     private static _deltaTime: number = 0;
     private _engine: Engine | undefined;
     private _isRunning: boolean = false;
+    private _fsms: FiniteStateMachine[];
 
     get isRunning(): boolean {
         return this._isRunning;
@@ -27,8 +29,6 @@ export class Game {
     private _t;
 
     private _demoTest = new DemoTest();
-    private pyodide;
-
 
     public static getInstance() {
 
@@ -38,10 +38,6 @@ export class Game {
         } else {
             return Game._instance;
         }
-    }
-
-    public getPyodide() {
-        return this.pyodide;
     }
 
     // Deltatime in seconds
@@ -55,7 +51,6 @@ export class Game {
 
     public async start() {
 
-
         const scene = Renderer.getInstance().scene;
 
         // Interpretation des codes de chaques states de chaques fsm
@@ -65,34 +60,29 @@ export class Game {
 
         this._demoTest.init(scene);
 
-        for (const gameObject of gameObjects) {
-
-            //Mis à jour des shapes des rigidbody
-            // const rb = gameObject.getComponent<Rigidbody>(Utils.RB_COMPONENT_TYPE);
-            // //rb?.test(); // NE PAS ENLEVER POUR LE MOMENT
-
-            // const collider = gameObject.getComponent<BoxCollider>(Utils.BX_COLLIDER_COMPONENT_TYPE);
-            // if (collider) {
-            //     if (!collider.gameObject.transform.parent) {
-            //         collider.updateBodyShape();
-            //     }
-            // }
-
-            if (gameObject instanceof ProgrammableGameObject) {
-
-                const states = gameObject.finiteStateMachines[0].states.length;
-                if (states > 0) {
-                    for (let index = 0; index < states; index++) {
-                        const state = gameObject.finiteStateMachines[0].states[index];
-                        await state.runCode();
-                    }
-                    if (gameObject.finiteStateMachines[0].currentState) {
-                        console.log(gameObject.finiteStateMachines[0].currentState.onEnterState);
-                        gameObject.finiteStateMachines[0].currentState.onEnterState.notifyObservers();
-                    }
-                }
-            }
+        for (const go of gameObjects) {
+            // Collecter toutes les FSM une seule fois
+            const fsms = go.getComponents(FiniteStateMachine);
+            this._fsms.push(...fsms);
         }
+
+        // Initialize
+        await Promise.all(this._fsms.map(f => f.initialize()));
+        // if (gameObject instanceof ProgrammableGameObject) {
+
+        //     const states = gameObject.finiteStateMachines[0].states.length;
+        //     if (states > 0) {
+        //         for (let index = 0; index < states; index++) {
+        //             const state = gameObject.finiteStateMachines[0].states[index];
+        //             await state.runCode();
+        //         }
+        //         if (gameObject.finiteStateMachines[0].currentState) {
+        //             console.log(gameObject.finiteStateMachines[0].currentState.onEnterState);
+        //             gameObject.finiteStateMachines[0].currentState.onEnterState.notifyObservers();
+        //         }
+        //     }
+        // }
+
 
         clearTimeout(this._t);
         scene.physicsEnabled = true;
@@ -111,14 +101,9 @@ export class Game {
         this.onGameUpdate.notifyObservers();
         this._demoTest.onGameUpdate();
 
-        const gameObjects = GameObject.gameObjects.values();
-        for (const go of gameObjects) {
-            if (go instanceof ProgrammableGameObject) {
-                //console.log(Game.deltaTime);
-                if (go.finiteStateMachines[0].currentState) {
-                    go.finiteStateMachines[0].currentState.onUpdateState.notifyObservers();
-                }
-            }
+        for (const fsm of this._fsms) {
+            //fsm.onUpdateState.notifyObservers();
+            fsm.update(deltaTime);
         }
     }
 
@@ -132,11 +117,7 @@ export class Game {
 
         this._isRunning = false;
 
-        GameObject.gameObjects.forEach((go: GameObject, key) => {
-            if (go instanceof ProgrammableGameObject) {
-            }
-        })
-
+        this._fsms = [];
         this.onGameUpdate.clear();
         this.onGameStopped.notifyObservers();
         this._demoTest.stop(scene);
@@ -148,6 +129,7 @@ export class Game {
         this.onGameStarted = new Observable();
         this.onGameUpdate = new Observable();
         this.onGameStopped = new Observable();
+        this._fsms = new Array<FiniteStateMachine>();
 
         const scene = Renderer.getInstance().scene;
         const engine = scene.getEngine();

@@ -4,10 +4,10 @@ import { Accordion, Alert, Breadcrumb, Button, Col, Container, Dropdown, Form, R
 import '../../assets/css/fsm-graph.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import StateEditorUtils from '@renderer/editor/StateEditorUtils';
-import { IStateFile } from '@renderer/engine/FSM/IStateFile';
+import { IStateFile } from '@renderer/engine/FSM/IStateFileOld';
 
 import FSMGraph from '@renderer/components/StatesMachineEditor/FSMGraph';
-import State from '@renderer/engine/FSM/State';
+import State from '@renderer/engine/FSM/StateOld';
 import LGM3DEditor from '@renderer/editor/LGM3DEditor';
 
 

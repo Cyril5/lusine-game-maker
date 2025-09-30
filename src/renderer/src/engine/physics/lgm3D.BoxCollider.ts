@@ -1,6 +1,6 @@
 import { Game } from "../Game";
 import { GameObject } from "../GameObject";
-import { FiniteStateMachine } from "../FSM/lgm3D.FiniteStateMachine";
+import { FiniteStateMachine } from "../FSM/lgm3D.FiniteStateMachineOLD";
 import { ProgrammableGameObject } from "../ProgrammableGameObject";
 import Collider from "./lgm3D.Collider";
 import { ColliderMetaData, GameObjectComponentMetaData } from "../structs/ComponentsMetaData";
@@ -258,7 +258,7 @@ export default class BoxCollider extends Collider {
     public findRigidbody(): RigidbodyTest | undefined {
         let current: GameObject | undefined = this.gameObject;
         while (current) {
-            const rb = current.getComponent<RigidbodyTest>(Utils.RB_COMPONENT_TYPE);
+            const rb = current.getComponentOfType<RigidbodyTest>(Utils.RB_COMPONENT_TYPE);
             if (rb) {
                 // 👇 Dès qu’on en trouve un → forcer rebuild au prochain cycle
                 ColliderSystem.markDirty(this.gameObject);

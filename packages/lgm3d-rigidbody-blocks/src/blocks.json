@@ -1,0 +1,46 @@
+[
+  {
+    "type": "lgm_rb_add_force",
+    "message0": "Rigidbody • Add Force %1",
+    "args0": [{ "type": "input_value", "name": "VEC", "check": "Vector3" }],
+    "previousStatement": null,
+    "nextStatement": null,
+    "colour": 210,
+    "tooltip": "Ajoute une force au rigidbody",
+    "helpUrl": ""
+  },
+  {
+    "type": "lgm_rb_set_velocity",
+    "message0": "Rigidbody • Set Velocity %1",
+    "args0": [{ "type": "input_value", "name": "VEC", "check": "Vector3" }],
+    "previousStatement": null,
+    "nextStatement": null,
+    "colour": 210,
+    "tooltip": "Fixe la vitesse instantanée",
+    "helpUrl": ""
+  },
+  {
+    "type": "lgm_rb_get_velocity",
+    "message0": "Rigidbody • Get Velocity",
+    "output": "Vector3",
+    "colour": 210,
+    "tooltip": "Retourne la vitesse (Vector3)",
+    "helpUrl": ""
+  },
+  {
+    "type": "lgm_rb_get_speed",
+    "message0": "Rigidbody • Get Speed",
+    "output": "Number",
+    "colour": 210,
+    "tooltip": "Retourne la norme de la vitesse",
+    "helpUrl": ""
+  },
+  {
+    "type": "lgm_rb_is_sleeping",
+    "message0": "Rigidbody • Is Sleeping?",
+    "output": "Boolean",
+    "colour": 210,
+    "tooltip": "Le corps est-il en sommeil ?",
+    "helpUrl": ""
+  }
+]

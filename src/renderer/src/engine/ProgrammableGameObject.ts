@@ -1,4 +1,4 @@
-import { FiniteStateMachine } from "./FSM/lgm3D.FiniteStateMachine";
+import { FiniteStateMachine } from "./FSM/lgm3D.FiniteStateMachineOLD";
 import { Game } from "./Game";
 import { GameObject } from "./GameObject";
 import RotateTowardsBehaviour from "./behaviours/lgm3D.RotateTowardsBehaviour";
@@ -31,7 +31,7 @@ export class ProgrammableGameObject extends GameObject {
         this._fsms = new Array<FiniteStateMachine>();
         this._fsms.push(new FiniteStateMachine(this));
         this._scene = scene;
-        const rbFound = this.getComponent<Rigidbody>("Rigidbody");
+        const rbFound = this.getComponentOfType<Rigidbody>("Rigidbody");
         if(!rbFound)
             this._rigidbody = this.addComponent(Utils.RB_COMPONENT_TYPE, new Rigidbody(this, scene));
         else

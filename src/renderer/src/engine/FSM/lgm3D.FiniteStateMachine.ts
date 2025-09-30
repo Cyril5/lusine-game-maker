@@ -1,175 +1,80 @@
-import State from "./State";
-import { ProgrammableGameObject } from "../ProgrammableGameObject";
-import { IStateFile } from "./IStateFile";
-import { Observable } from "babylonjs";
-import BoxCollider from "../physics/lgm3D.BoxCollider";
-import { Game } from "../Game";
-import { EditorObservable } from "@renderer/editor/EditorObservable";
+// FiniteStateMachine.ts
+import { GameObject } from "../GameObject";
 import Component from "../lgm3D.Component";
+import { Rigidbody } from "../physics/lgm3D.Rigidbody";
+import { IStateFile } from "./IStateFile";
+import { State } from "./lgm3D.State";
+import { StateRuntimeManager } from "./lgm3D.StateRuntimeManager";
 
-
-
-// Machine d'états fini attachable sur des ProgrammableGameObject seulement
 export class FiniteStateMachine extends Component {
+    states: Array<State> = new Array<State>();
+    fsm: FiniteStateMachine;
 
-    public update(dt: number) {
+    public copyFrom<T extends Component>(componentSource: T): Component {
         throw new Error("Method not implemented.");
     }
 
-    states: Array<State> = [];
+    public _currState: State | null = null;
+    private nextRequested: string | null = null;
 
-    name: string = 'Automate Fini Principal';
-
-    // private _gameObject: ProgrammableGameObject;
-    // public get gameObject(): ProgrammableGameObject {
-    //     return this._gameObject;
-    // }
-
-    private _currState: State | null = null;
-    public get currentState(): State | null {
-        return this._currState;
-    }
-
-    //#region "Evenements"
-    onStart: FSMObservable<void>;
-    onUpdate: FSMObservable<void>;
-    onCollisionEnter: FSMObservable<BoxCollider | null>;
-    onCollisionStay: FSMObservable<BoxCollider | null>;
-    onCollisionExit: FSMObservable<BoxCollider | null>;
-
-    /**
-    * Observable lorsqu'un état est ajouté
-    */
-    onStateAdded: EditorObservable | null;
-
-    //#endregion "Evenements"
-
-    constructor(gameObject) {
-
+    constructor(
+        public readonly name: string,
+        public readonly initialId: string,
+        gameObject: GameObject,
+    ) {
         super(gameObject);
-        this.onStateAdded = new EditorObservable();
-        this.onStart = new FSMObservable();
-        this.onUpdate = new FSMObservable();
-        this.onCollisionEnter = new FSMObservable();
-        this.onCollisionStay = new FSMObservable();
-        this.onCollisionExit = new FSMObservable();
-
         this.addState("Nouvel Etat");
-
-        // TEST
-        // this.onCollisionEnter.add((collider)=>{
-        //     console.log("ping");
-        //     console.log(this._gameObject.name+ " touche : "+collider.shape.name);
-        // })
-
-
-        // Game.getInstance().onGameStoped.add(()=>{
-        //     this.clearObservables();
-        // });
-
     }
 
-    addState(name: string = 'Nouvel Etat', statefile?: IStateFile | undefined): State {
-
-        const newState = new State(this, statefile);
-        newState.name = name;
-
-        this.states.push(newState);
-
-        if (this.states.length == 1) {
-            this.setState(newState);
-        }
-
-        this.onStateAdded.notifyObservers();
-        return newState;
+    // Surchages d'ajout de state
+    addState(name: string, statefile?: IStateFile): State;
+    addState(state: State): State;
+    addState(arg1: string | State, statefile?: IStateFile): State {
+        const s = arg1 instanceof State ? arg1 : new State(arg1, statefile);
+        this.states.push(s);
+        return s;
     }
 
-    setState(state: State | null) : void {
-
-        
-        if(!state) {
+    setState(state: State | null): void {
+        if (!state) {
             this._currState = null;
             return;
         }
-        
         if (this._currState)
-            this._currState.onExitState.notifyObservers();
+            this._currState.onExit();
         this._currState = state;
-        console.log(this._currState.onEnterState);
-        this._currState.onEnterState.notifyObservers();
+        console.log(this._currState.onEnter);
+        this._currState.onEnter();
     }
 
-    /**
- * Enlève un état de l'Automate Fini.
- * Si input est un nombre alors supprimer l'élément à partir de l'index input
- * @param {State | number} input
- */
-    removeState(input: State | number): void {
-        if (typeof input === 'number') {
-            // If input is a number, assume it's an index and remove by index
-            const index = input as number;
-            this.states.splice(index, 1);
-        } else {
-            // If input is a State object, find its index and remove by object
-            const state = input as State;
-            const index = this.states.indexOf(state);
-            if (index !== -1) {
-                this.states.splice(index, 1);
+    private find(id: string) { return this.states.find(s => s.id === id) ?? null; }
+
+    async initialize() {
+        // compile tous les states via StateRuntimeManager.prepare(id, codeTs) puis bindFromModule(...).
+        await Promise.all(this.states.map(s => StateRuntimeManager.prepare(s.id, s.codeTs)));
+        for (const s of this.states) {
+            const mod = StateRuntimeManager.getModule(s.id)!;
+            s.bindFromModule(mod, {
+                requestTransition: (id) => { this.nextRequested = id; },
+                rigidbody: this._gameObject.getComponent(Rigidbody),
+            });
+        }
+        this._currState = this.states.find(st => st.id === this.initialId) ?? this.states[0] ?? null;
+        this._currState?.onEnter();
+    }
+
+    update(dt: number) {
+        if (!this._currState) return;
+        this._currState.onUpdate(dt);
+
+        if (this.nextRequested) {
+            const next = this.find(this.nextRequested);
+            this.nextRequested = null;
+            if (next && next !== this._currState) {
+                this._currState.onExit();
+                this._currState = next;
+                this._currState.onEnter();
             }
         }
     }
-
-    // Nettoyer la liste des méthodes dans les observables pour éviter de les rappeler à chaque démarrage du jeu
-    // L'objet FSMObservable le fait déjà
-    private clearObservables() : void {
-        this.onStart.clear();
-        this.onUpdate.clear();
-        this.onCollisionEnter.clear();
-        this.onCollisionStay.clear();
-        this.onCollisionExit.clear();
-    }
-
-    deserialize() : any {
-        const states : any = {};
-        this.states.forEach((state)=>{
-            const stateJson = {};
-            stateJson["stateFilename"] = state.stateFile.filename;
-            states.push(stateJson);
-        });
-        return states;
-    }
-
-    serialize() : any {
-        // "finiteStateMachines":[
-            //{
-                //"states":[
-                    //{
-                    //    "statefile": {
-                  //          "name": "StateA"
-                //        }
-              //      }
-            //    ]
-          //  }
-        //]
-
-        return {};
-    }
-
-}
-
-/**
-* Observable pour les FSM
-* @remarks
-* La liste des méthodes observées est supprimée lorsque le jeu s'arrête
-*/
-export class FSMObservable<T> extends Observable<T> {
-
-    constructor() {
-        super();
-        // nettoyer la liste des méthodes lorsque jeu s'arrête
-        Game.getInstance().onGameStopped.add(() => {
-            this.clear();
-        });
-    }
-
 }

@@ -1,45 +1,56 @@
 import { GameObject } from "../GameObject"
 import GameLoader from "@renderer/editor/GameLoader";
 import LGM3DEditor from "@renderer/editor/LGM3DEditor";
-import { Game } from "../Game";
-import { Tank } from "./Tank";
+import { State } from "../FSM/lgm3D.State";
+import { GreenTs as GreenLightCode, RedTs as RedLightCode, YellowTs as YellowLightCode } from "../FSM/test/TrafficLightsFSMStatesCode";
+import { FiniteStateMachine } from "../FSM/lgm3D.FiniteStateMachine";
+import { IStateFile } from "../FSM/IStateFile";
 
 export default class DemoTest {
     private scene;
-    private static init : boolean = true;
-    tankA! : Tank;
-    tankB!: Tank;
+    private static init: boolean = true;
 
     constructor() {
         GameLoader.onLevelLoaded.addOnce((scene) => {
-
             this.scene = scene;
             //const copyTest = GameObject.createInstance(GameObject.getById(27));
             LGM3DEditor.getInstance().updateObjectsTreeView();
         });
+
+        
     }
-
+    
     init = (scene: BABYLON.Scene) => {
-        return; // Juste pour le test de l'éditeur
-
+        
         if (!DemoTest.init)
             return;
         DemoTest.init = false;
-
-        //ROAD
-        const road = this.scene.getMeshByUniqueID(445);
-        if(road) {
-            new BABYLON.PhysicsAggregate(road, BABYLON.PhysicsShapeType.MESH, { mass: 0, friction: 0.9, restitution: 0 });
+        async function initTrafficLightLogic() {
+            const go = new GameObject("FSM_TEST", scene);
+            const fsm = new FiniteStateMachine("TrafficLightFSM", "Crossroad#1", go);
+            const stateFileA = new IStateFile("Red");
+            stateFileA.outputCode = RedLightCode;
+            const stateFileB = new IStateFile("Green");
+            stateFileB.outputCode = GreenLightCode;
+            const stateFileC = new IStateFile("Yellow");
+            stateFileC.outputCode = YellowLightCode;
+            const etatFeuRouge = new State("Feu rouge", stateFileA);
+            fsm.addState(etatFeuRouge); 
+            fsm.addState(new State("Feu vert", stateFileB));
+            fsm.addState(new State("Feu Orange", stateFileC));
+            go.addComponent("FiniteStateMachine", fsm);
+            fsm.setState(etatFeuRouge);
+            console.log(fsm.states);
         }
-        this.tankA = new Tank(scene, true,  new BABYLON.Vector3(-6, 0, -6)); // joueur
-        //this.tankB = new Tank(scene, false, new BABYLON.Vector3( 6, 0,  6)); // cible statique
+        initTrafficLightLogic();
+
+
     }
 
     onGameUpdate() {
-        this.tankA?.update();
-        //this.tankB.update();
+
     }
-    
+
     start() {
     }
 
