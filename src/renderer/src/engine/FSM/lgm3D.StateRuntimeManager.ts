@@ -40,6 +40,8 @@ export class StateRuntimeManager {
       sourcefile: `${stateId}.ts`,
     });
 
+    console.log("[SRM] compiled", stateId, "codeLen=", out.code.length);
+
     const url = URL.createObjectURL(
       new Blob([out.code], { type: "application/javascript" })
     );

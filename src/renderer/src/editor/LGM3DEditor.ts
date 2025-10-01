@@ -20,6 +20,7 @@ import Utils from "@renderer/engine/utils/lgm3D.Utils";
 import FileManager from "@renderer/engine/lgm3D.FileManager";
 import AssetsManager from "@renderer/engine/lgm3D.AssetsManager";
 import { PostFXManager } from "@renderer/engine/lgm3D.PostFX";
+import { FiniteStateMachine } from "@renderer/engine/FSM/lgm3D.FiniteStateMachine";
 
 export enum Mode {
     LevelEditor = 1,
@@ -469,12 +470,12 @@ export default class LGM3DEditor {
         }
 
         let gofsm = null;
-        if (objetJeu.finiteStateMachines) {
-            if (objetJeu.finiteStateMachines.length > 0) {
-                gofsm = objetJeu.finiteStateMachines[0];
-            }
-        }
+        const gofsms = objetJeu.getComponents(FiniteStateMachine);
 
+        if (gofsms.length > 0) {
+            gofsm = gofsms[0];
+        }
+        
         this.states.setSelectedGO(objetJeu);
         this.states.setFSM(gofsm);
         this._renderer!.gizmoManager.positionGizmoEnabled = true;

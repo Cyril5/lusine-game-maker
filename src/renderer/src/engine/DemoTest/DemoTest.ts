@@ -4,11 +4,13 @@ import LGM3DEditor from "@renderer/editor/LGM3DEditor";
 import { State } from "../FSM/lgm3D.State";
 import { GreenTs as GreenLightCode, RedTs as RedLightCode, YellowTs as YellowLightCode } from "../FSM/test/TrafficLightsFSMStatesCode";
 import { FiniteStateMachine } from "../FSM/lgm3D.FiniteStateMachine";
-import { IStateFile } from "../FSM/IStateFile";
+import { StateFile } from "../FSM/IStateFile";
 
 export default class DemoTest {
     private scene;
     private static init: boolean = true;
+    private fsm? : FiniteStateMachine;
+    private etatFeuRouge?: State;
 
     constructor() {
         GameLoader.onLevelLoaded.addOnce((scene) => {
@@ -16,7 +18,6 @@ export default class DemoTest {
             //const copyTest = GameObject.createInstance(GameObject.getById(27));
             LGM3DEditor.getInstance().updateObjectsTreeView();
         });
-
         
     }
     
@@ -25,22 +26,20 @@ export default class DemoTest {
         if (!DemoTest.init)
             return;
         DemoTest.init = false;
-        async function initTrafficLightLogic() {
+        const initTrafficLightLogic = async ()=> {
             const go = new GameObject("FSM_TEST", scene);
-            const fsm = new FiniteStateMachine("TrafficLightFSM", "Crossroad#1", go);
-            const stateFileA = new IStateFile("Red");
+            const stateFileA = new StateFile("Red");
             stateFileA.outputCode = RedLightCode;
-            const stateFileB = new IStateFile("Green");
+            const stateFileB = new StateFile("Green");
             stateFileB.outputCode = GreenLightCode;
-            const stateFileC = new IStateFile("Yellow");
+            const stateFileC = new StateFile("Yellow");
             stateFileC.outputCode = YellowLightCode;
-            const etatFeuRouge = new State("Feu rouge", stateFileA);
-            fsm.addState(etatFeuRouge); 
-            fsm.addState(new State("Feu vert", stateFileB));
-            fsm.addState(new State("Feu Orange", stateFileC));
-            go.addComponent("FiniteStateMachine", fsm);
-            fsm.setState(etatFeuRouge);
-            console.log(fsm.states);
+            this.etatFeuRouge = new State("Feu rouge", stateFileA);
+            this.fsm = new FiniteStateMachine("TrafficLightFSM", "Crossroad#1", go);
+            this.fsm.addState(this.etatFeuRouge); 
+            this.fsm.addState(new State("Feu vert", stateFileB));
+            this.fsm.addState(new State("Feu Orange", stateFileC));
+            go.addComponent("FiniteStateMachine", this.fsm);
         }
         initTrafficLightLogic();
 
@@ -52,6 +51,7 @@ export default class DemoTest {
     }
 
     start() {
+        this.fsm!.setStateSilently(this.etatFeuRouge);
     }
 
     stop(scene: BABYLON.Scene) {

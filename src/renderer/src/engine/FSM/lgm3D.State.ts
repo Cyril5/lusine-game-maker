@@ -1,5 +1,5 @@
 import ShortUniqueId from "short-unique-id";
-import { IStateFile } from "./IStateFile";
+import { StateFile } from "./IStateFile";
 import { FiniteStateMachine } from "./lgm3D.FiniteStateMachine";
 import { createRuntimeApi, FsmApi } from "./lgm3D.FSMRuntimeAPI";
 
@@ -14,17 +14,17 @@ export class State {
     public instance: any = null;
     name: string = "State";
     fsm?: FiniteStateMachine; // fsm owner
-    stateFile?: IStateFile;
+    stateFile?: StateFile;
     readonly id: string;
 
-    constructor(name: string, stateFile: IStateFile | undefined) {
+    constructor(name: string, stateFile: StateFile | undefined) {
         this.name = name;
         if (stateFile) {
             this.stateFile = stateFile;
         }
-        const uid = new ShortUniqueId({ length: 6 });
+        const uid = new ShortUniqueId({ length: 8 });
         // id stable si filename défini, sinon unique
-        this.id = this.stateFile?.filename ?? `${this.name}#${uid.rnd()}`;
+        this.id = uid.rnd();
     }
 
     // 👉 Le code TS vient du fichier d'état
@@ -40,6 +40,7 @@ export class State {
         console!: FsmApi["console"];
         requestTransition!: FsmApi["requestTransition"];
         rigidbody?: FsmApi["rigidbody"];
+        fsm: FsmApi["fsm"];
         onEnter(){} onUpdate(_dt:number){} onExit(){}
         }
         `.trim();
@@ -47,7 +48,7 @@ export class State {
 
     bindFromModule(
         mod: any,
-        ctx: { requestTransition: (id: string) => void; rigidbody?: FsmApi["rigidbody"] }
+        ctx: { requestTransition: (id: string) => void; rigidbody?: FsmApi["rigidbody"], fsm: FsmApi["fsm"] }
     ) {
         const api = createRuntimeApi(ctx);
         const inst = new mod.default(api);

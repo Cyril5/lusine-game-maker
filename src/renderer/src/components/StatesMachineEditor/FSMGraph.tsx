@@ -1,363 +1,367 @@
-import React, { useEffect, forwardRef, useImperativeHandle, useRef } from 'react';
-//import Drawflow from 'drawflow';
-//import Drawflow from '../../../src/assets/drawflow-modified.js';
-//import 'drawflow/dist/drawflow.min.css';
-//import '../../assets/css/fsm-graph.scss';
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import StateNode from "./StateNode";
+import TransitionEdge from "./TransitionEdge";
+import { EdgeVM, NodeVM } from "./SMEditorTypes";
 
-import * as Vis from 'vis-network';
-import 'vis-network/styles/vis-network.min.css';
+type LinkStep = "idle" | "source" | "target";
 
-import State from '@renderer/engine/FSM/StateOld';
-import { FiniteStateMachine } from '@renderer/engine/FSM/lgm3D.FiniteStateMachineOLD';
-import EditorUtils from '@renderer/editor/EditorUtils';
+type FSMGraphProps = {
+  states: NodeVM[];
+  transitions: EdgeVM[];
+  onChangeStates?: (states: NodeVM[]) => void;
+  onChangeTransitions?: (edges: EdgeVM[]) => void;
+  onSelectedState?: (state: NodeVM | null) => void;   // 👈 nouveau
+  onSelectedTransition?: (edge: EdgeVM | null) => void; // 👈 optionnel
+};
 
+export default function FsmGraph({
+  states,
+  transitions,
+  onChangeStates,
+  onChangeTransitions,
+  onSelectedState,
+  onSelectedTransition
+}: FSMGraphProps) {
 
-const FSMGraph = forwardRef(({fsm,...props}, ref) => {
+  // ----- nodes from FSM -----
+  const [nodes, setNodes] = useState<NodeVM[]>([]);
+  const [edges, setEdges] = useState<EdgeVM[]>([]);
 
-  const START_NODE_ID = '_START_NODE_ID_';
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
 
-  const MAIN_OUTPUT_SOURCE_NODE = 'output_1';
-  const MAIN_INPUT_TARGET_NODE = 'input_1';
+  // pan/zoom
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const draggingView = useRef<{ ox: number; oy: number; sx: number; sy: number } | null>(null);
 
-  const visjsNetworkRef = useRef<Vis.Network>(null);
-  const drawflowRef = useRef(null);
-  const selectedNodeRef = useRef(null);
-  const currentFSMRef = useRef<FiniteStateMachine>(fsm);
+  // drag node
+  const [dragging, setDragging] = useState<{ id: string; ox: number; oy: number; sx: number; sy: number } | null>(null);
 
+  // context menu
+  const [ctxMenu, setCtxMenu] = useState<{ show: boolean; x: number; y: number; onNodeId?: string } | null>(null);
 
-  const addNode = (nodeData, callback) => {
+  // link wizard
+  const [linkStep, setLinkStep] = useState<LinkStep>("idle");
+  const [linkFrom, setLinkFrom] = useState<string | null>(null);
+  const [hint, setHint] = useState<string>("");
 
-    console.log(currentFSMRef.current.states);
+  const nodesById = useMemo(() => Object.fromEntries(nodes.map(n => [n.id, n])), [nodes]);
 
-    nodeData.id = currentFSMRef.current.states.length;
-    nodeData.label = 'Nouvel Etat';
-    currentFSMRef.current.addState('Nouvel Etat');
-    callback(nodeData);
+  const viewportRef = useRef<HTMLDivElement | null>(null);
 
-  }
-
-  const updateSelectedNode = (name): void => {
-
-    const network = visjsNetworkRef.current;
-    // TODO mettre le container en ref
-    network!.body.data.nodes.update({id: network!.getSelectedNodes()[0],label:name});
-
-  }
-
-  const setStartStateNode = (edgeData, callback, targetNode): void => {
-
-    const network = visjsNetworkRef.current;
-
-    edgeData.arrows = 'to';
-    callback(edgeData); // Création du lien
-    const startNodeLinks = network!.getConnectedEdges(START_NODE_ID);
-    const startNodeDestination = network!.getConnectedNodes(START_NODE_ID)[0];
-
-    let nodeToUpdate = { id: startNodeDestination, color: { background: '#97C2FC', } };
-    network!.body.data.nodes.update(nodeToUpdate);
-    network!.body.data.edges.remove(startNodeLinks[0]); // suppression du lien précédent
-
-    nodeToUpdate = { id: edgeData.to, color: { background: 'orange' } };
-    network.body.data.nodes.update(nodeToUpdate);
-
-    // Définir le nouveau état de départ quand on démarra le fsm
-    const startState = nodeToUpdate.id;
-    currentFSMRef.current.setState(currentFSMRef.current.states[startState]);
-
-    console.log(currentFSMRef.current.currentState.name);
-  }
-
-  // Exposez la méthode du parent dans ce composant
-  useImperativeHandle(ref, () => ({
-    addNode,
-    updateSelectedNode
-  }));
-
-  // Lorsque le fsm du parent à changé
+  // charger les nodes depuis la FSM
   useEffect(() => {
-    currentFSMRef.current = fsm;
-    console.log("FSM changed !");
-    console.log(visjsNetworkRef.current?.getViewPosition());
-    visjsNetworkRef.current?.fit();
-  }, [fsm])
+    if (!states) return;
+    const gridStartX = 80, gridStartY = 80, stepX = 180, stepY = 120;
+    const next: NodeVM[] = states.map((s, i) => ({
+      id: s.id,
+      name: s.name,
+      stateFile: s.stateFile,
+      x: s.ui?.x ?? (gridStartX + (i % 4) * stepX),
+      y: s.ui?.y ?? (gridStartY + Math.floor(i / 4) * stepY),
+    }));
+    setNodes(next);
+  }, [states]);
 
   useEffect(() => {
-    const container = document.getElementById('graph-container');
-    const data = {
-      nodes: [
-        { id: START_NODE_ID, label: 'START', x: 0, y: 0 },
-        { id: 0, label: 'State A', x: 150, y: 0 },
-      ],
-      edges: [
-        { from: START_NODE_ID, to: 0, arrows: 'to' }, // Flèche allant de INIT à STATE_1
-      ]
+    const el = viewportRef.current;
+    if (!el) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      // empêcher le scroll de la page
+      e.preventDefault();
+
+      // zoom "doux"
+      const factor = e.deltaY < 0 ? 1.1 : 0.9;
+
+      // Option UX : zoom centré sous la souris
+      // récupérer la position souris dans le repère SVG
+      const rect = el.getBoundingClientRect();
+      const px = e.clientX - rect.left;
+      const py = e.clientY - rect.top;
+
+      setPan(prevPan => {
+        // avant de changer le zoom, calcule le point monde (avant zoom)
+        const worldX = (px - prevPan.x) / zoom;
+        const worldY = (py - prevPan.y) / zoom;
+
+        // applique le nouveau zoom
+        const newZoom = Math.min(2.5, Math.max(0.3, zoom * factor));
+        setZoom(newZoom);
+
+        // recalcule le pan pour garder le curseur “ancré” sur le même point monde
+        const newPanX = px - worldX * newZoom;
+        const newPanY = py - worldY * newZoom;
+        return { x: newPanX, y: newPanY };
+      });
     };
 
-    const locales = {
-      en: {
-        edit: 'Edit',
-        del: 'Supprimer état',
-        back: 'Back',
-        addNode: 'Ajouter un état',
-        addEdge: 'Ajouter une transition',
-        editNode: '',
-        editEdge: '',
-        addDescription: 'Click in an empty space to place a new node.',
-        edgeDescription: 'Click on a node and drag the edge to another node to connect them.',
-        editEdgeDescription: 'Click on the control points and drag them to a node to connect to it.',
-        createEdgeError: 'Cannot link edges to a cluster.',
-        deleteClusterError: 'Clusters cannot be deleted.',
-        editClusterError: 'Clusters cannot be edited.'
+    // IMPORTANT: passive:false pour autoriser preventDefault()
+    el.addEventListener("wheel", handleWheel, { passive: false });
+
+    return () => el.removeEventListener("wheel", handleWheel);
+  }, [zoom]);
+
+  // actions
+  function addNode() {
+    const id = prompt("Id du nouvel état ?"); if (!id) return;
+    if (nodesById[id]) { alert("Id déjà utilisé"); return; }
+    setNodes(ns => [...ns, { id, x: 120, y: 80 }]);
+  }
+
+  function beginCreateTransition(fromNodeId?: string) {
+    setSelectedEdgeId(null);
+    setSelectedNodeId(null);
+    setLinkFrom(null);
+    setLinkStep("source");
+    setHint("Sélectionnez l'état source…");
+    if (fromNodeId) {
+      setLinkFrom(fromNodeId);
+      setLinkStep("target");
+      setHint("Sélectionnez l'état de destination…");
+    }
+  }
+
+  function onPickNodeForLink(nodeId: string) {
+    if (linkStep === "source") {
+      setLinkFrom(nodeId);
+      setLinkStep("target");
+      setHint("Sélectionnez l'état de destination…");
+      return;
+    }
+    if (linkStep === "target" && linkFrom) {
+      if (linkFrom === nodeId) {
+        setHint("Source et destination identiques. Recommence.");
+        setTimeout(() => { setHint(""); setLinkStep("idle"); setLinkFrom(null); }, 800);
+        return;
       }
+      const exists = edges.some(e => e.from === linkFrom && e.to === nodeId);
+      if (!exists) {
+        setEdges(es => [...es, { id: `e_${Date.now()}`, from: linkFrom, to: nodeId }]);
+      }
+      setLinkFrom(null);
+      setLinkStep("idle");
+      setHint("");
+    }
+  }
+
+  function deleteSelectedEdge() {
+    if (!selectedEdgeId) return;
+    setEdges(es => es.filter(e => e.id !== selectedEdgeId));
+    setSelectedEdgeId(null);
+  }
+
+  // context menu
+  function openContextMenu(e: React.MouseEvent, onNodeId?: string) {
+    e.preventDefault();
+    setCtxMenu({ show: true, x: e.clientX, y: e.clientY, onNodeId });
+    setSelectedEdgeId(null);
+    setSelectedNodeId(onNodeId ?? null);
+  }
+  function closeContextMenu() { setCtxMenu(null); }
+
+
+  function onBackgroundMouseDown(e: React.MouseEvent) {
+    if ((e.target as HTMLElement).tagName === "svg") {
+      draggingView.current = { ox: e.clientX, oy: e.clientY, sx: pan.x, sy: pan.y };
+      setSelectedNodeId(null);
+      setSelectedEdgeId(null);
+      closeContextMenu();
+      onSelectedState?.(null);        // 👈 notifie le parent
+      onSelectedTransition?.(null);
+    }
+  }
+
+  function onBackgroundMouseMove(e: React.MouseEvent) {
+    if (!draggingView.current) return;
+    const dx = e.clientX - draggingView.current.ox;
+    const dy = e.clientY - draggingView.current.oy;
+    setPan({ x: draggingView.current.sx + dx, y: draggingView.current.sy + dy });
+  }
+  function onBackgroundMouseUp() { draggingView.current = null; }
+
+  // drag node
+  function onMouseDownNode(id: string, e: React.MouseEvent) {
+    e.stopPropagation();
+    closeContextMenu();
+    setSelectedNodeId(id);
+    setSelectedEdgeId(null);
+    setDragging({ id, ox: e.clientX, oy: e.clientY, sx: nodesById[id].x, sy: nodesById[id].y });
+  }
+  function onMouseMove(e: React.MouseEvent) {
+    if (!dragging) return;
+    const dx = e.clientX - dragging.ox;
+    const dy = e.clientY - dragging.oy;
+    setNodes(ns => ns.map(n => n.id === dragging.id ? { ...n, x: dragging.sx + dx, y: dragging.sy + dy } : n));
+  }
+  function onMouseUp() { setDragging(null); }
+
+  // click node / edge
+  function onNodeClick(id: string, e: React.MouseEvent) {
+    e.stopPropagation();
+    if (linkStep === "source" || linkStep === "target") {
+      onPickNodeForLink(id);
+    } else {
+      setSelectedNodeId(id);
+      setSelectedEdgeId(null);
+      const node = nodes.find(n => n.id === id) ?? null;
+      onSelectedState?.(node);   // 👈 notifie le parent
+      onSelectedTransition?.(null);
+    }
+  }
+
+  function onEdgeClick(id: string, e: React.MouseEvent) {
+    e.stopPropagation();
+    closeContextMenu();
+    setSelectedEdgeId(id);
+    setSelectedNodeId(null);
+  }
+
+  // keyboard
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setLinkStep("idle"); setLinkFrom(null); setHint(""); closeContextMenu();
+        setSelectedEdgeId(null); setSelectedNodeId(null);
+      }
+      if (e.key === "Delete" && selectedEdgeId) deleteSelectedEdge();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [selectedEdgeId]);
+
+  // Regrouper les edges par paire directionnelle "from->to"
+  const laneByEdgeId = useMemo(() => {
+    const map = new Map<string, number>(); // edgeId -> laneIndex
+    const groups = new Map<string, EdgeVM[]>();
+
+    const keyOf = (e: EdgeVM) => `${e.from}→${e.to}`;
+
+    for (const e of edges) {
+      const k = keyOf(e);
+      if (!groups.has(k)) groups.set(k, []);
+      groups.get(k)!.push(e);
     }
 
-    const options = {
-      locale: 'en',
-      locales: locales,
-      edges: {
-        smooth: {
-          enabled: false,
-        }
-      },
-      nodes: {
-        shape: 'box',
-        shadow: false,
-        color: {
-          border: 'white',
-          highlight: {
-            background: 'yellow',
-            border: 'red',
-          }
-        },
-        scaling: {
-          min: 100,
-          max: 100
-        },
-        margin: {
-          top: 10,
-          left: 25,
-          right: 25,
-          bottom: 10,
-        },
-
-      },
-      manipulation: {
-        enabled: true,
-        initiallyActive: true,
-        addNode: (nodeData, callback) => {
-          addNode(nodeData, callback);
-        },
-        deleteNode: (nodeData, callback)=> {
-
-          if(visjsNetworkRef.current.body.data.nodes.length < 3) {
-            callback(null)
-            return;
-          }
-
-          if (nodeData.nodes[0] == START_NODE_ID) {
-            EditorUtils.showWarnMsg('Vous ne pouvez pas supprimer le nœud "START" !');
-            callback(null); // Annuler la suppression
-          } else {
-            callback(nodeData); // Autoriser la suppression des autres nœuds
-          }
-        },
-        deleteEdge: (edgeData,callback)=>{
-
-        },
-        addEdge: (edgeData, callback) => {
-
-          setStartStateNode(edgeData, callback, null);
-
-          // if (edgeData.from === 1 && edgeData.to === 2) {
-          //   alert("Vous ne pouvez pas lier le noeud avec l'id 1 vers le noeud avec l'id 2 !");
-          //   callback(null); // Annuler la création du lien
-          // } else {
-          //   edgeData.arrows = 'to';
-          //   callback(edgeData);
-          // }
-        },
-      },
-      physics: {
-        enabled: false
-      }
+    // attribution des lanes : 0, +1, -1, +2, -2, ...
+    const orderIdx = (i: number) => {
+      // i = 0..n-1  =>  0, 1, -1, 2, -2, ...
+      if (i === 0) return 0;
+      const k = Math.ceil(i / 2);
+      return (i % 2 === 1) ? k : -k;
     };
 
-    visjsNetworkRef.current = new Vis.Network(container, data, options);
-
-    const network = visjsNetworkRef.current;
-
-    // setInterval(()=>{
-    //   visjsNetworkRef.current!.moveTo({position:{x:0,y:0}});
-    // },2000)
-
-    const startNode = {
-      id: START_NODE_ID,
-      color: { background: 'green' },
-      font: { color: 'white' },
-
-    };
-    network.body.data.nodes.update(startNode);
-
-    var isRightClicking = false; // Indique si le clic droit de la souris est enfoncé
-    var prevMousePos = { x: 0, y: 0 }; // Position précédente de la souris
-
-    // Ajouter un gestionnaire d'événements pour le clic sur un noeud
-    network.on("click", function (params) {
-      if (params.nodes.length > 0) {
-        const nodeId = params.nodes[0];
-        if (nodeId == START_NODE_ID)
-          return;
-        // Faites ce que vous voulez avec le noeud cliqué ici
-
-        //sélectionner l'état et envoyer l'info au StatesMachineEditor
-        props.onStateSelect(currentFSMRef.current.states[nodeId]);
-      }
-    });
-
-    // Écouter l'événement mousedown sur le conteneur du graphique
-    container.addEventListener('mousedown', function (event) {
-      if (event.button === 2) { // Vérifier si c'est le bouton droit de la souris
-        isRightClicking = true; // Le clic droit de la souris est enfoncé
-        prevMousePos = { x: event.clientX, y: event.clientY }; // Enregistrer la position initiale de la souris
-        event.preventDefault(); // Empêcher le comportement par défaut du navigateur
-      }
-    });
-
-    // Écouter l'événement mousemove sur le document pour suivre les mouvements de la souris
-    document.addEventListener('mousemove', function (event) {
-      return;
-      if (isRightClicking) { // Si le clic droit de la souris est enfoncé
-        var deltaX = event.clientX - prevMousePos.x; // Calculer le déplacement horizontal de la souris
-        var deltaY = event.clientY - prevMousePos.y; // Calculer le déplacement vertical de la souris
-        var currentViewPosition = network.getViewPosition(); // Obtenir la position actuelle du viewport
-        var newViewPosition = { x: currentViewPosition.x - deltaX, y: currentViewPosition.y - deltaY }; // Calculer la nouvelle position du viewport
-
-        network.moveTo({ position: newViewPosition, animation: false }); // Déplacer le viewport sans animation
-        prevMousePos = { x: event.clientX, y: event.clientY }; // Mettre à jour la position précédente de la souris
-        event.preventDefault(); // Empêcher le comportement par défaut du navigateur
-      }
-    });
-
-    //Écouter l'événement mouseup sur le document pour détecter quand le clic droit de la souris est relâché
-    document.addEventListener('mouseup', function (event) {
-      if (event.button === 2) { // Vérifier si c'est le bouton droit de la souris
-        isRightClicking = false; // Le clic droit de la souris n'est plus enfoncé
-        event.preventDefault(); // Empêcher le comportement par défaut du navigateur
-      }
-    });
-
-    visjsNetworkRef.current!.fit();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // const container: HTMLElement | null = document.getElementById('drawflow-container');
-    // drawflowRef.current = new Drawflow(container);
-
-    // const drawflow: Drawflow = drawflowRef.current;
-    // drawflow.start();
-
-
-    // const data = { "name": '', "stateIndex": 0 };
-
-    // const startNodeData = {
-    //   "connection": { // la connexion unique lié au startNode
-    //     "output_id": 1,
-    //     "input_id": 2, // l'id du noeud cible
-    //   },
-    // };
-
-    // drawflow.addNode('start-node', 0, 1, 100, 200, 'start-node', startNodeData, 'START');
-
-    // // const test = ReactDOMServer.renderToString(<FSMNode />);
-    // drawflow.addNode('state-node', 1, 1, 400, 300, 'state-node', data, 'Nouvel Etat');
-
-
-
-    // drawflow.addConnection(1, 2, MAIN_OUTPUT_SOURCE_NODE, MAIN_INPUT_TARGET_NODE);
-
-    // drawflow.on('nodeRemoved', (id) => {
-    //   currentFSMRef.current.removeState(selectedNodeRef.current.data.stateIndex);
-    //   if (id == 1) {
-    //     const n = drawflow.addNode('start-node', 0, 1, 100, 200, 'start-node', startNodeData, 'START');
-    //     //container.querySelector('#node-'+n).id = 'node-1';
-    //     //drawflow.getNodeFromId(n).id = 1;
-    //   }
-    // });
-
-    // // Si une connection a été enlevé 
-    // drawflow.on('connectionRemoved', ({ output_id, input_id, output_class, input_class }) => {
-    //   const startNode = drawflow.getNodeFromId(1);
-    //   if (output_id == '1' && startNode.outputs[MAIN_OUTPUT_SOURCE_NODE].connections.length == 0) {
-    //     currentFSMRef.current.setState(null);
-    //     EditorUtils.showMsgDialog({ type: 'warning', message: "L'Automate Fini n'a pas d'état de départ." });
-    //   }
-    // });
-
-    // // Lors de la sélection d'un noeud
-    // drawflow.on('nodeSelected', (id) => {
-    //   console.log(id);
-    //   selectedNodeRef.current = drawflow.getNodeFromId(id);
-
-    //   if (id > 1) {
-    //     // sélectionner l'état et envoyer l'info au StatesMachineEditor
-    //     props.onStateSelect(currentFSMRef.current.states[selectedNodeRef.current.data.stateIndex]);
-    //   }
-    // });
-
-
-
-    // drawflow.on('connectionCreated', ({ output_id, input_id, output_class, input_class }) => {
-
-    //   const sourceNode = drawflow.getNodeFromId(output_id);
-    //   const targetNode = drawflow.getNodeFromId(input_id);
-    //   // Si c'est le début du lien est le startNode
-    //   if (sourceNode.id == '1') {
-    //     setStartStateNode({ sourceNode, targetNode });
-    //     return;
-    //   }
-    //   // autre liaison différente du startNode
-
-
-    // });
-
-    // return () => {
-    //   drawflow.clear();
-    // };
-
-  }, []);
-
-  //return <div id="drawflow-container" style={{ width: '100%', height: '60vh', border: 'wheat 1px solid' }}></div>;
-  return <div id="graph-container" style={{ height: '60vh', border: 'wheat 1px solid' }}></div>
-});
-
-
-export default FSMGraph;
+    for (const arr of groups.values()) {
+      arr.forEach((e, i) => map.set(e.id, orderIdx(i)));
+    }
+    return map;
+  }, [edges]);
+
+  return (
+    <div className="w-full h-full" style={{ background: "#1f1f1f", color: "white", userSelect: "none", position: "relative" }}>
+      {/* Toolbar rapide */}
+      <div style={{ display: "flex", gap: 8, padding: 8, borderBottom: "1px solid #333", alignItems: "center" }}>
+        <button className="btn btn-dark btn-sm" onClick={addNode}>+ État</button>
+        <button className="btn btn-outline-light btn-sm" onClick={() => beginCreateTransition()}>
+          Créer une transition (guide)
+        </button>
+        <button className="btn btn-danger btn-sm" onClick={deleteSelectedEdge} disabled={!selectedEdgeId}>
+          Supprimer transition
+        </button>
+        {hint && <div style={{ marginLeft: 12, color: "#9ad" }}>{hint}</div>}
+      </div>
+
+      {/* Graphe */}
+      <div
+        ref={viewportRef}
+        // SUPPRIMER onWheel ici
+        onMouseMove={(e) => { onMouseMove(e); onBackgroundMouseMove(e); }}
+        onMouseUp={() => { onMouseUp(); onBackgroundMouseUp(); }}
+        onMouseDown={onBackgroundMouseDown}
+        onContextMenu={(e) => openContextMenu(e, undefined)}
+        style={{ width: "100%", height: "calc(100% - 46px)" }}
+      >
+        <svg width="100%" height="60vh" style={{ cursor: draggingView.current ? "grabbing" : "default" }}>
+          <svg width="100%" height="100%" style={{ cursor: draggingView.current ? "grabbing" : "default" }}>
+            <defs>
+              <marker id="fsm-arrow" markerWidth="10" markerHeight="8" refX="10" refY="4"
+                orient="auto" markerUnits="strokeWidth">
+                <path d="M 0 0 L 10 4 L 0 8 z" fill="#bbb" />
+              </marker>
+              <marker id="fsm-arrow-selected" markerWidth="10" markerHeight="8" refX="10" refY="4"
+                orient="auto" markerUnits="strokeWidth">
+                <path d="M 0 0 L 10 4 L 0 8 z" fill="#fff" />
+              </marker>
+            </defs>
+            <g transform={`translate(${pan.x},${pan.y}) scale(${zoom})`}>
+              {/* ... */}
+            </g>
+          </svg>
+          <g transform={`translate(${pan.x},${pan.y}) scale(${zoom})`}>
+            {/* edges */}
+            {edges.map(e => {
+              const a = nodesById[e.from], b = nodesById[e.to];
+              if (!a || !b) return null;
+              return (
+                <TransitionEdge
+                  key={e.id}
+                  edge={e}
+                  a={a}
+                  b={b}
+                  selected={e.id === selectedEdgeId}
+                  onClick={onEdgeClick}
+                  laneIndex={laneByEdgeId.get(e.id) ?? 0}
+                />
+              );
+            })}
+            {/* nodes */}
+            {nodes.map(n => (
+              <StateNode
+                key={n.id}
+                node={n}
+                selected={n.id === selectedNodeId}
+                onMouseDown={onMouseDownNode}
+                onClick={onNodeClick}
+                onContextMenu={(id, ev) => openContextMenu(ev, id)}
+              />
+            ))}
+            {/* message du wizard près de la source */}
+            {linkStep !== "idle" && linkFrom && nodesById[linkFrom] && (
+              <text
+                x={nodesById[linkFrom].x}
+                y={nodesById[linkFrom].y - 22}
+                fontSize={11}
+                fill="#9ad"
+                textAnchor="middle"
+              >
+                {hint}
+              </text>
+            )}
+          </g>
+        </svg>
+      </div>
+
+      {/* Menu contextuel (style react-bootstrap) */}
+      {ctxMenu?.show && (
+        <div
+          className="dropdown-menu show"
+          style={{ position: "fixed", top: ctxMenu.y, left: ctxMenu.x, zIndex: 1000 }}
+          onMouseLeave={closeContextMenu}
+        >
+          <button
+            className="dropdown-item"
+            onClick={() => { closeContextMenu(); beginCreateTransition(ctxMenu.onNodeId); }}
+          >
+            Créer une transition
+          </button>
+          {selectedEdgeId && (
+            <button className="dropdown-item text-danger" onClick={() => { closeContextMenu(); deleteSelectedEdge(); }}>
+              Supprimer la transition sélectionnée
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}

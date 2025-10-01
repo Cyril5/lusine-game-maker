@@ -10,6 +10,7 @@ export interface FsmApi {
   console: { log: (...a:any[])=>void; warn: (...a:any[])=>void; error: (...a:any[])=>void };
   requestTransition: (nextId: string) => void;
   rigidbody?: Rigidbody;
+  fsm: FiniteStateMachine;
 }
 
 export function createRuntimeApi(ctx: {
@@ -18,6 +19,7 @@ export function createRuntimeApi(ctx: {
   rigidbody?: Rigidbody;
 }): FsmApi {
   return {
+    fsm: ctx.fsm,
     console: {
       log:  (...a)=>console.log(`[FSM:${ctx.fsm.name}]`, ...a),
       warn: (...a)=>console.warn(`[FSM:${ctx.fsm.name}]`, ...a),

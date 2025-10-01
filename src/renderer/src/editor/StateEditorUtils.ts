@@ -1,6 +1,4 @@
-import { IStateFile } from "@renderer/engine/FSM/IStateFileOld";
-import { Game } from "@renderer/engine/Game";
-import Editor from "../components/EditorOld";
+import { StateFile } from "@renderer/engine/FSM/IStateFile";
 import BaseStateFile from '@renderer/assets/BaseStateFile.xml?raw';
 import FileManager from "@renderer/engine/lgm3D.FileManager";
 import EditorUtils from "./EditorUtils";
@@ -13,19 +11,17 @@ export default class StateEditorUtils {
     static _stateFilesFormat = "xml"; //private set public get => json ou xml (load json ne fonctionne pas pour le moment)
     static _stateCodeFilesFormat = "state";
     
-    private static _stateFiles: Map<string, IStateFile> = new Map<string, IStateFile>();
-    
     static getStatesFiles() {
-        return StateEditorUtils._stateFiles;
+        return StateFile.stateFiles();
     }
     
-    static getStateFile(name: string): IStateFile | null {
+    static getStateFile(clsName: string): StateFile | null {
 
-        const result = this._stateFiles.get(name);
+        const result = StateFile.stateFiles().get(clsName);
         if (result) {
             return result;
         }
-        EditorUtils.showErrorMsg(`StateFile : ${name} not found in list`);
+        EditorUtils.showErrorMsg(`StateFile : ${clsName} not found in list`);
         return null;
     }
     
@@ -79,7 +75,7 @@ export default class StateEditorUtils {
     }
 
     static removeStateFile = (name: string) : void=> {
-        StateEditorUtils._stateFiles.delete(name);
+        StateFile.stateFiles().delete(name);
     }
     
     //Recherche un fichier d'état et l'applique sur un statefile
@@ -96,18 +92,18 @@ export default class StateEditorUtils {
             return;
         }
 
-        const stateFile: IStateFile = new IStateFile(name);
+        const stateFile: StateFile = new StateFile(name);
         stateFile.filename = fileLocation;
         stateFile.codeFilename = codeFileLocation;
-        stateFile.needToLoad = true;
+        // stateFile.needToLoad = true;
 
-        StateEditorUtils._stateFiles.set(name, stateFile);
+        // StateEditorUtils._stateFiles.set(name, stateFile);
         EditorUtils.updateStatesFilesList();
 
-        if (StateEditorUtils._stateFiles.size == 1) {
+        if (StateFile.stateFiles().size == 1) {
 
             // Si c'est le premier du projet alors l'ouvrir dans l'éditeur d'état
-            LGM3DEditor.getInstance().states.setInitStateFile(StateEditorUtils._stateFiles.get(name));
+            LGM3DEditor.getInstance().states.setInitStateFile(StateFile.stateFiles().get(name));
             // LGM3DEditor.getInstance().setState({ initStateFile: StateEditorUtils._stateFiles.get(name) }, () => {
             // });
         }
