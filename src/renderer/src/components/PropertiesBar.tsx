@@ -1,17 +1,17 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Accordion, Button, Dropdown, Form, Offcanvas } from "react-bootstrap";
-import FSMComponent from "./FSMComponent";
-import Editor from "./EditorOld";
+import { FSMComponent } from "./Objects/FSMComponent";
 import '@renderer/assets/css/properties-bar.scss';
 import TransformComponent from "./Objects/TransformComponent";
 import { GameObject } from "@renderer/engine/GameObject";
 import ColliderComponent from "./Objects/ColliderComponent";
 import PhysicComponent from "./Objects/PhysicComponent";
 import BoxCollider from "@renderer/engine/physics/lgm3D.BoxCollider";
-import Rigidbody from "@renderer/engine/physics/lgm3D.Rigidbody";
+import { Rigidbody } from "@renderer/engine/physics/lgm3D.Rigidbody";
 import { ProgrammableGameObject } from "@renderer/engine/ProgrammableGameObject";
 import LGM3DEditor from "@renderer/editor/LGM3DEditor";
+import { FiniteStateMachine } from "@renderer/engine/FSM/lgm3D.FiniteStateMachine";
 
 const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
 
@@ -70,7 +70,7 @@ const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
         height: '87vh'
     };
 
-    const fsms = (gameObjectRef.current as ProgrammableGameObject)?.finiteStateMachines;
+    const fsms = (gameObjectRef.current as ProgrammableGameObject)?.getComponents(FiniteStateMachine);
     return (
 
         <div>
@@ -85,7 +85,7 @@ const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
                     {gameObjectRef.current && (
 
                         
-                        <Accordion defaultActiveKey={['0', '1']} alwaysOpen>
+                        <Accordion defaultActiveKey={['0', '1']} alwaysOpen className="small-acc">
 
                             <Accordion.Item eventKey="0">
                                 <Accordion.Header>Objet</Accordion.Header>
@@ -129,7 +129,7 @@ const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
                             <Accordion.Item eventKey="2">
                                 <Accordion.Header>Automates Finis</Accordion.Header>
                                 <Accordion.Body>
-                                    <FSMComponent/>
+                                    <FSMComponent name={fsms[0].name}/>
                                 </Accordion.Body>
                             </Accordion.Item>
                             )}

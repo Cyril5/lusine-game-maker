@@ -1,26 +1,29 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import StateNode from "./StateNode";
 import TransitionEdge from "./TransitionEdge";
-import { EdgeVM, NodeVM } from "./SMEditorTypes";
+import { EdgeVM, NodeVM } from "./FSMGraphEditorTypes";
 
 type LinkStep = "idle" | "source" | "target";
 
 type FSMGraphProps = {
+  data,
   states: NodeVM[];
   transitions: EdgeVM[];
   onChangeStates?: (states: NodeVM[]) => void;
   onChangeTransitions?: (edges: EdgeVM[]) => void;
   onSelectedState?: (state: NodeVM | null) => void;   // 👈 nouveau
   onSelectedTransition?: (edge: EdgeVM | null) => void; // 👈 optionnel
+  onAddStateBtnClick?: (e)=>void;
 };
 
 export default function FsmGraph({
-  states,
+  data,
   transitions,
   onChangeStates,
   onChangeTransitions,
   onSelectedState,
-  onSelectedTransition
+  onSelectedTransition,
+  onAddStateBtnClick
 }: FSMGraphProps) {
 
   // ----- nodes from FSM -----
@@ -52,9 +55,10 @@ export default function FsmGraph({
 
   // charger les nodes depuis la FSM
   useEffect(() => {
-    if (!states) return;
+    if(!data) return;
+    if (!data.states) return;
     const gridStartX = 80, gridStartY = 80, stepX = 180, stepY = 120;
-    const next: NodeVM[] = states.map((s, i) => ({
+    const next: NodeVM[] = data.states.map((s, i) => ({
       id: s.id,
       name: s.name,
       stateFile: s.stateFile,
@@ -62,7 +66,7 @@ export default function FsmGraph({
       y: s.ui?.y ?? (gridStartY + Math.floor(i / 4) * stepY),
     }));
     setNodes(next);
-  }, [states]);
+  }, [data]);
 
   useEffect(() => {
     const el = viewportRef.current;
@@ -105,9 +109,10 @@ export default function FsmGraph({
 
   // actions
   function addNode() {
-    const id = prompt("Id du nouvel état ?"); if (!id) return;
-    if (nodesById[id]) { alert("Id déjà utilisé"); return; }
-    setNodes(ns => [...ns, { id, x: 120, y: 80 }]);
+    // const id = prompt("Id du nouvel état ?"); if (!id) return;
+    // if (nodesById[id]) { alert("Id déjà utilisé"); return; }
+    // setNodes(ns => [...ns, { id, x: 120, y: 80 }]);
+    onAddStateBtnClick(null);
   }
 
   function beginCreateTransition(fromNodeId?: string) {

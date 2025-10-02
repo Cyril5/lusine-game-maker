@@ -6,7 +6,7 @@ export class StateFile {
   language: "ts" | "js" = "ts";
   private static _stateFiles : Map<string, StateFile> = new Map<string, StateFile>();
   
-  static stateFiles(){
+  static getStateFiles(){
     return StateFile._stateFiles;
   }
   

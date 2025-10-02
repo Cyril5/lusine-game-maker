@@ -1,3 +1,17 @@
+.small-acc {
+  --bs-accordion-btn-padding-y: .6rem;
+  --bs-accordion-btn-padding-x: .5rem;
+  --bs-accordion-body-padding-y: .3rem;
+  --bs-accordion-body-padding-x: .5rem;
+  --bs-accordion-btn-icon-width: .75rem;
+  --bs-accordion-btn-focus-box-shadow: none;
+}
+.small-acc .accordion-button,
+.small-acc .accordion-body {
+  font-size: .85rem;
+  line-height: 1.2;
+}
+
 .mdiRoot {
   height: 100vh;
   width: 100%;

@@ -1,5 +1,6 @@
 import StateEditorUtils from "./StateEditorUtils";
 import LGM3DEditor from "./LGM3DEditor";
+import { EditorAlertType } from "@renderer/components/EditorAlert";
 
 const { dialog } = require('@electron/remote');
 const { app } = require('@electron/remote');
@@ -90,7 +91,7 @@ export default class EditorUtils {
     dialog.showMessageBoxSync(options);
   }
 
-  static showWarnMsg(message: string = "", title: string = "Lusine Game Maker 3D") {
+  static showWarnMsg(message: string = "", Error: EditorAlertType, p0: () => void, title: string = "Lusine Game Maker 3D") {
 
     const options = {
       type: 'warning',

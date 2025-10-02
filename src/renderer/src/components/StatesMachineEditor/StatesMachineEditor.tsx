@@ -9,11 +9,18 @@ import { StateFile } from '@renderer/engine/FSM/IStateFile';
 import FSMGraph from '@renderer/components/StatesMachineEditor/FSMGraph';
 import { State } from '@renderer/engine/FSM/lgm3D.State';
 import LGM3DEditor from '@renderer/editor/LGM3DEditor';
-import { EdgeVM, NodeVM } from './SMEditorTypes';
+import { EdgeVM, NodeVM } from './FSMGraphEditorTypes';
+import { FiniteStateMachine } from '@renderer/engine/FSM/lgm3D.FiniteStateMachine';
+import EditorUtils from '@renderer/editor/EditorUtils';
+import FSMVariablesPanel from './VariablesPanel';
 
+type StateMachineEditorPropsTypes = {
+    fsm?: FiniteStateMachine, //Todo remplacer par un id
+};
 
-const StatesMachineEditor = ({ fsm = null, stateFiles = StateEditorUtils.getStatesFiles(), ...props }) => {
+const StatesMachineEditor = ({ fsm }: StateMachineEditorPropsTypes) => {
 
+    const [graph, setGraph] = useState(() => buildGraphFromFsm(fsm)); // {nodes, edges}
     const [objectName, setObjectName] = useState('');
     const [fsmName, setFSMName] = useState('');
     const [firstStateFileName, setFirstStateFileName] = useState('Aucun');
@@ -34,6 +41,7 @@ const StatesMachineEditor = ({ fsm = null, stateFiles = StateEditorUtils.getStat
             setObjectName(LGM3DEditor.getInstance().selectedGameObject?.name);
             setFSMName(fsm.name);
             setStates(fsm.states);
+            setGraph(buildGraphFromFsm(fsm)); //maj du graph
         }
     }, [fsm]);
 
@@ -50,8 +58,8 @@ const StatesMachineEditor = ({ fsm = null, stateFiles = StateEditorUtils.getStat
     // console.log(selectedState.stateFile);
     //}
 
-    const setSelectedState = (state)=>{
-        if(state) setSelectedStateId(state.id); else setSelectedStateId(null);
+    const setSelectedState = (state) => {
+        if (state) setSelectedStateId(state.id); else setSelectedStateId(null);
     }
 
     const [stateFileClsName, setStateFileClsName] = useState<string | null>(null);
@@ -61,7 +69,7 @@ const StatesMachineEditor = ({ fsm = null, stateFiles = StateEditorUtils.getStat
             setStates(prev => prev.map(s => s.id === selectedState.id ? { ...s, stateFile: undefined } : s));
             return;
         }
-        const sf = StateFile.stateFiles().get(eventKey!);
+        const sf = StateFile.getStateFiles().get(eventKey!);
         if (!sf) return;
         setStates(prev => prev.map(s => s.id === selectedState.id ? { ...s, stateFile: sf } : s));
     };
@@ -78,6 +86,30 @@ const StatesMachineEditor = ({ fsm = null, stateFiles = StateEditorUtils.getStat
         selectedState.name = inputText;
         setStateName(inputText);
         fsmGraphRef.current.updateSelectedNode(inputText);
+    }
+
+    function buildGraphFromFsm(fsm?: FiniteStateMachine) {
+        return { states: fsm?.states ?? [] };   // ✅ plus de "nodes", on renvoie "states"
+    }
+
+    const handleAddState = (e) => {
+        EditorUtils.openInputDialog({
+            title: "Créer un nouvel état",
+            message: "Choisissez le nom de l'état à insérer dans l'automate fini",
+            label: 'Nom:',
+            value: 'Nouvel Etat',
+            inputAttrs: { type: 'text', required: true },
+            type: 'input',
+            buttonsLabel: { ok: 'Ajouter', cancel: 'Annuler' }
+        }, (response) => {
+            if (response) {
+                const s = fsm!.addState(response);
+                setSelectedState(s);
+                setGraph(buildGraphFromFsm(fsm)); // ← force la maj du FSMGraph
+            }
+        }, (error) => {
+            console.error(error);
+        });
     }
 
     return (
@@ -99,11 +131,12 @@ const StatesMachineEditor = ({ fsm = null, stateFiles = StateEditorUtils.getStat
                         <Row>
                             <Col>
                                 <FSMGraph
-                                    states={states}
+                                    data={graph}
                                     //transitions={transitions}
                                     onChangeStates={setStates}
                                     //onChangeTransitions={setTransitions}
                                     onSelectedState={setSelectedState} // 👈 callback
+                                    onAddStateBtnClick={handleAddState}
                                 />
 
                                 <Offcanvas show={selectedState} backdrop={false} placement="end">
@@ -127,13 +160,13 @@ const StatesMachineEditor = ({ fsm = null, stateFiles = StateEditorUtils.getStat
                                                         >
                                                             Aucun
                                                         </Dropdown.Item>
-                                                        {Array.from(StateFile.stateFiles()).map(([key, sf]) => (
+                                                        {Array.from(StateFile.getStateFiles()).map(([key, sf]) => (
                                                             <Dropdown.Item
                                                                 key={key}
                                                                 eventKey={key}                                     // <- renvoyé dans handleStateFileSelect
                                                                 active={selectedState.stateFile?.clsName === sf.clsName}
                                                             >
-                                                                {sf.clsName} 
+                                                                {sf.clsName}
                                                             </Dropdown.Item>
                                                         ))}
                                                     </Dropdown.Menu>
@@ -148,6 +181,16 @@ const StatesMachineEditor = ({ fsm = null, stateFiles = StateEditorUtils.getStat
                                 <FontAwesomeIcon icon="edit"></FontAwesomeIcon> : Editer le fichier d'Etat sélectionné.
                             </Col>
                             <Col md={3}>
+
+                                <Accordion defaultActiveKey={['0']} alwaysOpen>
+                                    <Accordion.Item eventKey="0">
+                                        <Accordion.Header>Variables</Accordion.Header>
+                                        <Accordion.Body>
+                                            <FSMVariablesPanel fsm={fsm} />
+                                        </Accordion.Body>
+                                    </Accordion.Item>
+                                </Accordion>
+
                                 {/* <div className='fsm-properties-bar'>
                                     <h3>{fsm.name}</h3>
                                     <p>Nom AF : <Form.Control type="text" defaultValue={fsm.name} /></p>
@@ -155,30 +198,7 @@ const StatesMachineEditor = ({ fsm = null, stateFiles = StateEditorUtils.getStat
                                     <p>Démarrer au début du jeu : Oui</p>
 
 
-                                    <Accordion defaultActiveKey={['0']} alwaysOpen>
-                                        <Accordion.Item eventKey="0">
-                                            <Accordion.Header>Variables</Accordion.Header>
-                                            <Accordion.Body>
-                                                <Button>Ajouter</Button>
 
-                                                <div className="fsm-variable">
-                                                    <Form.Control type="text" readOnly />
-                                                    <p>Boolean</p>
-                                                    <Dropdown>
-                                                        <Dropdown.Toggle variant="dark" id="dropdown-basic">
-                                                            Vrai
-                                                        </Dropdown.Toggle>
-
-                                                        <Dropdown.Menu>
-                                                            <Dropdown.Item>Vrai</Dropdown.Item>
-                                                            <Dropdown.Item>Faux</Dropdown.Item>
-                                                        </Dropdown.Menu>
-                                                    </Dropdown>
-                                                    <Button variant='danger'>Delete</Button>
-                                                </div>
-                                            </Accordion.Body>
-                                        </Accordion.Item>
-                                    </Accordion>
 
                                     {selectedState && (
                                         <>

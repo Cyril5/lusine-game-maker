@@ -1,4 +1,4 @@
-import { FiniteStateMachine } from "./FSM/lgm3D.FiniteStateMachineOLD";
+import { FiniteStateMachine } from "./FSM/lgm3D.FiniteStateMachine";
 import { Game } from "./Game";
 import { GameObject } from "./GameObject";
 import RotateTowardsBehaviour from "./behaviours/lgm3D.RotateTowardsBehaviour";
@@ -29,7 +29,7 @@ export class ProgrammableGameObject extends GameObject {
     constructor(name: string, scene: BABYLON.Scene) {
         super(name, scene);
         this._fsms = new Array<FiniteStateMachine>();
-        this._fsms.push(new FiniteStateMachine(this));
+        this._fsms.push(new FiniteStateMachine(name, name, this));
         this._scene = scene;
         const rbFound = this.getComponentOfType<Rigidbody>("Rigidbody");
         if(!rbFound)

@@ -4,10 +4,15 @@ import { GameObject } from "../GameObject";
 import Component from "../lgm3D.Component";
 import { Rigidbody } from "../physics/lgm3D.Rigidbody";
 import { StateFile } from "./IStateFile";
+import { FSMVariable, FSMVarType } from "./lgm3D.FSMVariable";
 import { State } from "./lgm3D.State";
 import { StateRuntimeManager } from "./lgm3D.StateRuntimeManager";
 
 export class FiniteStateMachine extends Component {
+
+    public Variables: Map<string, FSMVariable> = new Map<string, FSMVariable>();
+    private _varsByName: Map<string, FSMVariable> = new Map();
+
     states: Array<State> = new Array<State>();
     fsm: FiniteStateMachine;
 
@@ -37,6 +42,43 @@ export class FiniteStateMachine extends Component {
             this._currState = s;
         }
         return s;
+    }
+
+    addVariable(name: string, type: FSMVarType, initial?: number | string | boolean): FSMVariable {
+        const id = (globalThis.crypto?.randomUUID?.() ?? `${Date.now()}_${Math.random()}`); // uid
+        const defVal =
+            type === 'number' ? Number(initial ?? 0) :
+                type === 'boolean' ? Boolean(initial ?? false) :
+                    String(initial ?? '');
+        const v: FSMVariable = { id, name, type, value: defVal };
+        this.Variables.set(id, v);
+        this._varsByName.set(name, v);
+        return v;
+    }
+
+    updateVariable(id: string, patch: Partial<Omit<FSMVariable,'id'>>) {
+        const cur = this.Variables.get(id);
+        if (!cur) return null;
+        // si on change le nom, mettre à jour VariablesByName
+        if (patch.name && patch.name !== cur.name) {
+            this._varsByName.delete(cur.name);
+            this._varsByName.set(patch.name, { ...cur, ...patch });
+        }
+        const next = { ...cur, ...patch };
+        this.Variables.set(id, next);
+        return next;
+    }
+
+    removeVariable(id: string) {
+        const v = this.Variables.get(id);
+        if (v) {
+            this._varsByName.delete(v.name);
+        }
+        return this.Variables.delete(id);
+    }
+
+    getVar(name: string) {
+        return this._varsByName.get(name)?.value;
     }
 
     public setState(state: State | null): void {

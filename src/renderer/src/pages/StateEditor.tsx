@@ -23,6 +23,7 @@ import EditorUtils from '@renderer/editor/EditorUtils';
 import CustomPrompt from '@renderer/components/StatesEditor/CustomPrompt';
 import { buildToolboxDom } from '@renderer/editor/ToolboxBlocksBuilder';
 import { RigidbodyManifest, registerRigidbodyBlocks } from "lgm3d-rigidbody-blocks";
+import Editor from '@renderer/components/Editor';
 
 
 //const serializer: Blockly.serialization.blocks.BlockSerializer = new Blockly.serialization.blocks.BlockSerializer();
@@ -276,7 +277,7 @@ const StateEditor = (statefiles = StateEditorUtils.getStatesFiles(), resizeWorks
                     StateEditorUtils.createStateFile(response);
 
                 } else {
-                    Editor.showAlert("Le nom du fichier n'est pas valide. \n\nCe dernier ne pas doit contenir de caractère spéciaux ni d'espace "
+                    EditorUtils.showWarnMsg("Le nom du fichier n'est pas valide. \n\nCe dernier ne pas doit contenir de caractère spéciaux ni d'espace "
                         , EditorAlertType.Error, () => {
                             openPromptNewStateFile();
                         }

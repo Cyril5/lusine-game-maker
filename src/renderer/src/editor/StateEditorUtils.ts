@@ -12,12 +12,12 @@ export default class StateEditorUtils {
     static _stateCodeFilesFormat = "state";
     
     static getStatesFiles() {
-        return StateFile.stateFiles();
+        return StateFile.getStateFiles();
     }
     
     static getStateFile(clsName: string): StateFile | null {
 
-        const result = StateFile.stateFiles().get(clsName);
+        const result = StateFile.getStateFiles().get(clsName);
         if (result) {
             return result;
         }
@@ -75,7 +75,7 @@ export default class StateEditorUtils {
     }
 
     static removeStateFile = (name: string) : void=> {
-        StateFile.stateFiles().delete(name);
+        StateFile.getStateFiles().delete(name);
     }
     
     //Recherche un fichier d'état et l'applique sur un statefile
@@ -100,10 +100,10 @@ export default class StateEditorUtils {
         // StateEditorUtils._stateFiles.set(name, stateFile);
         EditorUtils.updateStatesFilesList();
 
-        if (StateFile.stateFiles().size == 1) {
+        if (StateFile.getStateFiles().size == 1) {
 
             // Si c'est le premier du projet alors l'ouvrir dans l'éditeur d'état
-            LGM3DEditor.getInstance().states.setInitStateFile(StateFile.stateFiles().get(name));
+            LGM3DEditor.getInstance().states.setInitStateFile(StateFile.getStateFiles().get(name));
             // LGM3DEditor.getInstance().setState({ initStateFile: StateEditorUtils._stateFiles.get(name) }, () => {
             // });
         }

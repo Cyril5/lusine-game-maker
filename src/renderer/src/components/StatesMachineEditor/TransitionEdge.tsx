@@ -1,6 +1,6 @@
 // TransitionEdge.tsx
 import React, { useMemo } from "react";
-import { EdgeVM, NodeVM } from "./SMEditorTypes";
+import { EdgeVM, NodeVM } from "./FSMGraphEditorTypes";
 
 type Props = {
   edge: EdgeVM;

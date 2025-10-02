@@ -1,6 +1,6 @@
 // StateNode.tsx
 import React from "react";
-import { NodeVM } from "./SMEditorTypes";
+import { NodeVM } from "./FSMGraphEditorTypes";
 
 type Props = {
   node: NodeVM;
