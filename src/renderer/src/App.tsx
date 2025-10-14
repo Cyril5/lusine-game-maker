@@ -1,9 +1,6 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
 import './assets/css/index.scss'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import { Button, ButtonGroup } from 'react-bootstrap'
 import Editor from './components/Editor'
+import RendererComponent from './components/RendererComponent'
 
 const App = ()=> {
 

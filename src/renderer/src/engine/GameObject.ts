@@ -1,5 +1,5 @@
 import Component from "./lgm3D.Component";
-import { Observable } from "babylonjs";
+import *  as BABYLON from "@babylonjs/core";
 import Utils from "./utils/lgm3D.Utils";
 import ShortUniqueId from "short-unique-id";
 
@@ -33,15 +33,15 @@ export class GameObject {
     /**
      * Observable lorsque l'objet est détruit.
     */
-    readonly onDelete: Observable<void> = new BABYLON.Observable();
+    readonly onDelete: BABYLON.Observable<void> = new BABYLON.Observable();
     /**
      * Observable lorsque l'objet est créé.
     */
-    readonly onCreated: Observable<void> = new BABYLON.Observable();
+    readonly onCreated: BABYLON.Observable<void> = new BABYLON.Observable();
     /**
      * Observable lorsque le parent change
     */
-    readonly onParentChange: Observable<GameObject> = new BABYLON.Observable();
+    readonly onParentChange: BABYLON.Observable<GameObject> = new BABYLON.Observable();
 
     private _lastRelativeMatrix: BABYLON.Matrix = BABYLON.Matrix.Identity();
     private _relInit = false;

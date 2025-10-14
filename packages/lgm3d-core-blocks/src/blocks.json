@@ -1,3 +1,112 @@
 [
-
+    {
+        "type": "lgm_custom_code_xPKZqW",
+        "tooltip": "Execute un script lgm",
+        "helpUrl": "",
+        "message0": "%1 %2",
+        "args0": [
+            {
+                "type": "field_label_serializable",
+                "text": "Executer le code",
+                "name": "LABEL_CODE"
+            },
+            {
+                "type": "input_value",
+                "name": "CODE",
+                "check": "String"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 225
+    },
+    {
+        "type": "babylon_camera_construct_xBSebRq1",
+        "tooltip": "",
+        "helpUrl": "",
+        "message0": "Nouvelle caméra nommée  %1 à la position %2 définie par défaut ? %3",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "NAME",
+                "check": "String"
+            },
+            {
+                "type": "input_value",
+                "name": "POS",
+                "check": "VECTOR3"
+            },
+            {
+                "type": "input_value",
+                "name": "DEFAULT",
+                "check": "Boolean"
+            }
+        ],
+        "output": "BABYLON_CAMERA",
+        "colour": 345
+    },
+    {
+        "type": "lgm_gameobject_move_am9hZB",
+        "tooltip": "Utilisera une force si la case \"Physique\" est cochée",
+        "helpUrl": "",
+        "message0": "Déplacer l'objet %1 (Physique %2 ) %3 vers %4 à une vitesse de %5 unité(s) %6",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "GAMEOBJECT",
+                "check": "GameObject"
+            },
+            {
+                "type": "field_checkbox",
+                "name": "MOVE_RIGIDBODY",
+                "checked": "TRUE"
+            },
+            {
+                "type": "input_dummy",
+                "name": "NAME"
+            },
+            {
+                "type": "field_dropdown",
+                "name": "DIRECTION",
+                "options": [
+                    [
+                        "l'avant",
+                        "FORWARD"
+                    ],
+                    [
+                        "la droite",
+                        "RIGHT"
+                    ],
+                    [
+                        "l'arrière",
+                        "BACKWARD"
+                    ],
+                    [
+                        "la gauche",
+                        "LEFT"
+                    ],
+                    [
+                        "le haut",
+                        "UP"
+                    ],
+                    [
+                        "le bas",
+                        "DOWN"
+                    ]
+                ]
+            },
+            {
+                "type": "input_value",
+                "name": "SPEED",
+                "check": "Number"
+            },
+            {
+                "type": "input_end_row",
+                "name": "NAME"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 255
+    }
 ]

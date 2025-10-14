@@ -17,6 +17,9 @@ export class State {
     stateFile?: StateFile;
     readonly id: string;
 
+    public minTimeInStateSec: number = 0.2;  // par défaut 200ms ou 400ms pour les self transitions
+    _enteredAtMs: number = 0;
+
     constructor(name: string, stateFile: StateFile | undefined) {
         this.name = name;
         if (stateFile) {

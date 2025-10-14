@@ -53,10 +53,10 @@ export default class EditorCameraManager {
         this._yaw = this._targetYaw = Math.atan2(f.x, f.z);
         this._pitch = this._targetPitch = Math.asin(clamp(f.y, -1, 1));
 
-        Game.getInstance().onGameStarted.add(() => {
-            this._camera.inputs.attached.mouse.detachControl();
-            this._camera.inputs.attached.keyboard.detachControl();
-        });
+        // Game.getInstance().onGameStarted.add(() => {
+        //     this._camera.inputs.attached.mouse.detachControl();
+        //     this._camera.inputs.attached.keyboard.detachControl();
+        // });
 
         this._canvas.addEventListener("contextmenu", e => e.preventDefault());
         this._canvas.style.touchAction = "none";

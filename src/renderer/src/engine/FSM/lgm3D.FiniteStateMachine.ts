@@ -7,6 +7,14 @@ import { StateFile } from "./IStateFile";
 import { FSMVariable, FSMVarType } from "./lgm3D.FSMVariable";
 import { State } from "./lgm3D.State";
 import { StateRuntimeManager } from "./lgm3D.StateRuntimeManager";
+import { StateTransition } from "./lgm3D.StateTransition";
+
+export type TransitionCondition = (ctx: {
+    fsm: FiniteStateMachine;
+    from: State;
+    to: State;
+    dt: number;
+}) => boolean | Promise<boolean>;
 
 export class FiniteStateMachine extends Component {
 
@@ -14,6 +22,9 @@ export class FiniteStateMachine extends Component {
     private _varsByName: Map<string, FSMVariable> = new Map();
 
     states: Array<State> = new Array<State>();
+    // clé 1 = fromId (l’état source) clé 2 = toId (l’état destination) valeur = la StateTransition
+    private _outputsTransitions = new Map<string, Map<string, StateTransition>>();
+
     fsm: FiniteStateMachine;
 
     public copyFrom<T extends Component>(componentSource: T): Component {
@@ -56,7 +67,7 @@ export class FiniteStateMachine extends Component {
         return v;
     }
 
-    updateVariable(id: string, patch: Partial<Omit<FSMVariable,'id'>>) {
+    updateVariable(id: string, patch: Partial<Omit<FSMVariable, 'id'>>) {
         const cur = this.Variables.get(id);
         if (!cur) return null;
         // si on change le nom, mettre à jour VariablesByName
@@ -127,19 +138,55 @@ export class FiniteStateMachine extends Component {
         ) ?? null;
     }
 
+    public getOutputTransitions(fromId: string): StateTransition[] {
+        const byTo = this._outputsTransitions.get(fromId);
+        return byTo ? Array.from(byTo.values()) : [];
+    }
+
     update(dt: number) {
         if (!this._currState || !Game.getInstance().isRunning) return;
 
         this._currState.onUpdate(dt);
 
+        // priorité aux demandes explicites (si tu as ce mécanisme)
         if (this.nextRequested) {
             const next = this.findByKey(this.nextRequested);
             this.nextRequested = null;
             if (next && next !== this._currState) {
                 this._currState.onExit();
                 this._currState = next;
+                this._currState._enteredAtMs = performance.now?.() ?? Date.now();
                 this._currState.onEnter();
+                return;
             }
         }
+
+        const now = performance.now?.() ?? Date.now();
+        const elapsedSec = (now - (this._currState._enteredAtMs ?? now)) / 1000;
+
+        // 1) toujours respecter MinTimeInState (200ms par défaut)
+        if (elapsedSec < (this._currState.minTimeInStateSec ?? 0)) return;
+
+        // 2) évaluer les transitions sortantes (self inclus)
+        const outgoing = this.getOutputTransitions(this._currState.id);
+
+        (async () => {
+            for (const tr of outgoing) {
+                if (!tr.canFire(now)) continue;
+                const to = this.find(tr.toId);
+                if (!to) continue;
+                const ok = await tr.condition?.({ fsm: this, from: this._currState!, to, dt }) ?? false;
+                if (ok) {
+                    tr.markFired(now);
+
+                    // même traitement, même pour self (A→A) : onExit puis onEnter
+                    this._currState!.onExit();
+                    this._currState = to;              // identique si self, ça “rafraîchit” l’état
+                    this._currState._enteredAtMs = now; // redémarre le minTimeInState
+                    this._currState.onEnter();
+                    break;
+                }
+            }
+        })();
     }
 }

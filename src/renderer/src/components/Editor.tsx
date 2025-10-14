@@ -1,10 +1,10 @@
 import { Renderer } from "../engine/Renderer";
 import NavBarEditor from "./NavBarEditor";
 import { Button, Tab, Tabs } from "react-bootstrap";
-import LevelEditor from "@renderer/pages/LevelEditor";
+import LevelEditor from "@renderer/components/LevelEditor";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import StatesMachineEditor from "@renderer/components/StatesMachineEditor/StatesMachineEditor";
-import StateEditor from "@renderer/pages/StateEditor";
+import StateEditor from "@renderer/components/StateEditor";
 import EditorAlert from "./EditorAlert";
 import StartupModal from "./Modals/StartupModal";
 import LoadingEditorModal from "./Modals/LoadingEditorModal";
@@ -81,36 +81,6 @@ const Editor = function () {
     //     });
 
     // }
-
-    const clearScene = (scene: BABYLON.Scene) => {
-        // Parcourez tous les meshes (objets) de la scène et détruisez-les
-        scene.meshes.forEach(function (mesh) {
-            mesh.dispose();
-        });
-
-        // Parcourez toutes les caméras de la scène et détruisez-les
-        scene.cameras.forEach((camera) => {
-            if (camera.name !== Renderer.CAMERA_ID) {
-                console.log(camera.id + " disposed");
-                camera.dispose();
-            }
-        });
-
-        // Parcourez toutes les lumières de la scène et détruisez-les
-        scene.lights.forEach(function (light) {
-            light.dispose();
-        });
-
-        scene.materials.forEach((material) => {
-            material.dispose();
-        });
-
-        // scene.textures.forEach((texture)=>{
-        //     texture.dispose();
-        // });
-
-    }
-
 
 
     // loadDemo() {

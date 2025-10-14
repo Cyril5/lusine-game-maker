@@ -26,10 +26,6 @@ const GameObjectsTreeModal = (props: any) => {
 
   return (
     <>
-      {/* <Button variant="success" size="sm"><FontAwesomeIcon icon={'refresh'} onClick={handleRefreshObjectsList} /></Button>
-      <GameObjectsTreeView gameobjectslist={gameobjectslist} />
-      <AddObjectModal show={false} /> */}
-
       <Button variant="success" size="sm"><FontAwesomeIcon icon={'refresh'} onClick={handleRefreshObjectsList} /></Button>
       <Button variant="primary" size="sm"><FontAwesomeIcon icon={'plus'}/></Button>
       <GameObjectsTreeView/>

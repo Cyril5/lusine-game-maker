@@ -1,77 +1,165 @@
-// TransitionEdge.tsx
+type Props = {
+  edge: EdgeVM;
+  a: NodeVM;                 // node source
+  b: NodeVM;                 // node target
+  selected: boolean;
+  onClick: (id: string, e: React.MouseEvent) => void;
+  laneIndex?: number;        // index de voie pour arcs parallèles
+};
+// TransitionEdge.tsx (safe against NaN)
 import React, { useMemo } from "react";
 import { EdgeVM, NodeVM } from "./FSMGraphEditorTypes";
 
-type Props = {
-  edge: EdgeVM;
-  a: NodeVM;
-  b: NodeVM;
-  selected: boolean;
-  onClick: (id: string, e: React.MouseEvent) => void;
-  laneIndex?: number;     // ← NOUVEAU
-};
+// ...imports & types inchangés
 
-const LANE_GAP = 22;      // écart entre lanes
-const SELF_RADIUS = 28;   // rayon de base pour self-loop
+const LANE_GAP = 22;
+const SELF_RADIUS = 28;
+const NODE_R_FALLBACK = 24;
 
-export default function TransitionEdge({ edge, a, b, selected, onClick, laneIndex = 0 }: Props) {
-  const { d, mx, my } = useMemo(() => {
-    // Self-loop
-    if (a.id === b.id) {
-      const r = SELF_RADIUS + Math.abs(laneIndex) * 10;
-      const cx = a.x; const cy = a.y;
-      // petit arc autour du nœud (en haut)
-      const sx = cx;        const sy = cy - r;
-      const ex = cx + 0.01; const ey = cy - r; // éviter path null
-      // grand arc paramétré
-      const d = `M ${sx} ${sy} a ${r} ${r} 0 1 1 ${r} ${r} a ${r} ${r} 0 1 1 ${-r} ${-r}`;
-      const mx = cx; const my = cy - r*1.35; // milieu “visuel” pour le label/handle
-      return { d, mx, my };
-    }
+export default function TransitionEdge({
+  edge, a, b, selected, onClick, laneIndex = 0
+}: Props) {
 
-    // Courbe quadratique avec déport perpendiculaire
-    const ax = a.x, ay = a.y, bx = b.x, by = b.y;
-    const dx = bx - ax, dy = by - ay;
-    const len = Math.max(1, Math.hypot(dx, dy));
-    const nx = -dy / len, ny = dx / len; // normale
-    const offset = (laneIndex ?? 0) * LANE_GAP;
-    const cx = (ax + bx) / 2 + nx * offset;
-    const cy = (ay + by) / 2 + ny * offset;
+  // ---------- RENDU SELF-TRANSITION ----------
+// --- SELF LOOP (A -> A) : segments droits, départ bas -> arrivée haut ---
+if (a?.id === b?.id) {
+  const cx = Number.isFinite(a?.x) ? a.x : 0;
+  const cy = Number.isFinite(a?.y) ? a.y : 0;
 
-    const d = `M ${ax} ${ay} Q ${cx} ${cy} ${bx} ${by}`;
+  // Rayon visuel du node (si dispo) sinon fallback
+  const nodeR =
+    Number((a as any)?.r) ||
+    Number((a as any)?.radius) ||
+    24;
 
-    // point milieu de la quadratique (t=0.5)
-    const mx = (ax + 2*cx + bx) / 4;
-    const my = (ay + 2*cy + by) / 4;
+  const lane = Math.abs(laneIndex ?? 0);
 
-    return { d, mx, my };
-  }, [a, b, laneIndex]);
+  // Dégagement par rapport au bord du node
+  const padEdge = 1.5;
+
+  // Points "bas" et "haut" du node (sur son cercle)
+  const startX = cx;
+  const startY = cy + (nodeR + padEdge); // bas du node
+  const tipX   = cx;
+  const tipY   = cy - (nodeR + padEdge); // haut du node (pointe de flèche)
+
+  // Dimensions de la boucle "rectangulaire" à gauche
+  const leftX = cx - (nodeR + 26 + lane * 10); // plus la valeur est grande, plus ça s'écarte à gauche
+  const downGap = 10;                           // petit décroché vers le bas pour partir proprement
+  const upGap   = 30;                           // petit alignement avant la flèche
+
+  // Polyligne : bas du node -> descente -> à gauche -> remontée -> avant-haut du node
+  const polyPath = [
+    `M ${startX} ${startY}`,
+    `L ${startX} ${startY + downGap}`,
+    `L ${leftX} ${startY + downGap}`,
+    `L ${leftX} ${tipY - upGap}`,
+    `L ${tipX} ${tipY - upGap}`,
+  ].join(" ");
+
+  // Dernier petit segment avec flèche, collé en haut du node
+  const arrowPath = `M ${tipX} ${tipY - upGap} L ${tipX} ${tipY}`;
+
+  // Hit area qui couvre l’ensemble
+  const hitPath = `${polyPath} ${arrowPath}`;
+
+  // Dot + label au milieu de la colonne de gauche
+  const mx = leftX;
+  const my = cy;
+  const label = (edge as any).conditionPreview ?? edge.event ?? "auto";
 
   const stroke = selected ? "#fff" : "#777";
+  const wide   = selected ? 3 : 2;
   const marker = selected ? "url(#fsm-arrow-selected)" : "url(#fsm-arrow)";
-  const wide = selected ? 3 : 2;
 
   return (
     <g>
-      {/* hit area (invisible) */}
-      <path d={d}
-            stroke="transparent" strokeWidth={18} fill="none"
-            style={{ pointerEvents: "stroke", cursor: "pointer" }}
-            onClick={(ev)=>onClick(edge.id, ev)} />
-      {/* visible path */}
-      <path d={d}
-            stroke={stroke} strokeWidth={wide} fill="none" markerEnd={marker}
-            onClick={(ev)=>onClick(edge.id, ev)} />
-      {/* label */}
-      <text x={mx} y={my - 10} fontSize={12} fill="#bbb" textAnchor="middle">
-        {edge.event ?? "auto"}
+      {/* zone cliquable large */}
+      <path
+        d={hitPath}
+        stroke="transparent"
+        strokeWidth={18}
+        fill="none"
+        style={{ pointerEvents: "stroke", cursor: "pointer" }}
+        onClick={(ev) => onClick(edge.id, ev)}
+      />
+
+      {/* polyligne visible */}
+      <path
+        d={polyPath}
+        stroke={stroke}
+        strokeWidth={wide}
+        fill="none"
+        strokeLinecap="round"
+        onClick={(ev) => onClick(edge.id, ev)}
+      />
+
+      {/* petit segment final avec flèche, collé au haut du node */}
+      <path
+        d={arrowPath}
+        stroke={stroke}
+        strokeWidth={wide}
+        fill="none"
+        strokeLinecap="round"
+        markerEnd={marker}
+        onClick={(ev) => onClick(edge.id, ev)}
+      />
+
+      {/* label + dot à gauche */}
+      <text x={mx - 6} y={my - 10} fontSize={12} fill="#bbb" textAnchor="end">
+        {label}
       </text>
-      {/* handle central */}
+      <circle
+        cx={mx}
+        cy={my}
+        r={6}
+        fill={selected ? "#fff" : "#ccc"}
+        stroke="#333"
+        strokeWidth={1}
+        style={{ cursor: "pointer" }}
+        onClick={(ev) => onClick(edge.id, ev)}
+      />
+    </g>
+  );
+}
+
+  // ---------- RENDU EDGE NORMAL (ton code existant, inchangé) ----------
+  // (Quadratique avec lanes + mid node)
+  const { d, mx, my } = React.useMemo(() => {
+    const ax = a.x ?? 0, ay = a.y ?? 0, bx = b.x ?? 0, by = b.y ?? 0;
+    const dx = bx - ax, dy = by - ay;
+    const len = Math.max(1, Math.hypot(dx, dy));
+    const nx = -dy / len, ny = dx / len;
+    const offset = (laneIndex ?? 0) * LANE_GAP;
+    const cxm = (ax + bx) / 2 + nx * offset;
+    const cym = (ay + by) / 2 + ny * offset;
+    const d = `M ${ax} ${ay} Q ${cxm} ${cym} ${bx} ${by}`;
+    const mx = (ax + 2 * cxm + bx) / 4;
+    const my = (ay + 2 * cym + by) / 4;
+    return { d, mx, my };
+  }, [a.x, a.y, b.x, b.y, laneIndex]);
+
+  const stroke = selected ? "#fff" : "#777";
+  const wide = selected ? 3 : 2;
+  const marker = selected ? "url(#fsm-arrow-selected)" : "url(#fsm-arrow)";
+  const label = (edge as any).conditionPreview ?? edge.event ?? "auto";
+
+  return (
+    <g>
+      <path d={d} stroke="transparent" strokeWidth={18} fill="none"
+        style={{ pointerEvents: "stroke", cursor: "pointer" }}
+        onClick={(ev) => onClick(edge.id, ev)} />
+      <path d={d} stroke={stroke} strokeWidth={wide} fill="none" markerEnd={marker}
+        strokeLinecap="round"
+        onClick={(ev) => onClick(edge.id, ev)} />
+      <text x={mx} y={my - 10} fontSize={12} fill="#bbb" textAnchor="middle">
+        {label}
+      </text>
       <circle cx={mx} cy={my} r={6}
-              fill={selected ? "#fff" : "#ccc"}
-              stroke="#333" strokeWidth={1}
-              style={{ cursor: "pointer" }}
-              onClick={(ev)=>onClick(edge.id, ev)} />
+        fill={selected ? "#fff" : "#ccc"}
+        stroke="#333" strokeWidth={1}
+        style={{ cursor: "pointer" }}
+        onClick={(ev) => onClick(edge.id, ev)} />
     </g>
   );
 }

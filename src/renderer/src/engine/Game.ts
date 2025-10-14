@@ -1,12 +1,12 @@
-import { Engine } from "@babylonjs/core";
+import { Engine, SceneLoader } from "@babylonjs/core";
 import { GameObject } from "./GameObject";
 import { Renderer } from "./Renderer";
 import { ProgrammableGameObject } from "./ProgrammableGameObject";
 import InputManager, { KeyCode } from "./InputManager";
 import State from "./FSM/StateOld";
 import { Observable, Vector3 } from "babylonjs";
-import DemoTest from "./DemoTest/DemoTest";
 import { FiniteStateMachine } from "./FSM/lgm3D.FiniteStateMachine";
+import DemoTest from "./DemoTest/KartControllerGame/DemoTest";
 
 export class Game {
 
@@ -58,7 +58,32 @@ export class Game {
 
         let runCodeSuccess = 0;
 
-        this._demoTest.init(scene);
+        await this._demoTest.init(scene);
+
+        //scene.physicsEnabled = true;
+
+        ///=============================================================================================================
+                        // TEST PHYSICS SHAPE TYPE : MESH (fonctionne ici mais pas dans demoTest.init)
+
+        
+        // sphere
+        // const sphereTst = BABYLON.MeshBuilder.CreateSphere("sphere", { diameter: 2 }, scene);
+        // const sag = new BABYLON.PhysicsAggregate(sphereTst, BABYLON.PhysicsShapeType.SPHERE, { mass: 1 }, scene);
+
+        // //sol
+        // const trackMesh = BABYLON.MeshBuilder.CreateBox("track", { width: 10, height: 1, depth: 10 }, scene);
+        // trackMesh.setPositionWithLocalVector?.(new BABYLON.Vector3(0, -5, 0)); // si tu veux garder ça
+        // // trackMesh.computeWorldMatrix(true);
+        // // trackMesh.bakeCurrentTransformIntoVertices();
+        // // trackMesh.freezeWorldMatrix();
+
+        // const matTrack = new BABYLON.StandardMaterial("test", scene);
+        // matTrack.diffuseColor = BABYLON.Color3.Black();
+        // trackMesh.material = matTrack;
+
+        // const aggTrack = new BABYLON.PhysicsAggregate(trackMesh, BABYLON.PhysicsShapeType.MESH, { mass: 0 }, scene);
+        //================================================================================================================
+
 
         for (const go of gameObjects) {
             // Collecter toutes les FSM une seule fois
@@ -99,7 +124,7 @@ export class Game {
             return;
 
         this.onGameUpdate.notifyObservers();
-        this._demoTest.onGameUpdate();
+        this._demoTest.onGameUpdate(deltaTime);
 
         for (const fsm of this._fsms) {
             //fsm.onUpdateState.notifyObservers();
@@ -134,7 +159,7 @@ export class Game {
         const scene = Renderer.getInstance().scene;
         const engine = scene.getEngine();
 
-        scene.onBeforeRenderObservable.add(() => {
+        scene.onBeforeStepObservable.add(() => {
             if (!this._isRunning)
                 return;
             Game._deltaTime = engine.getDeltaTime() / 1000;

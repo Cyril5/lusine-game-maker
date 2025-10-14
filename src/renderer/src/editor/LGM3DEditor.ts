@@ -1,5 +1,5 @@
 import React from "react";
-import { setGameObjects, setMaterialIds} from "./EditorStore";
+import { setGameObjects, setMaterialIds } from "./EditorStore";
 import EditorCameraManager from "./EditorCameraManager";
 import { Renderer } from "@renderer/engine/Renderer";
 import { GameObject } from "@renderer/engine/GameObject";
@@ -313,6 +313,7 @@ export default class LGM3DEditor {
             parent: 0,
             droppable: true,
             text: "Racine",
+            isOpen: true,
             data: { type: "folder", locked: true }
         }];
 
@@ -475,7 +476,7 @@ export default class LGM3DEditor {
         if (gofsms.length > 0) {
             gofsm = gofsms[0];
         }
-        
+
         this.states.setSelectedGO(objetJeu);
         this.states.setFSM(gofsm);
         this._renderer!.gizmoManager.positionGizmoEnabled = true;
@@ -497,8 +498,24 @@ export default class LGM3DEditor {
         Game.getInstance().stop();
     }
 
+    private _htmlRootInspector? : HTMLElement;
+    private _showDebugInspector = false;
     showDebugInspector(): void {
-        this._renderer!.scene.debugLayer.show({ embedMode: false, overlay: true });
+        this._showDebugInspector = !this._showDebugInspector;
+        if(this._showDebugInspector) {
+            if(!this._htmlRootInspector) this._htmlRootInspector = document.getElementById("inspector-host")!
+
+            this._renderer?.scene.debugLayer.show({
+                embedMode: true,
+                overlay: false,
+                handleResize: true,
+                globalRoot: this._htmlRootInspector,
+                enableClose: false,
+            });
+        }else{
+            this._renderer?.scene.debugLayer.hide();
+        }
+        this._htmlRootInspector!.style.visibility = this._showDebugInspector ? "visible" : "hidden";
     }
 
     setupBaseScene = () => {

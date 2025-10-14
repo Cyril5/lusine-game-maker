@@ -13,7 +13,7 @@ type FSMGraphProps = {
   onChangeTransitions?: (edges: EdgeVM[]) => void;
   onSelectedState?: (state: NodeVM | null) => void;   // 👈 nouveau
   onSelectedTransition?: (edge: EdgeVM | null) => void; // 👈 optionnel
-  onAddStateBtnClick?: (e)=>void;
+  onAddStateBtnClick?: (e) => void;
 };
 
 export default function FsmGraph({
@@ -55,7 +55,7 @@ export default function FsmGraph({
 
   // charger les nodes depuis la FSM
   useEffect(() => {
-    if(!data) return;
+    if (!data) return;
     if (!data.states) return;
     const gridStartX = 80, gridStartY = 80, stepX = 180, stepY = 120;
     const next: NodeVM[] = data.states.map((s, i) => ({
@@ -115,40 +115,94 @@ export default function FsmGraph({
     onAddStateBtnClick(null);
   }
 
+  const HINT_PICK_SOURCE = "Cliquez un état source pour créer une transition.";
+  const HINT_PICK_TARGET = "Sélectionnez l'état de destination…";
+
+  function getSelfLoopGeometry(
+    cx: number, cy: number,
+    r: number,           // rayon visuel du node (ou demi-largeur)
+    zoom: number = 1
+  ) {
+    // taille de boucle en fonction du zoom + rayon
+    const pad = Math.max(16, r * 0.5);          // écart entre la boucle et le node
+    const span = Math.max(52, r * 1.6) / zoom;   // amplitude de la boucle
+    // points d’ancrage sur le cercle du node (à ~110° et ~250° pour contourner par la gauche)
+    const a1 = (110 * Math.PI) / 180;
+    const a2 = (250 * Math.PI) / 180;
+
+    const sx = cx + Math.cos(a1) * (r + 2); // start
+    const sy = cy + Math.sin(a1) * (r + 2);
+    const ex = cx + Math.cos(a2) * (r + 2); // end
+    const ey = cy + Math.sin(a2) * (r + 2);
+
+    // contrôles pour cubic bézier (tirer la boucle vers la gauche)
+    const ctrlOffsetX = span;         // plus grand => boucle plus large
+    const ctrlOffsetY = span * 0.4;   // légère asymétrie verticale
+
+    const c1x = cx - ctrlOffsetX;
+    const c1y = cy - ctrlOffsetY;
+    const c2x = cx - ctrlOffsetX;
+    const c2y = cy + ctrlOffsetY;
+
+    const d = `M ${sx} ${sy} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${ex} ${ey}`;
+
+    // position du “mid-node” (sur le flanc gauche)
+    const midX = cx - (ctrlOffsetX * 0.92);
+    const midY = cy;
+
+    // position de la flèche (petite pointe alignée à la fin)
+    const arrowAt = { x: ex, y: ey };
+
+    return { d, mid: { x: midX, y: midY }, arrowAt };
+  }
+
   function beginCreateTransition(fromNodeId?: string) {
     setSelectedEdgeId(null);
     setSelectedNodeId(null);
     setLinkFrom(null);
     setLinkStep("source");
-    setHint("Sélectionnez l'état source…");
+    setHint(HINT_PICK_SOURCE);
     if (fromNodeId) {
       setLinkFrom(fromNodeId);
       setLinkStep("target");
-      setHint("Sélectionnez l'état de destination…");
+      setHint(HINT_PICK_TARGET);
     }
   }
 
   function onPickNodeForLink(nodeId: string) {
+    // 1) choix de la source
     if (linkStep === "source") {
       setLinkFrom(nodeId);
       setLinkStep("target");
-      setHint("Sélectionnez l'état de destination…");
+      setHint(HINT_PICK_TARGET);
       return;
     }
+
+    // 2) choix de la cible
     if (linkStep === "target" && linkFrom) {
-      if (linkFrom === nodeId) {
-        setHint("Source et destination identiques. Recommence.");
-        setTimeout(() => { setHint(""); setLinkStep("idle"); setLinkFrom(null); }, 800);
-        return;
-      }
-      const exists = edges.some(e => e.from === linkFrom && e.to === nodeId);
-      if (!exists) {
-        setEdges(es => [...es, { id: `e_${Date.now()}`, from: linkFrom, to: nodeId }]);
-      }
+      const isSelf = linkFrom === nodeId;
+
+      // Ajout atomique + anti-doublon dans setEdges (évite les races/state stale)
+      setEdges(prev => {
+        const already = prev.some(e => e.from === linkFrom && e.to === nodeId);
+        if (already) return prev; // rien à faire
+        const newEdge = { id: `e_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`, from: linkFrom, to: nodeId };
+        return [...prev, newEdge];
+      });
+
+      // reset propre + message court
+      setHint(isSelf ? "Self-transition ajoutée." : "Transition ajoutée.");
       setLinkFrom(null);
       setLinkStep("idle");
-      setHint("");
+      // effacer le message après un court délai
+      setTimeout(() => setHint(""), 700);
+      return;
     }
+
+    // 3) fallback (état incohérent)
+    setLinkFrom(null);
+    setLinkStep("idle");
+    setHint("");
   }
 
   function deleteSelectedEdge() {
@@ -274,7 +328,7 @@ export default function FsmGraph({
         <button className="btn btn-danger btn-sm" onClick={deleteSelectedEdge} disabled={!selectedEdgeId}>
           Supprimer transition
         </button>
-        {hint && <div style={{ marginLeft: 12, color: "#9ad" }}>{hint}</div>}
+        {linkStep !== "idle" && hint && <div style={{ marginLeft: 12, color: "#9ad" }}>{hint}</div>}
       </div>
 
       {/* Graphe */}

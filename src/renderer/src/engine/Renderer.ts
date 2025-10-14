@@ -1,15 +1,13 @@
 import HavokPhysics from "@babylonjs/havok";
-import { Engine, GizmoManager, HemisphericLight, Vector3 } from "@babylonjs/core";
+import * as BABYLON from "@babylonjs/core";
 
 // import { FBXLoader } from "babylon-fbx-loader";
-
-import { Observable } from "babylonjs";
-// import Ammo from 'ammojs-typed';
-// import { AmmoJSPlugin } from "babylonjs";
+//import { Observable } from "babylonjs";
 
 import '@renderer/assets/css/index.scss';
-import cannon from 'cannon';
 import EditorUtils from '@renderer/editor/EditorUtils';
+import KartController from "./DemoTest/KartControllerGame/KartController";
+import EditorCameraManager from "@renderer/editor/EditorCameraManager";
 
 
 export class Renderer {
@@ -17,12 +15,14 @@ export class Renderer {
     static readonly CAMERA_ID: string = '_RENDERER_CAMERA_';
 
     private _scene: BABYLON.Scene;
-    private _engine: Engine;
+    private _engine: BABYLON.Engine;
     private _camera: BABYLON.UniversalCamera;
 
     private static instance: Renderer;
 
-    static isReadyObservable: Observable<any> = new Observable();
+    static isReadyObservable: BABYLON.Observable<any> = new BABYLON.Observable();
+    body: BABYLON.PhysicsBody;
+    kart: any;
 
     get scene(): BABYLON.Scene {
         return this._scene;
@@ -36,41 +36,28 @@ export class Renderer {
         return this._engine.getRenderingCanvas();
     }
 
-    private _gizmoManager: GizmoManager;
-    get gizmoManager(): GizmoManager {
+    private _gizmoManager: BABYLON.GizmoManager;
+    get gizmoManager(): BABYLON.GizmoManager {
         return this._gizmoManager;
     }
 
     ammo: Ammo;
     hk?: BABYLON.HavokPlugin;
 
-    //onLoaded:()=>void
-    private loadAmmoPhysicsEngine = async (): Promise<void> => {
-
-        try {
-            this.ammo = await Ammo.bind(window)();
-            this._scene.enablePhysics(new BABYLON.Vector3(0, -10, 0), new AmmoJSPlugin(true, this.ammo));
-            //onLoaded();
-
-        } catch (error) {
-            console.error(error);
-        }
-    }
-
     private loadHavokPhysicsEngine = async (): Promise<void> => {
         try {
-            window.CANNON = cannon;
+            //window.CANNON = cannon;
 
             // initialize plugin
             const havokInstance = await HavokPhysics();
             // pass the engine to the plugin
             const hk = new BABYLON.HavokPlugin(true, havokInstance);
-
             this._scene.enablePhysics(new BABYLON.Vector3(0, -9.81, 0), hk);
         } catch (error) {
             console.error(error);
             EditorUtils.showMsgDialog({ type: "error", title: "Load Physics Engine Error", message: error.message });
         }
+        this.init();
     }
 
 
@@ -78,100 +65,57 @@ export class Renderer {
 
         console.log("renderer initializing");
 
-        this._gizmoManager = new GizmoManager(this._scene);
+        const scene = this._scene;
+
+        this._gizmoManager = new BABYLON.GizmoManager(this._scene);
         this._gizmoManager.usePointerToAttachGizmos = false;
-
-        this._scene.debugLayer.onSelectionChangedObservable.add((selectedObjects) => {
-            //const selectedObject = selectedObjects[0];
-            // console.log(selectedObjects);
-
-        });
-
         this._engine.getRenderingCanvas().addEventListener("wheel", evt => evt.preventDefault());
+
+
+        // 5) Logs diags utiles
+        //console.log("[PHY] Shape type:", shape?.getType?.?.name ?? (shape as any)?.type ?? "unknown");
+
 
         //SceneLoader.RegisterPlugin(new FBXLoader());
         //BABYLON.SceneLoader.RegisterPlugin(new FBXLoader());
         // await SceneLoader.ImportMeshAsync(null, 'models/fbxtest/', 'cube.fbx', this._scene);
         const canvas = this._scene.getEngine().getRenderingCanvas();
 
-        this._camera.attachControl(canvas, true);
+        //this._camera.attachControl(canvas, true);
 
-        //this._scene.debugLayer.show();
-
-        // // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
-        const light = new HemisphericLight("light", new Vector3(0, 1, 0), this._scene);
-
-        // // Default intensity is 1. Let's dim the light a small amount
-        light.intensity = 1.0;
-
-        //const sunLight = new BABYLON.DirectionalLight("DirectionalLight", new BABYLON.Vector3(0, -1, 0), this._scene);
-
-
-        //SceneLoader.ImportMesh("", "/models/", "haunted_house.glb", this._scene, function (meshes) {});
-
-        // SceneLoader.ImportMesh("", "models/fbxtest/", "cube1m.obj", this._scene, (meshes) => {
-
-        //     const cube = this._scene.getNodeByName("Cube");
-        //     cube.parent = null;
-        //     cube.scaling = new Vector3(0.01, 0.01, 0.01);
-
-        //     const model3d: GameObject = new GameObject("CubeModel3D", this._scene);
-        //     cube.parent = model3d;
+        // scene.debugLayer.show({
+        //     embedMode: true,
+        //     overlay: false,
+        //     handleResize: true,
+        //     globalRoot: document.getElementById("inspector-host")!
         // });
 
+        //TEST
+        // sphere
+        //const sphere = BABYLON.MeshBuilder.CreateSphere("sphere", { diameter: 2 }, this.scene);
+        //const sag = new BABYLON.PhysicsAggregate(sphere, BABYLON.PhysicsShapeType.SPHERE, { mass: 1 }, this.scene);
 
-        // SceneLoader.ImportMesh("", "https://models.babylonjs.com/", "aerobatic_plane.glb", this._scene, (meshes) => {
+        // sol
+        //const trackMesh = BABYLON.MeshBuilder.CreateBox("track", { width: 10, height: 1, depth: 10 }, this.scene);
+        //trackMesh.setPositionWithLocalVector?.(new BABYLON.Vector3(0, -5, 0)); // si tu veux garder ça
+        // trackMesh.computeWorldMatrix(true);
+        // trackMesh.bakeCurrentTransformIntoVertices();
+        // trackMesh.freezeWorldMatrix();
 
-        //     const plane = this._scene.getNodeByName("aerobatic_plane.2");
-        //     plane.parent = null;
-        //     // plane.scaling = new Vector3(, 0.5, 0.5);
-        //     const propellor = this._scene.getNodeByName("Propellor_Joint.9");
-        //     propellor.parent = plane;
+        // const matTrack = new BABYLON.StandardMaterial("test", this.scene);
+        // matTrack.diffuseColor = BABYLON.Color3.Black();
+        // trackMesh.material = matTrack;
 
-        //     const model3d: GameObject = new GameObject("Modele 3D Avion", this._scene);
-        //     plane.parent = model3d.transform;
+        // const aggTrack = new BABYLON.PhysicsAggregate(trackMesh, BABYLON.PhysicsShapeType.MESH, { mass: 0 }, this.scene);
 
-        //     const progGo: ProgrammableGameObject = new ProgrammableGameObject("Objet Programmable", this._scene);
-        //     model3d.parent = progGo;
-
-        //     this._scene.getNodeById("__root__")?.dispose();
-
-        //     // Créer un action manager pour le parentNode
-        //     model3d.transform.getChildren()[0].actionManager = new BABYLON.ActionManager(this._scene);
-
-        //     // Ajouter une action de clic pour le mesh et ses enfants
-        //     model3d.transform.getChildren()[0].actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger, (evt)=> {
-        //         // Votre code ici
-        //         console.log(model3d.name);
-        //     }));
-
-        // });
-
-
-
-        // // hide/show the Inspector
-        // window.addEventListener("keydown", (ev) => {
-        //     // Shift+Ctrl+Alt+I
-        //     if (ev.shiftKey && ev.ctrlKey && ev.altKey && ev.key === 'i') {
-        //         if (this._scene.debugLayer.isVisible()) {
-        //             this._scene.debugLayer.hide();
-        //         } else {
-        //             this._scene.debugLayer.show();
-        //         }
-        //     }
-        // });
-
-        //run the main render loop
-        // this._engine.runRenderLoop(() => {
-        //  //this._game?.update(this._engine.getDeltaTime());
-        //  GameObject.gameObjects.get(9).translate(Axis.Z,0.5,Space.LOCAL);
-        //  if(carTest) {
-        //  }
-        // });
+        // pas fins
+        // const pe = this.scene.getPhysicsEngine();
+        // pe.setTimeStep(1 / 120);
+        // pe.setSubTimeStep(8);
 
     }
 
-    private constructor(engine: Engine, scene: BABYLON.Scene) {
+    private constructor(engine: BABYLON.Engine, scene: BABYLON.Scene) {
         console.log("renderer constructor");
         this._engine = engine;
         this._scene = scene;
@@ -183,10 +127,9 @@ export class Renderer {
         this._camera.inertia = 0; // on gère nous-mêmes l’inertie
         this._camera.doNotSerialize = true;
         this._camera.doNotSerialize = true;
-        this.init();
     }
 
-    public static async initAndGetInstance(engine: Engine, scene: BABYLON.Scene) {
+    public static async initAndGetInstance(engine: BABYLON.Engine, scene: BABYLON.Scene) {
         if (Renderer.instance === undefined) {
             Renderer.instance = new Renderer(engine, scene);
         }
@@ -194,21 +137,9 @@ export class Renderer {
         var loadingScreen = new EngineLoadingScreen("I'm loading!!");
         engine.loadingScreen = loadingScreen;
 
-        // Renderer.instance.loadPhysicsEngine(()=>{
-
-        //     console.log("ammo loaded");
-        //     Renderer.isReadyObservable.notifyObservers();
-        // });
-
         Renderer.instance.loadHavokPhysicsEngine().then(() => {
-
-            //console.log("AmmoJS loaded");
             console.log("Havok engine loaded");
-
-            Renderer.isReadyObservable.notifyObservers();
-
-            //Renderer.instance.scene.debugLayer.show();
-
+            Renderer.isReadyObservable.notifyObservers(null);
             return Renderer.instance;
         });
 
