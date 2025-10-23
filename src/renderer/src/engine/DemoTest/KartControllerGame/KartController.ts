@@ -1,187 +1,270 @@
 // KartController.ts
 import * as BABYLON from "@babylonjs/core";
 
+/** Unity-like: projette v sur le plan orthogonal à normal */
+function projectOnPlane(v: BABYLON.Vector3, normal: BABYLON.Vector3): BABYLON.Vector3 {
+  const n = normal.normalize();
+  return v.subtract(n.scale(BABYLON.Vector3.Dot(v, n)));
+}
+/** Unity-like: projette v sur la direction dir */
+function projectOnVector(v: BABYLON.Vector3, dir: BABYLON.Vector3): BABYLON.Vector3 {
+  const n = dir.normalize();
+  return n.scale(BABYLON.Vector3.Dot(v, n));
+}
+/** Compat helpers pour les différentes builds de PhysicsRaycastResult */
+function getRayHitNormal(res: BABYLON.PhysicsRaycastResult): BABYLON.Vector3 {
+  // Certaines builds exposent hitNormalWorld, d'autres hitNormal
+  const anyRes = res as any;
+  const n: BABYLON.Vector3 | undefined = anyRes.hitNormalWorld ?? anyRes.hitNormal;
+  return n instanceof BABYLON.Vector3 && n.lengthSquared() > 1e-8 ? n.normalize() : BABYLON.Vector3.Up();
+}
+
 type Keys = Record<string, boolean>;
 
-function projectOnPlane(v: BABYLON.Vector3, normal: BABYLON.Vector3): BABYLON.Vector3 {
-    const n = normal.normalize();
-    // Projection = v - (v·n) * n
-    const dot = BABYLON.Vector3.Dot(v, n);
-    return v.subtract(n.scale(dot));
-}
-
-function projectOnVector(v: BABYLON.Vector3, direction: BABYLON.Vector3): BABYLON.Vector3 {
-    const n = direction.normalize();
-    const dot = BABYLON.Vector3.Dot(v, n);
-    return n.scale(dot);
-}
-
 export default class KartController {
-    // Réfs
-    private scene: BABYLON.Scene;
-    private root: BABYLON.TransformNode;
-    private sphere: BABYLON.AbstractMesh;
-    //private mesh: BABYLON.AbstractMesh;
-    private body: BABYLON.PhysicsBody;
+  // Références
+  private scene: BABYLON.Scene;
+  private root: BABYLON.TransformNode;
+  private sphere: BABYLON.AbstractMesh;
+  private visual: BABYLON.TransformNode;
+  private body: BABYLON.PhysicsBody;
 
-    // Inputs
-    private keys: Keys = {};
-    private deadzone = 0.12;
+  // Inputs
+  private keys: Keys = {};
+  private deadzone = 0.12;
+  private turnInput = 0;    // -1..1
+  private speedInput = 0;   // 0..1 (RT / Up) — jamais négatif
+  private brakeInput = 0;   // 0..1 (LT / Down)
 
-    // Tuning "Unity-like"
-    public moveForce = 1000;          // intensité AddForce
-    public turnStrength = 120;       // degrés / seconde (comme ton snippet Unity)
-    public groundOffset = 0.45;      // garde au sol visuelle
-    public maxSpeed = 125;            // clamp optionnel
-    public useMaxSpeedClamp = true;
+  // Tuning
+  public moveForce = 500;       // poussée moteur
+  public turnStrength = 40;    // degrés/s (rotation du root)
+  public groundOffset = 0.45;   // hauteur visuelle
+  public useMaxSpeedClamp = true;
+  public maxSpeed = 130;         // m/s 
 
-    private groundNormal = BABYLON.Vector3.Up();
-    public lateralGrip = 150;    // ↑ = + d’adhérence latérale (stop slide)
-    public steerAssist = 20;    // ↑ = la vitesse tourne plus vite vers le forward
-    public downforce = 40;      // colle au sol (augmente avec la vitesse)
+  // Stabilité / adhérence
+  public lateralGrip = 80;      // force opposée au slide latéral
+  public steerAssist = 30;      // aide à réaligner la vitesse dans l'axe
+  public downforce = 160;        // colle au sol
+  public engineBrake = 900;      // frein moteur (quand pas de RT/Up)
+  public brakeForce = 2000;      // frein (LT/Down)
+  public minStopSpeed = 0.3;    // sous ce seuil + frein → snap à 0
+  public allowReverse = false;  // pas de marche arrière pour l’instant
 
-    // internes
-    private turnInput = 0;           // -1..1
-    private speedInput = 0;          // -1..1
+  /** Lissage de l’alignement (0.0 = instantané, ~0.1-0.2 confortable) */
+  public tiltLerp = 0.15;
 
-    private rayResult = new BABYLON.PhysicsRaycastResult();
+  /** Forward projeté sur le sol, stocké pour l’alignement visuel */
+  private fwdOnPlane = BABYLON.Vector3.Forward(); // (0,0,1)
 
-    constructor(
-        root: BABYLON.TransformNode,
-        sphere: BABYLON.AbstractMesh,
-        //mesh: BABYLON.AbstractMesh,
-        scene: BABYLON.Scene,
-        body: BABYLON.PhysicsBody
-    ) {
-        this.root = root;
-        this.sphere = sphere;
-        //this.mesh = mesh;
-        this.scene = scene;
-        this.body = body;
+  // Sol / raycast
+  private groundNormal = BABYLON.Vector3.Up();
+  private rayResult = new BABYLON.PhysicsRaycastResult();
 
-        // IMPORTANT : la sphère ne doit pas être parente du root
-        this.sphere.setParent(null);
+  constructor(
+    root: BABYLON.TransformNode,
+    sphere: BABYLON.AbstractMesh,
+    visual: BABYLON.TransformNode,
+    scene: BABYLON.Scene,
+    body: BABYLON.PhysicsBody
+  ) {
+    this.root = root;
+    this.sphere = sphere;
+    this.visual = visual;
+    this.scene = scene;
+    this.body = body;
 
-        // --- clavier (fallback)
-        window.addEventListener("keydown", e => (this.keys[e.code] = true));
-        window.addEventListener("keyup", e => (this.keys[e.code] = false));
+    // La sphère physique doit être indépendante
+    this.sphere.setParent(null);
 
-        // AVANT la physique: inputs -> rotation root -> force
-        // --- AVANT la physique: input -> rotation -> forces
-        this.scene.onBeforePhysicsObservable.add(() => {
-            const dt = this.scene.getEngine().getDeltaTime() * 0.001;
+    // Clavier
+    window.addEventListener("keydown", e => (this.keys[e.code] = true));
+    window.addEventListener("keyup", e => (this.keys[e.code] = false));
 
-            // 1) Inputs + rotation du root (comme Unity)
-            this.readInput();
-            const eul = (this.root.rotationQuaternion?.toEulerAngles() ?? this.root.rotation.clone());
-            eul.y += (this.turnInput * this.turnStrength) * (Math.PI / 180) * dt;
-            this.root.rotationQuaternion = BABYLON.Quaternion.FromEulerVector(eul);
-            this.root.computeWorldMatrix(true);
 
-            // 2) Normale du sol (raycast depuis la sphère)
-            const plugin = this.scene.getPhysicsEngine()?.getPhysicsPlugin() as BABYLON.IPhysicsEnginePluginV2 | undefined;
-            if (plugin) {
-                const from = this.sphere.getAbsolutePosition().add(new BABYLON.Vector3(0, 0.25, 0));
-                const to = from.add(new BABYLON.Vector3(0, -2.0, 0));
 
-                // IMPORTANT: réutiliser l'objet et/ou le reset avant usage
-                this.rayResult.reset();
-                plugin.raycast(from, to, this.rayResult); // ✅ 3 paramètres
+    // --- AVANT la physique : inputs → rotation root → forces
+    this.scene.onBeforePhysicsObservable.add(() => {
+      const dt = this.scene.getEngine().getDeltaTime() * 0.001;
 
-                if (this.rayResult.hasHit && this.rayResult.hitNormal) {
-                    this.groundNormal.copyFrom(this.rayResult.hitNormal);
-                }
-            }
+      // 1) Inputs
+      this.readInput();
 
-            // 3) Directions + vitesses tangentielles (sur le plan de la piste)
-            const forward = this.root.getDirection(BABYLON.Axis.Z);
-            const fwdOnPlane = projectOnPlane(forward, this.groundNormal).normalize();
+      // 2) Rotation du root (style Unity: Euler + degrés/s)
+      const eul = (this.root.rotationQuaternion?.toEulerAngles() ?? this.root.rotation.clone());
+      eul.y += (this.turnInput * this.turnStrength) * (Math.PI / 180) * dt; // deg→rad
+      this.root.rotationQuaternion = BABYLON.Quaternion.FromEulerVector(eul);
+      this.root.computeWorldMatrix(true);
 
-            const vel = this.body.getLinearVelocity() ?? BABYLON.Vector3.ZeroReadOnly;
-            const tanVel = projectOnPlane(vel, this.groundNormal); // vitesse sur la piste
-            const speedTan = tanVel.length();
-            const forwardComp = projectOnVector(tanVel, fwdOnPlane);        // composante dans l'axe
-            const lateral = tanVel.subtract(forwardComp);                      // composante latérale (le slide)
+      // 3) Normale du sol (raycast physique v2)
+      const plugin = this.scene.getPhysicsEngine()?.getPhysicsPlugin() as BABYLON.IPhysicsEnginePluginV2 | undefined;
+      if (plugin) {
+        const from = this.sphere.getAbsolutePosition().add(new BABYLON.Vector3(0, 0.25, 0));
+        const to = from.add(new BABYLON.Vector3(0, -2.0, 0));
+        this.rayResult.reset();
+        plugin.raycast(from, to, this.rayResult); // v2: (from, to, result)
+        this.groundNormal.copyFrom(this.rayResult.hasHit ? getRayHitNormal(this.rayResult) : BABYLON.Vector3.Up());
+      } else {
+        this.groundNormal.set(0, 1, 0);
+      }
 
-            const location = this.sphere.getAbsolutePosition();
+      // 4) Axes projettés sur la piste
+      const forward = this.root.getDirection(BABYLON.Axis.Z);
+      const fwdOnPlane = projectOnPlane(forward, this.groundNormal).normalize();
 
-            // 4) Propulsion moteur (dans l’axe projeté sur la piste)
-            if (Math.abs(this.speedInput) > 0.01 && fwdOnPlane.lengthSquared() > 1e-6) {
-                const drive = fwdOnPlane.scale(this.moveForce * this.speedInput);
-                this.body.applyForce(drive, location);
-            }
+      const vel = this.body.getLinearVelocity() ?? BABYLON.Vector3.ZeroReadOnly;
+      const tanVel = projectOnPlane(vel, this.groundNormal);
+      const speedTan = tanVel.length();
+      const forwardComp = projectOnVector(tanVel, fwdOnPlane);
+      const lateral = tanVel.subtract(forwardComp);
 
-            // 5) Lateral grip: freine le glissement latéral
-            if (lateral.lengthSquared() > 1e-6) {
-                // force opposée au slide proportionnelle à la vitesse latérale
-                const gripForce = lateral.scale(-this.lateralGrip);
-                this.body.applyForce(gripForce, location);
-            }
+      const location = this.sphere.getAbsolutePosition();
+      const isBraking = this.brakeInput > 0.01;
+      const hasThrottle = this.speedInput > 0.01;
 
-            // 6) Steer assist: réoriente la vitesse vers le forward (sans changer l’énergie)
-            if (speedTan > 0.01 && fwdOnPlane.lengthSquared() > 1e-6) {
-                const desiredTan = fwdOnPlane.scale(speedTan);
-                const delta = desiredTan.subtract(tanVel);         // "où je veux aller" - "où je vais"
-                const steerAssistForce = delta.scale(this.steerAssist);  // facteur à régler
-                this.body.applyForce(steerAssistForce, location);
-            }
+      // on mémorise le forward projeté pour l’alignement visuel
+      if (fwdOnPlane.lengthSquared() > 1e-6) {
+        this.fwdOnPlane.copyFrom(fwdOnPlane);
+      }
 
-            // 7) Downforce: colle au sol (un peu plus avec la vitesse)
-            const stick = this.groundNormal.scale(-this.downforce * (1 + 0.02 * speedTan));
-            this.body.applyForce(stick, location);
+      // 5) Propulsion (seulement si pas en frein)
+      if (!isBraking && hasThrottle && fwdOnPlane.lengthSquared() > 1e-6) {
+        const drive = fwdOnPlane.scale(this.moveForce * this.speedInput);
+        this.body.applyForce(drive, location);
+      }
 
-            // 8) (option) clamp vitesse max arcade
-            if (this.useMaxSpeedClamp) {
-                const v = this.body.getLinearVelocity() ?? BABYLON.Vector3.ZeroReadOnly;
-                const sp = v.length();
-                if (sp > this.maxSpeed) this.body.setLinearVelocity(v.normalize().scale(this.maxSpeed));
-            }
-        });
+      // 6) Frein (LT / S/↓) : s’oppose à la vitesse tangentielle
+      if (isBraking && speedTan > 1e-6) {
+        const oppose = tanVel.normalize().scale(-this.brakeForce * this.brakeInput);
+        this.body.applyForce(oppose, location);
 
-        // APRÈS la physique: recoller root sur la sphère
-        this.scene.onAfterPhysicsObservable.add(() => {
-            const p = this.sphere.getAbsolutePosition();   // aucune autre source !
-            const yOffset = this.groundOffset;
-            this.root.position.copyFrom(p).addInPlaceFromFloats(0, yOffset, 0);
-
-            // visuel = root
-            // if (!this.mesh.rotationQuaternion) this.mesh.rotationQuaternion = new BABYLON.Quaternion();
-            // this.mesh.rotationQuaternion.copyFrom(this.root.rotationQuaternion ?? BABYLON.Quaternion.Identity());
-            // this.mesh.position.copyFrom(this.root.position);
-        });
-    }
-
-    // Appelé par ton script externe si tu veux (sinon pas nécessaire)
-    public update(_dt: number) {
-        // tout est déjà orchestré par onBeforePhysics / onAfterPhysics
-    }
-
-    // ----------- INPUTS -----------
-    private readInput() {
-        // 1) Gamepad (Web Gamepad API) : RT=buttons[7], LT=buttons[6], stick gauche X=axes[0]
-        let steer = 0, throttle = 0;
-        const pads = navigator.getGamepads?.();
-        const pad = pads ? (Array.from(pads).find(p => !!p) as Gamepad | undefined) : undefined;
-
-        if (pad) {
-            const steerAxis = pad.axes[0] ?? 0;
-            steer = Math.abs(steerAxis) < this.deadzone ? 0 : steerAxis;
-
-            const rt = pad.buttons[7]?.value ?? 0;
-            const lt = pad.buttons[6]?.value ?? 0;
-            throttle = rt - lt;          // RT avance, LT freine / recule
-        } else {
-            // 2) Fallback clavier : ZQSD / flèches
-            const left = this.keys["KeyQ"] || this.keys["KeyA"];
-            const right = this.keys["KeyD"];
-            const up = this.keys["KeyZ"] || this.keys["KeyW"];
-            const down = this.keys["KeyS"];
-
-            steer = (right ? 1 : 0) - (left ? 1 : 0);
-            throttle = (up ? 1 : 0) - (down ? 1 : 0);
+        // Snap à l’arrêt pour éviter le micro-glissement
+        if (speedTan < this.minStopSpeed) {
+          const newVel = vel.subtract(tanVel); // conserve la composante verticale
+          this.body.setLinearVelocity(newVel);
         }
+      }
 
-        this.turnInput = steer;
-        this.speedInput = throttle;
+      // 7) Frein moteur (quand pas de RT/Up et pas en frein)
+      if (!hasThrottle && !isBraking && forwardComp.lengthSquared() > 1e-8) {
+        const engineBrakeForce = forwardComp.normalize().scale(-this.engineBrake);
+        this.body.applyForce(engineBrakeForce, location);
+      }
+
+      // 8) Lateral grip (anti-slide)
+      if (lateral.lengthSquared() > 1e-6) {
+        this.body.applyForce(lateral.scale(-this.lateralGrip), location);
+      }
+
+      // 9) Steer assist (réoriente la vitesse dans l’axe)
+      if (speedTan > 0.01 && fwdOnPlane.lengthSquared() > 1e-6) {
+        const desiredTan = fwdOnPlane.scale(speedTan);
+        const delta = desiredTan.subtract(tanVel);
+        this.body.applyForce(delta.scale(this.steerAssist), location);
+      }
+
+      // 10) Downforce : colle au sol (légèrement dépendant de la vitesse)
+      const stick = this.groundNormal.scale(-this.downforce * (1 + 0.02 * speedTan));
+      this.body.applyForce(stick, location);
+
+      // 11) Clamp vitesse max (arcade)
+      if (this.useMaxSpeedClamp) {
+        const v = this.body.getLinearVelocity() ?? BABYLON.Vector3.ZeroReadOnly;
+        const sp = v.length();
+        if (sp > this.maxSpeed) this.body.setLinearVelocity(v.normalize().scale(this.maxSpeed));
+      }
+    });
+
+    function quatFromTo(from: BABYLON.Vector3, to: BABYLON.Vector3): BABYLON.Quaternion {
+      const f = from.normalizeToNew();
+      const t = to.normalizeToNew();
+      const dot = BABYLON.Vector3.Dot(f, t);
+
+      // quasi opposés : choisir un axe orthogonal pour tourner de 180°
+      if (dot < -0.999999) {
+        // trouver un vecteur non parallèle
+        let axis = BABYLON.Vector3.Cross(BABYLON.Axis.X, f);
+        if (axis.lengthSquared() < 1e-6) axis = BABYLON.Vector3.Cross(BABYLON.Axis.Y, f);
+        axis.normalize();
+        return BABYLON.Quaternion.RotationAxis(axis, Math.PI);
+      }
+
+      // formule courte-arc : q = [cross, 1+dot] normalisé
+      const c = BABYLON.Vector3.Cross(f, t);
+      const q = new BABYLON.Quaternion(c.x, c.y, c.z, 1 + dot);
+      q.normalize();
+      return q;
     }
+
+    // --- APRÈS la physique : recoller root/mesh sur la sphère (position)
+    this.scene.onAfterPhysicsObservable.add(() => {
+      const dt = this.scene.getEngine().getDeltaTime() * 0.001;
+
+      // 1) Recaler la position du root sur la sphère + offset
+      const p = this.sphere.getAbsolutePosition();
+      this.root.position.copyFrom(p).addInPlace(this.groundNormal.scale(this.groundOffset));
+
+      // 2) S'assurer que le root utilise un quaternion
+      if (!this.root.rotationQuaternion) {
+        this.root.rotationQuaternion = BABYLON.Quaternion.FromEulerAngles(0, 0, 0);
+      }
+
+      // 3) Cible "à la Unity":
+      // targetRot = FromToRotation(transform.up, hit.normal) * transform.rotation
+      const upNow = this.root.getDirection(BABYLON.Axis.Y);      // équiv. transform.up (monde)
+      const qFromTo = quatFromTo(upNow, this.groundNormal);         // FromToRotation
+      const targetRot = qFromTo.multiply(this.root.rotationQuaternion);
+
+      // 4) Lissage: transform.rotation = Slerp(current, target, alignToGroundSmooth * dt)
+      const t = Math.min(1, 3.8 * dt);           // alignToGroundSmooth ~ 3..8
+      BABYLON.Quaternion.SlerpToRef(
+        this.root.rotationQuaternion,
+        targetRot,
+        t,
+        this.root.rotationQuaternion
+      );
+
+      // 5) (Option visuelle) Si ton mesh visuel est enfant du root,
+      //    garde sa position locale à zéro pour éviter toute double translation.
+      if (this.visual.parent !== this.root) this.visual.setParent(this.root);
+      this.visual.position.set(0, -1, 0);
+      // Laisse la rotation locale du visuel telle quelle (hérite du root).
+    });
+  }
+
+  // Tout est déjà orchestré par les observables
+  public update(_dt: number) { }
+
+  // ---------- INPUTS ----------
+  private readInput() {
+    const pads = navigator.getGamepads?.();
+    const pad = pads ? (Array.from(pads).find(p => !!p) as Gamepad | undefined) : undefined;
+
+    let steer = 0, throttle = 0, brake = 0;
+
+    if (pad) {
+      const sx = pad.axes[0] ?? 0;
+      steer = Math.abs(sx) < this.deadzone ? 0 : sx;
+
+      const rt = pad.buttons[7]?.value ?? 0; // RT = accélère
+      const lt = pad.buttons[6]?.value ?? 0; // LT = freine
+
+      throttle = Math.max(0, rt); // 0..1 — jamais négatif ici
+      brake = Math.max(0, lt); // 0..1
+    } else {
+      const left = this.keys["ArrowLeft"] || this.keys["KeyQ"] || this.keys["KeyA"];
+      const right = this.keys["ArrowRight"] || this.keys["KeyD"];
+      const up = this.keys["ArrowUp"] || this.keys["KeyZ"] || this.keys["KeyW"];
+      const down = this.keys["ArrowDown"] || this.keys["KeyS"];
+
+      steer = (right ? 1 : 0) - (left ? 1 : 0);
+      throttle = up ? 1 : 0;  // ↑ / Z / W → accélère
+      brake = down ? 1 : 0;  // ↓ / S     → freine
+    }
+
+    this.turnInput = steer;
+    this.speedInput = throttle; // 0..1
+    this.brakeInput = brake;    // 0..1
+  }
 }

@@ -520,17 +520,10 @@ export default class LGM3DEditor {
 
     setupBaseScene = () => {
 
-        //window.CANNON = cannon;
-
         const scene = this._renderer.scene;
-
         const camRenderer = this._renderer.camera
         camRenderer.fov = 0.75;
         camRenderer.maxZ = 850;
-
-
-        this.states.setShowStartupModal(false);
-
 
         //const ammo = renderer.ammo;
         const havok = this._renderer!.hk;

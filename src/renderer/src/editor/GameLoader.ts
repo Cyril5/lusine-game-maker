@@ -9,7 +9,7 @@ import Utils from "@renderer/engine/utils/lgm3D.Utils";
 import LGM3DEditor from "./LGM3DEditor";
 
 // ESM uniquement
-import { Material, Observable} from "@babylonjs/core";
+import { Material, Observable, Scene} from "@babylonjs/core";
 import "@babylonjs/core/Loading/Plugins/babylonFileLoader";   // plugin .babylon
 import "@babylonjs/core/Materials/standardMaterial";          // Standard
 import "@babylonjs/core/Materials/PBR/pbrMaterial";           // PBR
@@ -27,8 +27,8 @@ const uid = new ShortUniqueId({ length: 10 });
 
 export default abstract class GameLoader {
 
-    private _scene: BABYLON.Scene;
-    static onLevelLoaded: Observable<BABYLON.Scene> = new Observable();
+    private _scene: Scene;
+    static onLevelLoaded: Observable<Scene> = new Observable();
 
     constructor(scene) {
         this._scene = scene;
@@ -305,8 +305,9 @@ export default abstract class GameLoader {
                                     keepOriginalName: true // garder les noms d’origine pour l’UI
                                 }
                             );
-                            rebindMaterialsFromMetadataAndCleanup(scene.materials, scene);
+                            await scene.whenReadyAsync();
                             processNodes(scene);
+                            rebindMaterialsFromMetadataAndCleanup(scene.materials, scene);
                             scene.materials.forEach(mat => {
                                 AssetsManager.addMaterial(mat);
                             });
@@ -325,10 +326,13 @@ export default abstract class GameLoader {
                 }
             }
 
-            editor.states.setShowStartupModal(false);
+            //editor.states.setShowStartupModal(false);
         });
 
-        const processNodes = (scene: BABYLON.Scene) => {
+        const processNodes = (scene: Scene) => {
+
+            console.log("Processing nodes...");
+            editor.setupBaseScene();
 
             //0 : source, 1 : destinationID
             let goLinks: [number, number][] = []
@@ -337,7 +341,7 @@ export default abstract class GameLoader {
             let converted: Map<number, number> = new Map<number, number>();
 
 
-            scene.getNodes().forEach((node: BABYLON.Node) => {
+            scene.getNodes().forEach((node: Node) => {
 
                 let goCreated = false;
 
@@ -422,10 +426,9 @@ export default abstract class GameLoader {
                 }
             });
 
-            console.log(GameObject.gameObjects);
-            editor.setupBaseScene();
             editor.updateObjectsTreeView();
             GameLoader.onLevelLoaded.notifyObservers(scene);
+            editor.states.setShowStartupModal(false);
         }
 
     }

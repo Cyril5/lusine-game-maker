@@ -1,11 +1,12 @@
 import { Game } from "../Game";
 import { GameObject } from "../GameObject";
-import BoxCollider from "./lgm3D.BoxCollider";
+import Collider from "./lgm3D.Collider";
 import { Rigidbody } from "./lgm3D.Rigidbody";
+import * as BABYLON from "@babylonjs/core";
 
 export class ColliderSystem {
 
-  private static collidersByGO = new Map<GameObject, Set<BoxCollider>>();
+  private static collidersByGO = new Map<GameObject, Set<Collider>>();
   private static dirtyGOs = new Set<GameObject>();
   private static _installed = false;
 
@@ -24,7 +25,7 @@ export class ColliderSystem {
   private static _cooldown = new Map<GameObject, number>();
   private static readonly FRAMES_COOLDOWN = 2;
 
-  static registerCollider(c: BoxCollider) {
+  static registerCollider(c: Collider) {
     const go = c.gameObject;
 
     if (!this.collidersByGO.has(go)) {
@@ -45,7 +46,7 @@ export class ColliderSystem {
     this.collidersByGO.get(go)!.add(c);
   }
 
-  static unregisterCollider(c: BoxCollider) {
+  static unregisterCollider(c: Collider) {
     const set = this.collidersByGO.get(c.gameObject);
     if (!set) return;
     set.delete(c);
@@ -102,7 +103,7 @@ export class ColliderSystem {
     }
 
     // 1) collecter
-    const dirtyCols: BoxCollider[] = [];
+    const dirtyCols: Collider[] = [];
     for (const go of this.dirtyGOs) {
       const set = this.collidersByGO.get(go);
       if (set) for (const col of set) dirtyCols.push(col);
@@ -110,7 +111,7 @@ export class ColliderSystem {
     this.dirtyGOs.clear();
 
     // 2) regrouper par RB
-    const perRb = new Map<Rigidbody | undefined, BoxCollider[]>();
+    const perRb = new Map<Rigidbody | undefined, Collider[]>();
     for (const c of dirtyCols) {
       const rb = c.findRigidbody();
       (perRb.get(rb) ?? perRb.set(rb, []).get(rb)!).push(c);

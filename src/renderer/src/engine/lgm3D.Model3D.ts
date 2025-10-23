@@ -1,4 +1,4 @@
-import { Observable, SceneLoader } from "@babylonjs/core";
+import { Observable, SceneLoader, Node, TransformNode, Material, Scene } from "@babylonjs/core";
 import { GameObject } from "./GameObject";
 import EditorUtils from "@renderer/editor/EditorUtils";
 import AssetsManager from "./lgm3D.AssetsManager";
@@ -202,7 +202,7 @@ export class Model3D extends GameObject {
         return null;
     }
 
-    private constructor(arg: { scene: BABYLON.Scene, node?: BABYLON.TransformNode, options: { autoReuseMaterials: boolean } });
+    private constructor(arg: { scene: Scene, node?: TransformNode, options: { autoReuseMaterials: boolean } });
     private constructor(arg: { directoryOrUrl: string, filename: string, options: { autoReuseMaterials: boolean, extractTextures: true }, scene: BABYLON.Scene });
     private constructor(arg) {
 
@@ -226,7 +226,7 @@ export class Model3D extends GameObject {
             const materialsSceneNames = [];
 
             // TODO : Recupérer plutôt la liste des Materiaux dans le AssetManager
-            arg.scene.materials.forEach((mat: BABYLON.AbstractMaterial) => {
+            arg.scene.materials.forEach((mat) => {
                 const last = materialsSceneNames.push(mat.name);
             });
 
@@ -250,7 +250,7 @@ export class Model3D extends GameObject {
                     );
                 }
 
-                const materialsToDispose = new Set<BABYLON.Material>();
+                const materialsToDispose = new Set<Material>();
                 const importedMats = this._getAllMaterialsFromMeshes(meshes);
 
                 importedMats.forEach(async mat => {
@@ -343,8 +343,11 @@ export class Model3D extends GameObject {
                 //---------------------------------------------------
                 // Fusionner tous les maillages individuels en un seul maillage
                 //const mergedMesh = BABYLON.Mesh.MergeMeshes(meshes[0].getChildMeshes(), true, true, undefined, false, true);
-                meshes[0].getChildren(undefined, true).forEach((node: BABYLON.Node) => {
+                meshes[0].getChildren(undefined, true).forEach((node: Node) => {
                     node.parent = this._transform;
+                    if (node instanceof TransformNode) {
+                        node.doNotSerialize = true; // ne pas sauvegarder les sous-noeuds du modèle lors du save
+                    }
                 });
 
                 //enlever le mesh root "__root__"
@@ -359,7 +362,7 @@ export class Model3D extends GameObject {
 
             }, (onProgress) => {
 
-            }, (scene: BABYLON.Scene, message: string, exception?: any) => {
+            }, (scene: Scene, message: string, exception?: any) => {
                 console.error(message);
             });
         }
@@ -368,7 +371,7 @@ export class Model3D extends GameObject {
 
     }
 
-    private _getUniqueMaterialName(scene: BABYLON.Scene, baseName: string): string {
+    private _getUniqueMaterialName(scene: Scene, baseName: string): string {
         let name = baseName;
         let i = 1;
         while (scene.getMaterialByName(name)) {

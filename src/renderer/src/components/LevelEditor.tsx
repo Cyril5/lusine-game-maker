@@ -51,15 +51,7 @@ const LevelEditor = (props) => {
         <>
             <div className="level-editor">
                 <Container fluid={true}>
-                    <Row>
-                        <Col sm={2}>
-                            <GameObjectsTreeModal gameobjectslist={gameObjects} show={false} />
-                        </Col>
-                        <Col>
-                            <div className="scene-level-editor">
-                                <RendererComponent />
-                                <div id="inspector-host"/>
-                                {/* <ButtonToolbar aria-label="Toolbar with button groups">
+                                <ButtonToolbar aria-label="Toolbar with button groups">
                                 <ButtonGroup className="me-2" aria-label="First group">
                                     <Button onClick={() => editor.setTransformGizmoMode("TRANSLATE")} variant="secondary"><FontAwesomeIcon icon="arrows-up-down-left-right" /></Button>
                                     <Button onClick={() => setTransformMode("ROTATE")} variant="secondary"><FontAwesomeIcon icon="arrows-rotate" /></Button>
@@ -71,7 +63,15 @@ const LevelEditor = (props) => {
                                     <Button variant="secondary"><FontAwesomeIcon icon="location-crosshairs" /> Local</Button>
                                     <Button variant="danger" onClick={() => editor.deleteSelection()}><FontAwesomeIcon icon="trash" /></Button>
                                 </ButtonGroup>
-                            </ButtonToolbar> */}
+                            </ButtonToolbar>
+                    <Row>
+                        <Col sm={2}>
+                            <GameObjectsTreeModal gameobjectslist={gameObjects} show={false} />
+                        </Col>
+                        <Col>
+                            <div className="scene-level-editor">
+                                <RendererComponent />
+                                <div id="inspector-host"/>
                             </div>
                         </Col>
                         <Col sm={2}>

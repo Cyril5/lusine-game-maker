@@ -14,6 +14,8 @@
  * ---------------------------------------------------------------
  */
 
+const DEBUG_LOADERS = false;
+
 import ShortUniqueId from "short-unique-id";
 import {
     Engine,
@@ -273,10 +275,11 @@ export class TransformsAnalyzer {
         options: SanitizeOptions = {}
     ) {
         const tryLoad = async (path: string) => {
-            SceneLoader.loggingLevel = (SceneLoader as any).DETAILED_LOGGING ?? 3;
-            await SceneLoader.AppendAsync("", path, scene, undefined, ".babylon", (s, m, e) => console.error("[Loader ERROR]", m, e));
+            SceneLoader.loggingLevel = DEBUG_LOADERS ? ((SceneLoader as any).DETAILED_LOGGING ?? 3) : BABYLON.SceneLoader.NO_LOGGING; 
+            await SceneLoader.AppendAsync("", path, scene, undefined, ".babylon", (s, m, e) => {
+                if (DEBUG_LOADERS) console.error("[Loader ERROR]", m, e);
+            });
         };
-
         try {
             await tryLoad(projectFile);
             return { retried: false };

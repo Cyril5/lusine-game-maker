@@ -22,40 +22,27 @@ export default class DemoTest {
 
         this.scene = scene;
 
-        // sphere
-        // const sphereTst = BABYLON.MeshBuilder.CreateSphere("sphereTEST", { diameter: 2 }, scene);
-        // const sag = new BABYLON.PhysicsAggregate(sphereTst, BABYLON.PhysicsShapeType.SPHERE, { mass: 1 }, scene);
-
-        // //sol
-        // const trackMesh = BABYLON.MeshBuilder.CreateBox("trackTEST_in_demo", { width: 10, height: 1, depth: 10 }, scene);
-        // trackMesh.setPositionWithLocalVector?.(new BABYLON.Vector3(0, -5, 0)); // si tu veux garder ça
-        // // trackMesh.computeWorldMatrix(true);
-        // // trackMesh.bakeCurrentTransformIntoVertices();
-        // // trackMesh.freezeWorldMatrix();
-
-        // const matTrack = new BABYLON.StandardMaterial("test", scene);
-        // matTrack.diffuseColor = BABYLON.Color3.Black();
-        // trackMesh.material = matTrack;
-
-        // const aggTrack = new BABYLON.PhysicsAggregate(trackMesh, BABYLON.PhysicsShapeType.MESH, { mass: 0 }, scene);
-
-        const ground = BABYLON.MeshBuilder.CreateBox("ground", { width: 500, height: 2, depth: 500 }, scene);
-        const gShape = new BABYLON.PhysicsShapeMesh(ground, scene);
-        gShape.material = {friction:0, restitution:0};
-        const gBody = new BABYLON.PhysicsBody(ground, BABYLON.PhysicsMotionType.STATIC, false, scene);
-        gBody.shape = gShape;
-        const groundMat = new BABYLON.StandardMaterial("groundMat", scene);
-        groundMat.diffuseColor = BABYLON.Color3.Green();
-        ground.material = groundMat;
+        // const ground = BABYLON.MeshBuilder.CreateBox("ground", { width: 500, height: 2, depth: 500 }, scene);
+        // const gShape = new BABYLON.PhysicsShapeMesh(ground, scene);
+        // gShape.material = {friction:0, restitution:0};
+        // const gBody = new BABYLON.PhysicsBody(ground, BABYLON.PhysicsMotionType.STATIC, false, scene);
+        // gBody.shape = gShape;
+        // const groundMat = new BABYLON.StandardMaterial("groundMat", scene);
+        // groundMat.diffuseColor = BABYLON.Color3.Green();
+        // ground.material = groundMat;
 
         const initKart = () => {
 
             // --- Création du kart ---
             const root = new BABYLON.TransformNode("KartRoot", scene);
             const sphere = BABYLON.MeshBuilder.CreateSphere("KartSphere", { diameter: 1 }, scene);
+            sphere.doNotSerialize = true;
+            root.doNotSerialize = true;
             //const matSphere = new BABYLON.StandardMaterial("SphereControllerMat", scene);
             //sphere.material = matSphere;
             //matSphere.diffuseColor = BABYLON.Color3.Red();
+            sphere.position.x = -37.10;
+            sphere.position.z = -12;
             sphere.position.y = 5;
             sphere.visibility = 0.25;
             //sphere.position.x = 25.80;
@@ -80,19 +67,20 @@ export default class DemoTest {
             this.body.setLinearDamping(0.05);
             this.body.setAngularDamping(0.4);
 
+            const carModel = GameObject.getById(286);
+            //carModel.setScale(new BABYLON.Vector3(2.5, 2.5, 2.5));
+            carModel.transform.setParent(root);
+            carModel.setLocalPosition(0, -1, 0);
+
             // --- Contrôleur du kart ---
-            this.kart = new KartController(root, sphere, scene, this.body);
+            this.kart = new KartController(root, sphere, carModel.transform, scene, this.body);
 
             const followCam = new BABYLON.FollowCamera("cam", new BABYLON.Vector3(0, 10, 10), scene, root);
-            followCam.radius = -4;
+            followCam.radius = -6;
             followCam.heightOffset = 1.5;
             followCam.cameraAcceleration = 0.15;
             
 
-            const carModel = GameObject.getById(320);
-            carModel.setScale(new BABYLON.Vector3(2.5, 2.5, 2.5));
-            carModel.transform.setParent(root);
-            carModel.setLocalPosition(0, 0.5, 0);
         }
 
 
@@ -124,41 +112,52 @@ export default class DemoTest {
             body.shape = shape;
             //bunny.freezeWorldMatrix?.();
 
-            console.log("[PHY] Engine enabled?", !!scene.getPhysicsEngine());
-            console.log("[PHY] Bunny isDisposed?", bunny.isDisposed(), "| isInstance?", (bunny as any).isAnInstance === true);
+            bunny.doNotSerialize = true;
 
         });
 
         //CIRCUIT TEST
-        const trackMesh = scene.getMeshById("Road");
-        trackMesh!.setParent(null);
-        trackMesh!.position.y = 2;
-        trackMesh!.position.z = 176;
-        trackMesh!.scaling = new BABYLON.Vector3(4,4,4);
-        const trackPhyShape = new BABYLON.PhysicsShapeMesh(trackMesh, scene);
-        trackPhyShape.material = {friction: 0, restitution: 0};
-        const trackPhyBody = new BABYLON.PhysicsBody(trackMesh, BABYLON.PhysicsMotionType.STATIC, false, scene);
-        trackPhyBody.shape = trackPhyShape;
+        const trackMeshes = scene.getMeshesById("1TARMAC-road");
+        trackMeshes.forEach((m)=>{
+            m!.setParent(null);
+            const trackPhyShape = new BABYLON.PhysicsShapeMesh(m, scene);
+            trackPhyShape.material = {friction: 0, restitution: 0};
+            const trackPhyBody = new BABYLON.PhysicsBody(m, BABYLON.PhysicsMotionType.STATIC, false, scene);
+            trackPhyBody.shape = trackPhyShape;
+        });
+        // GROUND
+        const grounds = ["1GRASS_grass_1_0", "0GRASS_grass_1_0", "1GRAVEL_gravel_0", "0GRASS2_grass_2_0", "1GRASS_2_grass_2_0", "Object021_gravel_0", "sand_outside_gravel_0", "Cylinder001_rock_0", "Plane001_rock_0"];
+        grounds.forEach((id)=>{
+            const gm = scene.getMeshById(id);
+            gm!.setParent(null);
+            const gPhyShape = new BABYLON.PhysicsShapeMesh(gm, scene);
+            gPhyShape.material = {friction: 0, restitution: 0};
+            const gPhyBody = new BABYLON.PhysicsBody(gm, BABYLON.PhysicsMotionType.STATIC, false, scene);
+            gPhyBody.shape = gPhyShape;
+        });
 
-        const wallMesh = scene.getMeshById("Wall A");
-        wallMesh!.setParent(null);
-        wallMesh!.position.y = 0.94;
-        wallMesh!.position.z = 176;
-        wallMesh!.scaling = new BABYLON.Vector3(4,4,4);
-        const trackPhyShape2 = new BABYLON.PhysicsShapeMesh(wallMesh, scene);
-        trackPhyShape2.material = {friction: 0, restitution: 0};
-        const trackPhyBody2 = new BABYLON.PhysicsBody(wallMesh, BABYLON.PhysicsMotionType.STATIC, false, scene);
-        trackPhyBody2.shape = trackPhyShape2;
+        //const g = GameObject.getById(148);
+        //g.setScale(new BABYLON.Vector3(2, 2, 2));
 
-        const wallMesh2 = scene.getMeshById("Wall B");
-        wallMesh2!.setParent(null);
-        wallMesh2!.position.y = 0.94;
-        wallMesh2!.position.z = 176;
-        wallMesh2!.scaling = new BABYLON.Vector3(4,4,4);
-        const trackPhyShape3 = new BABYLON.PhysicsShapeMesh(wallMesh2, scene);
-        trackPhyShape3.material = {friction: 0, restitution: 0};
-        const trackPhyBody3 = new BABYLON.PhysicsBody(wallMesh2, BABYLON.PhysicsMotionType.STATIC, false, scene);
-        trackPhyBody3.shape = trackPhyShape3;
+        // const wallMesh = scene.getMeshById("Wall A");
+        // wallMesh!.setParent(null);
+        // wallMesh!.position.y = 0.94;
+        // wallMesh!.position.z = 176;
+        // wallMesh!.scaling = new BABYLON.Vector3(4,4,4);
+        // const trackPhyShape2 = new BABYLON.PhysicsShapeMesh(wallMesh, scene);
+        // trackPhyShape2.material = {friction: 0, restitution: 0};
+        // const trackPhyBody2 = new BABYLON.PhysicsBody(wallMesh, BABYLON.PhysicsMotionType.STATIC, false, scene);
+        // trackPhyBody2.shape = trackPhyShape2;
+
+        // const wallMesh2 = scene.getMeshById("Wall B");
+        // wallMesh2!.setParent(null);
+        // wallMesh2!.position.y = 0.94;
+        // wallMesh2!.position.z = 176;
+        // wallMesh2!.scaling = new BABYLON.Vector3(4,4,4);
+        // const trackPhyShape3 = new BABYLON.PhysicsShapeMesh(wallMesh2, scene);
+        // trackPhyShape3.material = {friction: 0, restitution: 0};
+        // const trackPhyBody3 = new BABYLON.PhysicsBody(wallMesh2, BABYLON.PhysicsMotionType.STATIC, false, scene);
+        // trackPhyBody3.shape = trackPhyShape3;
 
 
 

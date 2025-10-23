@@ -1,232 +1,72 @@
 import { Game } from "../Game";
 import { GameObject } from "../GameObject";
-import { FiniteStateMachine } from "../FSM/lgm3D.FiniteStateMachineOLD";
-import { ProgrammableGameObject } from "../ProgrammableGameObject";
 import Component from "../lgm3D.Component";
-import { Renderer } from "../Renderer";
+import ColliderSystem from "./lgm3D.ColliderSystem";
+import { Rigidbody } from "./lgm3D.Rigidbody";
+import * as BABYLON from "@babylonjs/core";
 
-export default class Collider extends Component {
-
-   
-    public update(dt: number) {
-        throw new Error("Method not implemented.");
-    }
-
-    private _hkPlugin: BABYLON.HavokPlugin;
-    protected get havokPlugin(): BABYLON.HavokPlugin {
-        return this._hkPlugin;
-    }
-
-    static colliders = new Map<number | string, Collider>();
-
-    _boxMesh: BABYLON.Mesh;
+export default abstract class Collider extends Component {
     
-    protected _receiverFSM: FiniteStateMachine | null = null;
+  protected _scene: BABYLON.Scene;
+  protected _editorGizmo?: BABYLON.AbstractMesh;     // maillage proxy (wireframe) pour l’éditeur
+  protected _physicsBody?: BABYLON.PhysicsBody;      // seulement en Play
+  protected _physicsShape?: BABYLON.PhysicsShape;    // seulement en Play
+  protected _dirty = true;
+  protected _isTrigger = false;
 
-    protected detectableQualifiers: Array<string>;
+  get isTrigger() { return this._isTrigger; }
+  set isTrigger(v: boolean) {
+    this._isTrigger = v;
+    // En Play uniquement : propager sur la shape
+    if (this._physicsShape) (this._physicsShape as any).isTrigger = v;
+  }
 
+  constructor(owner: GameObject) {
+    super(owner);
+    this._scene = owner.scene;
 
-    get shape(): Mesh {
-        return this._boxMesh;
+    // Enregistrer ce collider côté système (rebuilds centralisés)
+    ColliderSystem.registerCollider(this);
+    ColliderSystem.install(this._scene);
+    ColliderSystem.markDirty(this._gameObject);
+
+    // Abonnements jeu : activer/désactiver uniquement pendant le Play
+    Game.getInstance().onGameStarted.add(this._onGameStarted);
+    Game.getInstance().onGameStopped.add(this._onGameStopped);
+  }
+
+  // ---------- Cycle Play ----------
+  private _onGameStarted = () => {
+    // Le ColliderSystem fera l'appel à build* après activation du moteur physique.
+    // Rien à créer ici : on laisse le système (re)construire.
+  };
+
+  private _onGameStopped = () => {
+    // Nettoyage sûr
+    this._physicsBody?.setCollisionCallbackEnabled?.(false);
+    this._physicsBody?.dispose();
+    this._physicsBody = undefined;
+    this._physicsShape?.dispose();
+    this._physicsShape = undefined;
+  };
+
+  // ---------- API requise pour toutes les formes ----------
+  public abstract buildShapeInto(rb: Rigidbody): void;   // injecte la shape dans le container du RB
+  public abstract buildStatic(): void;                   // crée body+shape STATIC sur ce node (quand aucun RB)
+  public abstract _setDirty(v: boolean): void;           // flag interne
+
+  /** Recherche RB parent standardisée */
+  public findRigidbody(): Rigidbody | undefined {
+    let cur: GameObject | undefined = this._gameObject;
+    while (cur) {
+      const rb = cur.getComponent(Rigidbody);
+      if (rb) return rb;
+      cur = cur.parent ?? undefined;
     }
+    return undefined;
+  }
 
-    _isTrigger: boolean = false;
-    get isTrigger(): boolean {
-        return this._isTrigger;
-    }
-    set isTrigger(value: boolean) {
-        this._isTrigger = value;
-        if (this._isTrigger) {
-            //ammojs
-            //this._boxMesh.physicsImpostor?.dispose();
-            this._physicsShape.isTrigger = true;
-        } else {
-            //ammojs
-            // this._boxMesh.physicsImpostor = new BABYLON.PhysicsImpostor(this._boxMesh, BABYLON.PhysicsImpostor.BoxImpostor, {
-            //     mass: 0,
-            //     restitution: 0,
-            //     friction: 0,
-            // });
-            this._physicsShape.isTrigger = false;
-        }
-    }
-
-    // Le fsm qui appelera l'event OnCollisionEnter
-    setEventReceiverFSM(fsm: FiniteStateMachine) {
-        this._receiverFSM = fsm;
-    }
-
-    
-    constructor(owner: GameObject) {
-
-        super(owner);
-
-        this._hkPlugin = Renderer.getInstance().hk;
-         
-        this.detectableQualifiers = new Array<string>();
-        
-        return;
-        const shapeSize = BABYLON.Vector3.One();
-        this._boxMesh = BABYLON.MeshBuilder.CreateBox("BoxCollider", { height: shapeSize.y, width: shapeSize.x, depth: shapeSize.z }, scene);
-        this._boxMesh.setParent(this._gameObject);
-        const shapePos = this._boxMesh.position;
-        this._colliderShape = new BABYLON.PhysicsShapeBox(
-            shapePos,
-            BABYLON.Quaternion.Identity(),
-            shapeSize,
-            scene);
-        
-        BoxCollider.colliders.set(this._boxMesh.uniqueId, this);
-        this._boxMesh.isVisible = true;
-        this._boxMesh.visibility = 0.5;
-
-        const material = new BABYLON.StandardMaterial("material", scene);
-        material.wireframe = true;
-        material.diffuseColor = BABYLON.Color3.Green();
-        // Appliquer le matériau au cube
-        this._boxMesh.material = material;
-        
-        this._boxMesh.name += this._boxMesh.uniqueId;
-
-
-
-
-
-        this.isTrigger = false; // créer le physicsImpostor en fonction du choix "isTrigger"
-
-        // scene.getEngine().runRenderLoop(function () {
-        //     // si le parent à changé
-        //     if(this._gameObject.parent != )
-        // });
-
-
-
-        this._boxMesh.isPickable = false;
-
-        this._boxMesh.actionManager = new BABYLON.ActionManager(scene);
-
-        this._gameObject.onParentChange.add((newParent: GameObject) => {
-            
-            alert(newParent._shapeContainer);
-
-            if(newParent._shapeContainer) {
-                alert("parent change");
-                // this._colliderShape.dispose();
-                // this._colliderShape = new BABYLON.PhysicsShapeBox(
-                //     this._boxMesh.position,
-                //     BABYLON.Quaternion.Identity(),
-                //     shapeSize,
-                //     scene);
-
-                newParent._shapeContainer.addChildFromParent(newParent,this._colliderShape,this._boxMesh);
-                newParent._shapeContainerChildren.push(this._colliderShape); 
-            }  
-            
-            return;
-            
-            if(newParent) {
-                console.error(newParent.physicsImpostor);
-                // le parent doit être un objet avec un rigidbody
-                this.attachToGameObject(newParent);
-                this._owner = newParent;
-
-                const impostor = newParent.physicsImpostor;
-    
-                if (impostor) {
-                    newParent.removeRigidbody();
-                    newParent.addRigidbody({ mass: 1, restitution: 0.2, friction: 0.5 });
-                }
-                this._gameObject.onAfterWorldMatrixUpdateObservable.add(()=>{
-                    this.updateBodyShape();
-                });
-            }else{
-                this._gameObject.onAfterWorldMatrixUpdateObservable.removeCallback(()=>this.updateBodyShape());
-            }
-        });
-
-
-        Game.getInstance().onGameStarted.add(() => {
-
-            if(this._owner) {
-
-                //AMMOJS : pour que la collision physique fonctionne il faut que le mesh soit enfant de l'objet qui a le rigidbody
-                // this.attachToGameObject(this._owner);
-                // this._owner.physicsImpostor.forceUpdate();
-            }
-            this.detectCollisionTrigger('enter', true);
-
-            this.updateBodyShape();
-        });
-
-        // TODO se désinscrire de l'event quand le jeu est stopé 
-        Game.getInstance().onGameStoped.remove(() => {
-            this.detectCollisionTrigger('enter', true);
-
-            this.updateBodyShape();
-        });
-    }
-
-    attachToGameObject(go: GameObject): void {
-        //this._boxMesh.position = go.position;
-        this._boxMesh.setParent(go);
-    }
-
-    updateBodyShape() {
-            // On remet à jour le shapeContainer si il y a des modifications sur les dimensions du boxCollider
-            // const parentBodyGameObject = (this._gameObject.parent as GameObject);
-            // if(parentBodyGameObject) {
-            //     parentBodyGameObject._shapeContainer.removeChild(this._colliderShape);
-            //     parentBodyGameObject._shapeContainer.addChildFromParent(parentBodyGameObject,this._colliderShape,this._boxMesh);
-            // }
-            
-        //console.log("update transform");
-        // this._boxMesh.position = this._gameObject.position;
-        // this._boxMesh.scaling = this._gameObject.scaling;
-        // this._boxMesh.rotation = this._gameObject.rotation;
-        // On met à jour le rigidbody parent
-        // const impostor = this._owner.physicsImpostor;
-    
-        // if (impostor) {
-        //     this._owner.removeRigidbody();
-        //     this._owner.addRigidbody({ mass: 1, restitution: 0.2, friction: 0.5 });
-        // }
-
-        //this._boxMesh._physicsImpostor!.setScalingUpdated();
-    }
-
-
-
-    protected detectCollisionTrigger(event: string, trigger: boolean): void {
-
-        for (let [key, otherCollider] of BoxCollider.colliders) {
-            const otherColliderMesh = otherCollider.shape;
-            if (trigger) {
-                switch (event) {
-                    case 'enter':
-                        this._boxMesh.actionManager.registerAction(
-                            new BABYLON.ExecuteCodeAction(
-                                {
-                                    trigger: BABYLON.ActionManager.OnIntersectionEnterTrigger,
-                                    parameter: {
-                                        mesh: otherColliderMesh,
-                                        usePreciseIntersection: false // false pour les boxCollider 
-                                    }
-                                },
-                                () => {
-                                    if (otherCollider) {
-                                        console.log(`collision : ${this._boxMesh.name} & ${otherColliderMesh.name}`);
-
-                                        (this._owner as ProgrammableGameObject)?.finiteStateMachines[0].onCollisionEnter.notifyObservers(otherCollider);
-                                    }
-                                }
-
-                            )
-                        );
-                        break;
-                }
-            }
-        }
-
-    }
-
+  // Par défaut, les colliders n’updatent rien en runtime (rebuild par le système)
+  public update(): void { /* no-op */ }
+  public copyFrom<T extends Component>(_c: T): Component { return this; }
 }
