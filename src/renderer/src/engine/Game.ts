@@ -135,13 +135,9 @@ export class Game {
     public stop() {
 
         console.log('stop game');
-
-        State.deleteRuntimeGlobalVars();
-
+        //State.deleteRuntimeGlobalVars();
         const scene = Renderer.getInstance().scene;
-
         this._isRunning = false;
-
         this._fsms = [];
         this.onGameUpdate.clear();
         this.onGameStopped.notifyObservers();

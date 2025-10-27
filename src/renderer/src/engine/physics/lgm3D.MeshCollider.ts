@@ -16,7 +16,7 @@ export default class MeshCollider extends Collider {
 
   public _setDirty(v: boolean) { this._dirty = v; }
 
-  public buildShapeInto(rb: Rigidbody) {
+  public buildShapeIntoBody(rb: Rigidbody) {
     if (!this._dirty) return;
     this._dirty = false;
 

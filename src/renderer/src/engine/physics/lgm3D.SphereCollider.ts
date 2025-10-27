@@ -1,13 +1,11 @@
 import { GameObject } from "../GameObject";
 import Collider from "./lgm3D.Collider";
 import { Rigidbody } from "./lgm3D.Rigidbody";
-import ColliderSystem from "./lgm3D.ColliderSystem";
 
 export default class SphereCollider extends Collider {
   /** Rayon “base” (avant scale). Si 0 → déduit du bounding. */
   radius = 0.5;
-  private readonly PHYSICS_MARGIN = 0.998;
-
+  
   constructor(owner: GameObject) {
     super(owner);
     // Gizmo éditeur simple (facultatif)
@@ -21,12 +19,23 @@ export default class SphereCollider extends Collider {
     (this._editorGizmo as BABYLON.Mesh).isVisible = true;
     (this._editorGizmo as BABYLON.Mesh).visibility = 0.5;
 
-    ColliderSystem.markDirty(owner); // première construction via système (en Play uniquement)
+    if (!Collider.COLLIDER_MAT) {
+      Collider.COLLIDER_MAT = new BABYLON.StandardMaterial("_EDITOR_COLLIDER_MAT_", this._scene);
+      Collider.COLLIDER_MAT.wireframe = true;
+      Collider.COLLIDER_MAT.doNotSerialize = true;
+    }
+    this._editorGizmo.material = Collider.COLLIDER_MAT;
+    this._editorGizmo.renderOverlay = true;
+    this._editorGizmo.outlineWidth = 0.5;
+    this._editorGizmo.overlayColor = BABYLON.Color3.Green();
+    this._editorGizmo.name += this._editorGizmo.uniqueId;
+    this._editorGizmo.isPickable = false;
+
   }
 
   public _setDirty(v: boolean) { this._dirty = v; }
 
-  public buildShapeInto(rb: Rigidbody) {
+  public buildShapeIntoBody(rb: Rigidbody) {
     if (!this._dirty) return;
     this._dirty = false;
 
@@ -40,16 +49,18 @@ export default class SphereCollider extends Collider {
     mesh.computeWorldMatrix(true);
 
     // Rayon monde conservateur (max scale)
-    const s = new BABYLON.Vector3(); const q = new BABYLON.Quaternion(); const p = new BABYLON.Vector3();
+    const s = new BABYLON.Vector3();
+    const q = new BABYLON.Quaternion();
+    const p = new BABYLON.Vector3();
     mesh.getWorldMatrix().decompose(s, q, p);
 
-    let rWorld = this.radius > 0 ? this.radius * Math.max(Math.abs(s.x), Math.abs(s.y), Math.abs(s.z)) : 0;
-    if (rWorld <= 0) {
+    let radiusWorld = this.radius > 0 ? this.radius * Math.max(Math.abs(s.x), Math.abs(s.y), Math.abs(s.z)) : 0;
+    if (radiusWorld <= 0) {
       const bb = mesh.getBoundingInfo().boundingBox;
       const size = bb.maximumWorld.subtract(bb.minimumWorld);
-      rWorld = Math.max(size.x, size.y, size.z) * 0.5;
+      radiusWorld = Math.max(size.x, size.y, size.z) * 0.5;
     }
-    rWorld *= this.PHYSICS_MARGIN;
+    radiusWorld *= this.PHYSICS_MARGIN;
 
     // offset / rot dans l’espace du RB
     const rootWM = rootNode.getWorldMatrix();
@@ -58,11 +69,11 @@ export default class SphereCollider extends Collider {
 
     const offsetRoot = BABYLON.Vector3.TransformCoordinates(bb.centerWorld, rootInv);
     const rootQ = BABYLON.Quaternion.FromRotationMatrix(rootWM.getRotationMatrix());
-    const rotRoot  = q.multiply(rootQ.conjugate());
+    const rotRoot = q.multiply(rootQ.conjugate());
 
     // créer la shape et injecter dans le container du RB
     this._physicsShape?.dispose();
-    const shape = new BABYLON.PhysicsShapeSphere(BABYLON.Vector3.Zero(), rWorld, this._scene);
+    const shape = new BABYLON.PhysicsShapeSphere(BABYLON.Vector3.Zero(), radiusWorld, this._scene);
     (shape as any).isTrigger = this._isTrigger;
     this._physicsShape = shape;
 
@@ -86,22 +97,13 @@ export default class SphereCollider extends Collider {
     const s = new BABYLON.Vector3(); const q = new BABYLON.Quaternion(); const p = new BABYLON.Vector3();
     mesh.getWorldMatrix().decompose(s, q, p);
 
-    let rWorld = this.radius > 0 ? this.radius * Math.max(Math.abs(s.x), Math.abs(s.y), Math.abs(s.z)) : 0;
-    if (rWorld <= 0) {
+    let radiusWorld = this.radius > 0 ? this.radius * Math.max(Math.abs(s.x), Math.abs(s.y), Math.abs(s.z)) : 0;
+    if (radiusWorld <= 0) {
       const bb = mesh.getBoundingInfo().boundingBox;
       const size = bb.maximumWorld.subtract(bb.minimumWorld);
-      rWorld = Math.max(size.x, size.y, size.z) * 0.5;
+      radiusWorld = Math.max(size.x, size.y, size.z) * 0.5;
     }
-    rWorld *= this.PHYSICS_MARGIN;
-
-    const bb = mesh.getBoundingInfo().boundingBox;
-    const colliderWM = node.getWorldMatrix();
-    const inv        = BABYLON.Matrix.Invert(colliderWM);
-
-    const offsetLocal = BABYLON.Vector3.TransformCoordinates(bb.centerWorld, inv);
-    const meshRotWorld = BABYLON.Quaternion.FromRotationMatrix(mesh.getWorldMatrix().getRotationMatrix());
-    const nodeRotWorld = BABYLON.Quaternion.FromRotationMatrix(colliderWM.getRotationMatrix());
-    const rotLocal = meshRotWorld.multiply(nodeRotWorld.conjugate());
+    radiusWorld *= this.PHYSICS_MARGIN;
 
     if (!this._physicsBody) {
       this._physicsBody = new BABYLON.PhysicsBody(node, BABYLON.PhysicsMotionType.STATIC, false, this._scene);
@@ -109,7 +111,7 @@ export default class SphereCollider extends Collider {
 
     this._physicsShape?.dispose();
     // NB: PhysicsShapeSphere n’a pas de paramètre de rotation → la sphère est isotrope (OK)
-    const shape = new BABYLON.PhysicsShapeSphere(offsetLocal, rWorld, this._scene);
+    const shape = new BABYLON.PhysicsShapeSphere(node.position, radiusWorld, this._scene);
     (shape as any).isTrigger = this._isTrigger;
 
     this._physicsBody.shape = shape;

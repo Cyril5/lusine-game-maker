@@ -326,7 +326,7 @@ export default abstract class GameLoader {
                 }
             }
 
-            //editor.states.setShowStartupModal(false);
+            editor.states.setShowStartupModal(false);
         });
 
         const processNodes = (scene: Scene) => {

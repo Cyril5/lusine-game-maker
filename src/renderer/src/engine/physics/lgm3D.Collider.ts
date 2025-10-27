@@ -6,7 +6,9 @@ import { Rigidbody } from "./lgm3D.Rigidbody";
 import * as BABYLON from "@babylonjs/core";
 
 export default abstract class Collider extends Component {
-    
+
+  protected PHYSICS_MARGIN = 0.998; // ou 0.995 (correction visuelle pour compenser la marge physique).
+  static COLLIDER_MAT: BABYLON.StandardMaterial;
   protected _scene: BABYLON.Scene;
   protected _editorGizmo?: BABYLON.AbstractMesh;     // maillage proxy (wireframe) pour l’éditeur
   protected _physicsBody?: BABYLON.PhysicsBody;      // seulement en Play
@@ -51,7 +53,7 @@ export default abstract class Collider extends Component {
   };
 
   // ---------- API requise pour toutes les formes ----------
-  public abstract buildShapeInto(rb: Rigidbody): void;   // injecte la shape dans le container du RB
+  public abstract buildShapeIntoBody(rb: Rigidbody): void;   // injecte la shape dans le container du RB
   public abstract buildStatic(): void;                   // crée body+shape STATIC sur ce node (quand aucun RB)
   public abstract _setDirty(v: boolean): void;           // flag interne
 

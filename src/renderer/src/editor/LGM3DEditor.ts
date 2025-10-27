@@ -187,7 +187,7 @@ export default class LGM3DEditor {
 
             if (deleteGo === 0) {
                 console.log(this.selectedGameObject.type);
-                this.selectedGameObject.dispose();
+                this.selectedGameObject.destroy();
                 this.updateObjectsTreeView();
             }
         }
@@ -624,8 +624,6 @@ export default class LGM3DEditor {
         const axis = new OriginAxis(scene);
         BABYLON.Tags.AddTagsTo({ ground }, EditorUtils.EDITOR_TAG);
         this.setTransformGizmoMode('TRANSLATE'); //maj du gizmo et de ses events
-        return;
-
     }
 
 

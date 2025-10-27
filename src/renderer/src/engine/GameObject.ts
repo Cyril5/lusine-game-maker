@@ -2,6 +2,7 @@ import Component from "./lgm3D.Component";
 import *  as BABYLON from "@babylonjs/core";
 import Utils from "./utils/lgm3D.Utils";
 import ShortUniqueId from "short-unique-id";
+import { Game } from "./Game";
 
 const uid = new ShortUniqueId({ length: 6 });
 
@@ -72,7 +73,7 @@ export class GameObject {
     }
 
     /**
-     * Obsolète
+     * @deprecated Utilisez localPosition
     */
     set position(value: BABYLON.Vector3) {
         this._transform.position = value;
@@ -192,6 +193,8 @@ export class GameObject {
         // Capte TOUT (gizmos / code / physique) mais filtre via matrice relative
         this._wmObs = this.transform.onAfterWorldMatrixUpdateObservable.add(() => this._onAfterWorldMatrixUpdate());
 
+        Game.getInstance().onGameStarted.add(this.saveTransform);
+        Game.getInstance().onGameStopped.add(this.resetTransform);
         // if (!GameObject._gameObjects.has(this._transform.uniqueId)) {
         //     GameObject._gameObjects.set(this._transform.uniqueId, this);
         //     console.log("Ajout de l'id "+this._transform.uniqueId);
@@ -234,13 +237,6 @@ export class GameObject {
     */
     static nodeIsGameObject(node: BABYLON.TransformNode) {
         return node.metadata?.gameObjectId != null;
-    }
-
-    static saveAllTransforms() {
-
-        GameObject._gameObjects.forEach((go, key) => {
-            go.saveTransform();
-        });
     }
 
     public static get gameObjects() {
@@ -411,9 +407,8 @@ export class GameObject {
     }
 
     private _initLocalPos: BABYLON.Vector3 = new BABYLON.Vector3();
-    private _initRotation;
-    initScale: BABYLON.Vector3 = BABYLON.Vector3.One();
-
+    private _initRotation: BABYLON.Quaternion = BABYLON.Quaternion.Identity();
+    private _initScale: BABYLON.Vector3 = BABYLON.Vector3.One();
 
     // ECS
     update(deltaTime: number): void {
@@ -444,12 +439,13 @@ export class GameObject {
    * @remarks
    * Veuillez à supprimer tous les composants de l'objet avant de supprimer le gameObject
    */
-    dispose(): void {
+    destroy(): void {
         this.onDelete.notifyObservers();
+        Game.getInstance().onGameStarted.removeCallback(this.saveTransform);
+        Game.getInstance().onGameStopped.removeCallback(this.resetTransform);
         GameObject._gameObjects.delete(this.Id);
         // this.onCreated.clear();
         // this.onDelete.clear();
-        // this._physicsImpostor?.dispose();
         this._transform.onAfterWorldMatrixUpdateObservable.remove(this._wmObs);
         this.transform.dispose();
 
@@ -458,39 +454,28 @@ export class GameObject {
         }
     }
 
-    setParent(newParent: GameObject) {
+    setParent(newParent: GameObject | null) {
         this.transform.setParent(newParent?.transform);
         this._parent = newParent;
         if (newParent) {
             this.metadata.parentId = newParent.Id;
             newParent.children.push(this);
         } else {
-            newParent.children.delete(this);
+            newParent?.children.delete(this);
         }
-
         this.onParentChange.notifyObservers(newParent);
     }
 
-    saveTransform(): void {
-        this.initLocalPos = this.position.clone();
-        this._initRotation = this.rotation.clone();
-        //console.log(this._initRotation);
-    }
+    saveTransform = (): void => {
+        this._initLocalPos = this.localPosition.clone();
+        this._initRotation = this.rotationQuaternion!.clone();
+        this._initScale = this.scale.clone();
+    };
 
     resetTransform = () => {
-
-
-        this._transform.position.copyFrom(this.initLocalPos);
-        //this.setAbsolutePosition(new BABYLON.Vector3(this.initWoldPos.x,this.initWoldPos.y,this.initWoldPos.z));
-
-        //this.setPositionWithLocalVector(new BABYLON.Vector3(this.initLocalPos.x,this.initLocalPos.y,this.initLocalPos.z));
-
-        //console.log(this._initRotation);
-        this._transform.rotation = this._initRotation;
-        //console.log(this.rotation);
-        //this.rotation = new Vector3(this.initRotation!.x,this.initRotation!.y,this.initRotation!.z);
-        // this.scaling = this.initScale;
-
+        this.setLocalPosition(this._initLocalPos);
+        this.setRotationQuaternion(this._initRotation);
+        this.setScale(new BABYLON.Vector3(this._initScale.x, this._initScale.y, this._initScale.z));
     }
 
     // getObjectOfTypeInParent<T>(targetType: new () => T): T | null {

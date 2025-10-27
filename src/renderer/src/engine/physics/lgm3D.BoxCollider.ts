@@ -12,9 +12,6 @@ import * as BABYLON from "@babylonjs/core";
 
 @InspectorComponent(BoxColliderInspector)
 export default class BoxCollider extends Collider {
-
-    private PHYSICS_MARGIN = 0.998; // ou 0.995 (correction visuelle pour compenser la marge physique).
-    static COLLIDER_MAT: BABYLON.StandardMaterial;
     size: BABYLON.Vector3 = new BABYLON.Vector3(1, 1, 1);  // dimensions of the box
 
     public metaData: ColliderMetaData = {
@@ -52,10 +49,10 @@ export default class BoxCollider extends Collider {
         //this._physicsBody.setMassProperties({ mass: 0 });
         //this.register();
 
-        if (!BoxCollider.COLLIDER_MAT) {
-            BoxCollider.COLLIDER_MAT = new BABYLON.StandardMaterial("_EDITOR_COLLIDER_MAT_", this._scene);
-            BoxCollider.COLLIDER_MAT.wireframe = true;
-            BoxCollider.COLLIDER_MAT.doNotSerialize = true;
+        if (!Collider.COLLIDER_MAT) {
+            Collider.COLLIDER_MAT = new BABYLON.StandardMaterial("_EDITOR_COLLIDER_MAT_", this._scene);
+            Collider.COLLIDER_MAT.wireframe = true;
+            Collider.COLLIDER_MAT.doNotSerialize = true;
         }
         // Appliquer le matériau au cube
         this._editorGizmo.material = BoxCollider.COLLIDER_MAT;
@@ -68,11 +65,6 @@ export default class BoxCollider extends Collider {
 
         this.isTrigger = false;
 
-        ColliderSystem.registerCollider(this);  // 👈 pas de dépendance inverse
-        ColliderSystem.install(this.gameObject.scene);          // safe: no-op si déjà installé
-        // Build initial via le batch (facultatif : on peut marquer dirty ici)
-        ColliderSystem.markDirty(this.gameObject);
-
         // Cet évenement est appelé après l'activation du moteur physique
         // TODO : enlever cet event quand le collider est supprimé
         Game.getInstance().onGameStarted.add(this.onGameStartedEvent());
@@ -82,7 +74,7 @@ export default class BoxCollider extends Collider {
 
     // ---------- Construction dynamique (attaché à un Rigidbody parent) ----------
 
-    buildShapeInto(rb: Rigidbody) {
+    buildShapeIntoBody(rb: Rigidbody) {
         if (!this._dirty) return;
         this._dirty = false;
 
@@ -186,7 +178,6 @@ export default class BoxCollider extends Collider {
 
         // 3) Calcul offset/rot locaux par rapport au collider root
         const colliderWM = node.getWorldMatrix();
-        const colliderInv = BABYLON.Matrix.Invert(colliderWM);
 
         // Centre du mesh -> en local du collider
         const offsetLocal = node.position;

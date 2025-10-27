@@ -1,5 +1,8 @@
 // KartController.ts
 import * as BABYLON from "@babylonjs/core";
+import { Game } from "@renderer/engine/Game";
+import { GameObject } from "@renderer/engine/GameObject";
+import { Rigidbody } from "@renderer/engine/physics/lgm3D.Rigidbody";
 
 /** Unity-like: projette v sur le plan orthogonal à normal */
 function projectOnPlane(v: BABYLON.Vector3, normal: BABYLON.Vector3): BABYLON.Vector3 {
@@ -25,9 +28,11 @@ export default class KartController {
   // Références
   private scene: BABYLON.Scene;
   private root: BABYLON.TransformNode;
-  private sphere: BABYLON.AbstractMesh;
+  //private sphere: BABYLON.AbstractMesh;
+  private sphereCarController: GameObject;
   private visual: BABYLON.TransformNode;
-  private body: BABYLON.PhysicsBody;
+  //private body: BABYLON.PhysicsBody;
+  private rigidBody: Rigidbody;
 
   // Inputs
   private keys: Keys = {};
@@ -64,28 +69,32 @@ export default class KartController {
 
   constructor(
     root: BABYLON.TransformNode,
-    sphere: BABYLON.AbstractMesh,
+    //sphere: BABYLON.AbstractMesh,
+    sphere: GameObject,
     visual: BABYLON.TransformNode,
     scene: BABYLON.Scene,
-    body: BABYLON.PhysicsBody
+    //body: BABYLON.PhysicsBody
+    body: Rigidbody
   ) {
     this.root = root;
-    this.sphere = sphere;
+    this.sphereCarController = sphere;
     this.visual = visual;
     this.scene = scene;
-    this.body = body;
+    this.rigidBody = body;
 
     // La sphère physique doit être indépendante
-    this.sphere.setParent(null);
+    this.sphereCarController.setParent(null);
 
     // Clavier
     window.addEventListener("keydown", e => (this.keys[e.code] = true));
     window.addEventListener("keyup", e => (this.keys[e.code] = false));
 
-
-
     // --- AVANT la physique : inputs → rotation root → forces
     this.scene.onBeforePhysicsObservable.add(() => {
+     
+       if(!Game.getInstance().isRunning)
+          return;
+
       const dt = this.scene.getEngine().getDeltaTime() * 0.001;
 
       // 1) Inputs
@@ -100,7 +109,7 @@ export default class KartController {
       // 3) Normale du sol (raycast physique v2)
       const plugin = this.scene.getPhysicsEngine()?.getPhysicsPlugin() as BABYLON.IPhysicsEnginePluginV2 | undefined;
       if (plugin) {
-        const from = this.sphere.getAbsolutePosition().add(new BABYLON.Vector3(0, 0.25, 0));
+        const from = this.sphereCarController.worldPosition.add(new BABYLON.Vector3(0, 0.25, 0));
         const to = from.add(new BABYLON.Vector3(0, -2.0, 0));
         this.rayResult.reset();
         plugin.raycast(from, to, this.rayResult); // v2: (from, to, result)
@@ -113,13 +122,13 @@ export default class KartController {
       const forward = this.root.getDirection(BABYLON.Axis.Z);
       const fwdOnPlane = projectOnPlane(forward, this.groundNormal).normalize();
 
-      const vel = this.body.getLinearVelocity() ?? BABYLON.Vector3.ZeroReadOnly;
+      const vel = this.rigidBody.getLinearVelocity() ?? BABYLON.Vector3.ZeroReadOnly;
       const tanVel = projectOnPlane(vel, this.groundNormal);
       const speedTan = tanVel.length();
       const forwardComp = projectOnVector(tanVel, fwdOnPlane);
       const lateral = tanVel.subtract(forwardComp);
 
-      const location = this.sphere.getAbsolutePosition();
+      const location = this.sphereCarController.worldPosition;
       const isBraking = this.brakeInput > 0.01;
       const hasThrottle = this.speedInput > 0.01;
 
@@ -131,48 +140,48 @@ export default class KartController {
       // 5) Propulsion (seulement si pas en frein)
       if (!isBraking && hasThrottle && fwdOnPlane.lengthSquared() > 1e-6) {
         const drive = fwdOnPlane.scale(this.moveForce * this.speedInput);
-        this.body.applyForce(drive, location);
+        this.rigidBody.body.applyForce(drive, location);
       }
 
       // 6) Frein (LT / S/↓) : s’oppose à la vitesse tangentielle
       if (isBraking && speedTan > 1e-6) {
         const oppose = tanVel.normalize().scale(-this.brakeForce * this.brakeInput);
-        this.body.applyForce(oppose, location);
+        this.rigidBody.body.applyForce(oppose, location);
 
         // Snap à l’arrêt pour éviter le micro-glissement
         if (speedTan < this.minStopSpeed) {
           const newVel = vel.subtract(tanVel); // conserve la composante verticale
-          this.body.setLinearVelocity(newVel);
+          this.rigidBody.setLinearVelocity(newVel);
         }
       }
 
       // 7) Frein moteur (quand pas de RT/Up et pas en frein)
       if (!hasThrottle && !isBraking && forwardComp.lengthSquared() > 1e-8) {
         const engineBrakeForce = forwardComp.normalize().scale(-this.engineBrake);
-        this.body.applyForce(engineBrakeForce, location);
+        this.rigidBody.body.applyForce(engineBrakeForce, location);
       }
 
       // 8) Lateral grip (anti-slide)
       if (lateral.lengthSquared() > 1e-6) {
-        this.body.applyForce(lateral.scale(-this.lateralGrip), location);
+        this.rigidBody.body.applyForce(lateral.scale(-this.lateralGrip), location);
       }
 
       // 9) Steer assist (réoriente la vitesse dans l’axe)
       if (speedTan > 0.01 && fwdOnPlane.lengthSquared() > 1e-6) {
         const desiredTan = fwdOnPlane.scale(speedTan);
         const delta = desiredTan.subtract(tanVel);
-        this.body.applyForce(delta.scale(this.steerAssist), location);
+        this.rigidBody.body.applyForce(delta.scale(this.steerAssist), location);
       }
 
       // 10) Downforce : colle au sol (légèrement dépendant de la vitesse)
       const stick = this.groundNormal.scale(-this.downforce * (1 + 0.02 * speedTan));
-      this.body.applyForce(stick, location);
+      this.rigidBody.body.applyForce(stick, location);
 
       // 11) Clamp vitesse max (arcade)
       if (this.useMaxSpeedClamp) {
-        const v = this.body.getLinearVelocity() ?? BABYLON.Vector3.ZeroReadOnly;
+        const v = this.rigidBody.getLinearVelocity() ?? BABYLON.Vector3.ZeroReadOnly;
         const sp = v.length();
-        if (sp > this.maxSpeed) this.body.setLinearVelocity(v.normalize().scale(this.maxSpeed));
+        if (sp > this.maxSpeed) this.rigidBody.setLinearVelocity(v.normalize().scale(this.maxSpeed));
       }
     });
 
@@ -199,10 +208,14 @@ export default class KartController {
 
     // --- APRÈS la physique : recoller root/mesh sur la sphère (position)
     this.scene.onAfterPhysicsObservable.add(() => {
+
+      if(!Game.getInstance().isRunning)
+        return;
+
       const dt = this.scene.getEngine().getDeltaTime() * 0.001;
 
       // 1) Recaler la position du root sur la sphère + offset
-      const p = this.sphere.getAbsolutePosition();
+      const p = this.sphereCarController.worldPosition;
       this.root.position.copyFrom(p).addInPlace(this.groundNormal.scale(this.groundOffset));
 
       // 2) S'assurer que le root utilise un quaternion
@@ -227,7 +240,6 @@ export default class KartController {
 
       // 5) (Option visuelle) Si ton mesh visuel est enfant du root,
       //    garde sa position locale à zéro pour éviter toute double translation.
-      if (this.visual.parent !== this.root) this.visual.setParent(this.root);
       this.visual.position.set(0, -1, 0);
       // Laisse la rotation locale du visuel telle quelle (hérite du root).
     });

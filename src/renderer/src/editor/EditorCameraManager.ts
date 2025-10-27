@@ -266,8 +266,7 @@ export default class EditorCameraManager {
         if (this._keys['KeyD'] || this._keys['ArrowRight']) wish.addInPlace(this._flyRight());
         if (this._keys['KeyA'] || this._keys['ArrowLeft']) wish.addInPlace(this._flyRight().scale(-1));
         if (this._keys['Space']) wish.addInPlace(BABYLON.Axis.Y);
-        if (this._keys['ControlLeft'] || this._keys['ControlRight']) wish.addInPlace(BABYLON.Axis.Y.scale(-1));
-
+        
         if (wish.lengthSquared() > 0) wish.normalize();
 
         const speed = (this._keys['ShiftLeft'] || this._keys['ShiftRight'])

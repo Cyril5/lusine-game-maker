@@ -3,6 +3,7 @@ import { GameObject } from "../GameObject";
 import Component from "../lgm3D.Component";
 import Utils from "../utils/lgm3D.Utils";
 import ColliderSystem from "./lgm3D.ColliderSystem";
+import * as BABYLON from "@babylonjs/core";
 
 export class Rigidbody extends Component {
 
@@ -69,7 +70,7 @@ export class Rigidbody extends Component {
     Game.getInstance().onGameStopped.add(() => this._resetToInitial());
   }
 
-  /** Ajout d’un collider (appelé par BoxCollider) */
+  /** Ajout d’un collider (appelé par la classe Collider) */
   public addShape(shape: any, offset: BABYLON.Vector3, rotation: any) {
     this._shapeContainer.addChild(shape, offset, rotation);
   }
@@ -111,6 +112,8 @@ export class Rigidbody extends Component {
   }
 
   private _resetToInitial() {
+
+    console.log("reset rb pos "+this._gameObject);
     // Recaler l’éditeur (LOCAL)
     this._gameObject.setLocalPosition(this._initLocalPos);
     this._gameObject.setRotationQuaternion(this._initLocalRot);

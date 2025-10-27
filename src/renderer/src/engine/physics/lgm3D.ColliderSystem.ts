@@ -123,7 +123,7 @@ export class ColliderSystem {
         rb.rebuildShapes(() => {
           for (const col of list) {
             col._setDirty?.(true);
-            col.buildShapeInto(rb);
+            col.buildShapeIntoBody(rb);
           }
         });
       } else {

@@ -31,7 +31,7 @@ export class ProgrammableGameObject extends GameObject {
         this._fsms = new Array<FiniteStateMachine>();
         this._fsms.push(new FiniteStateMachine(name, name, this));
         this._scene = scene;
-        const rbFound = this.getComponentOfType<Rigidbody>("Rigidbody");
+        const rbFound = this.getComponent(Rigidbody);
         if(!rbFound)
             this._rigidbody = this.addComponent(Utils.RB_COMPONENT_TYPE, new Rigidbody(this, scene));
         else
@@ -66,10 +66,6 @@ export class ProgrammableGameObject extends GameObject {
         this._rigidbody.setLinearVelocity(newVel);
     }
 
-    setRotationQuaternion(quaternion: BABYLON.Quaternion): void {
-        this.transform.rotationQuaternion = quaternion;
-    }
-
     rotate(axis: BABYLON.Vector3, amount: number, space?: BABYLON.Space | undefined): void {
         if (Game.getInstance().isRunning) {
             //if (this._rigidbody.body) {
@@ -99,11 +95,13 @@ export class ProgrammableGameObject extends GameObject {
             };
             fsm.states.forEach((state) => {
                 console.log(state.stateFile);
-                fsmJSON.states.push({
-                    statefile: {
-                        name: (state.stateFile.name ? state.stateFile.name : null)
-                    }
-                });
+                if(state.stateFile) {                    
+                    fsmJSON.states.push({
+                        statefile: {
+                            name: (state.stateFile.name ? state.stateFile.name : null)
+                        }
+                    });
+                }
             });
             this.metadata.finiteStateMachines.push(fsmJSON);
         })
