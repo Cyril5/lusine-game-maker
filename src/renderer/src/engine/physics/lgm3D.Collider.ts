@@ -15,6 +15,34 @@ export default abstract class Collider extends Component {
   protected _physicsShape?: BABYLON.PhysicsShape;    // seulement en Play
   protected _dirty = true;
   protected _isTrigger = false;
+  protected _material: BABYLON.PhysicsMaterial = {
+    friction: 0.5,
+    restitution: 0.0,
+  };
+
+  /** Définit la friction du matériau physique. */
+  public setFriction(value: number) {
+    this._material.friction = value;
+    if (this._physicsShape) this._physicsShape.material = this._material;
+  }
+
+  /** Définit la restitution (rebond). */
+  public setRestitution(value: number) {
+    this._material.restitution = value;
+    if (this._physicsShape) this._physicsShape.material = this._material;
+  }
+
+  /** Retourne le matériau complet (friction + restitution). */
+  public getMaterial(): BABYLON.PhysicsMaterial {
+    return this._material;
+  }
+
+  /** Applique le matériau courant à la shape (appelé après création). */
+  protected _applyMaterial(shape?: BABYLON.PhysicsShape) {
+    const target = shape ?? this._physicsShape;
+    if (target) target.material = this._material;
+  }
+
 
   get isTrigger() { return this._isTrigger; }
   set isTrigger(v: boolean) {

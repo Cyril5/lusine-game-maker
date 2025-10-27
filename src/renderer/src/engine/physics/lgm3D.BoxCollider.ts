@@ -127,6 +127,7 @@ export default class BoxCollider extends Collider {
             scene
         );
         (shape as any).isTrigger = this._isTrigger;
+        this._applyMaterial(shape);
         this._physicsShape = shape;
 
         // If a static body was left over, remove it
@@ -206,6 +207,7 @@ export default class BoxCollider extends Collider {
         // 6) Créer la nouvelle shape
         const shape = new BABYLON.PhysicsShapeBox(offsetLocal, rotLocal, sizeWorld, this._scene);
         (shape as any).isTrigger = this._isTrigger;
+        this._applyMaterial(shape);
 
         // 7) Assigner au body
         this._physicsBody.shape = shape;

@@ -42,6 +42,7 @@ export default class MeshCollider extends Collider {
     this._physicsShape?.dispose();
     const shape = new BABYLON.PhysicsShapeMesh(mesh, this._scene); // trimesh
     (shape as any).isTrigger = this._isTrigger;
+    this._applyMaterial(shape);
     this._physicsShape = shape;
 
     this._physicsBody?.dispose(); this._physicsBody = undefined;
@@ -75,6 +76,7 @@ export default class MeshCollider extends Collider {
     const shape = new BABYLON.PhysicsShapeMesh(mesh, this._scene);
     (shape as any).isTrigger = this._isTrigger;
 
+    this._applyMaterial(shape);  
     // NB: ShapeMesh ne prend pas directement offset/rot : on passe par le body/container local
     // Pour un body statique “local”, l’offset/rot se gèrent via la transform du node ou via container.
     // Solution simple: on crée un PhysicsShapeContainer local si tu veux gérer offset/rot précisément.

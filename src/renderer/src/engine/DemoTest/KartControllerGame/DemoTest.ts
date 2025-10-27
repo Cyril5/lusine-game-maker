@@ -3,13 +3,14 @@ import KartController from "./KartController";
 import { GameObject } from "@renderer/engine/GameObject";
 import { Rigidbody } from "@renderer/engine/physics/lgm3D.Rigidbody";
 import SphereCollider from "@renderer/engine/physics/lgm3D.SphereCollider";
+import Collider from "@renderer/engine/physics/lgm3D.Collider";
 
 const CAR_MODEL_ID = 118;
 const PLAYER_CAR_ID = 301;
 const PLAYER_SPC_CONTROLLER = 323; //sphere collider de playerCar
 
 export default class DemoTest {
-    
+
     private scene!: BABYLON.Scene;
     private kart!: KartController;
     static initialized: boolean;
@@ -41,14 +42,19 @@ export default class DemoTest {
             // --- Création du kart ---
             //const root = new BABYLON.TransformNode("KartRoot", scene);
             const root = GameObject.getById(PLAYER_CAR_ID);
-            
+
             const spc = new GameObject("SphereCarController", scene);
             spc.setLocalPosition(0, 10, 0);
-            spc.addComponent("Rigidbody", new Rigidbody(spc, scene));
+            const rb = spc.addComponent("Rigidbody", new Rigidbody(spc, scene, BABYLON.PhysicsMotionType.DYNAMIC, 120));
+            rb.body.setLinearDamping(0.05);
+            rb.body.setAngularDamping(0.4);
             const spcCollider = new GameObject("SphereCollider", scene);
             spcCollider.setParent(spc);
             spcCollider.setLocalPosition(0, 0, 0);
-            spcCollider.addComponent("SphereCollider", new SphereCollider(spcCollider));
+            const sphereCollider = spcCollider.addComponent("SphereCollider", new SphereCollider(spcCollider));
+            sphereCollider.setFriction(0.3); // glisse Arcade
+            sphereCollider.setRestitution(0);
+            
 
             // const sphere = BABYLON.MeshBuilder.CreateSphere("KartSphere", { diameter: 1 }, scene);
             // sphere.doNotSerialize = true;
@@ -97,20 +103,20 @@ export default class DemoTest {
 
         //CIRCUIT TEST
         const trackMeshes = scene.getMeshesById("1TARMAC-road");
-        trackMeshes.forEach((m)=>{
+        trackMeshes.forEach((m) => {
             m!.setParent(null);
             const trackPhyShape = new BABYLON.PhysicsShapeMesh(m, scene);
-            trackPhyShape.material = {friction: 0, restitution: 0};
+            trackPhyShape.material = { friction: 0.8, restitution: 0 };
             const trackPhyBody = new BABYLON.PhysicsBody(m, BABYLON.PhysicsMotionType.STATIC, false, scene);
             trackPhyBody.shape = trackPhyShape;
         });
         // GROUND
         const grounds = ["1GRASS_grass_1_0", "0GRASS_grass_1_0", "1GRAVEL_gravel_0", "0GRASS2_grass_2_0", "1GRASS_2_grass_2_0", "Object021_gravel_0", "sand_outside_gravel_0", "Cylinder001_rock_0", "Plane001_rock_0"];
-        grounds.forEach((id)=>{
+        grounds.forEach((id) => {
             const gm = scene.getMeshById(id);
             gm!.setParent(null);
             const gPhyShape = new BABYLON.PhysicsShapeMesh(gm, scene);
-            gPhyShape.material = {friction: 0, restitution: 0};
+            gPhyShape.material = { friction: 0.3, restitution: 0 };
             const gPhyBody = new BABYLON.PhysicsBody(gm, BABYLON.PhysicsMotionType.STATIC, false, scene);
             gPhyBody.shape = gPhyShape;
         });

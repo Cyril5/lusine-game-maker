@@ -5,7 +5,7 @@ import { Rigidbody } from "./lgm3D.Rigidbody";
 export default class SphereCollider extends Collider {
   /** Rayon “base” (avant scale). Si 0 → déduit du bounding. */
   radius = 0.5;
-  
+
   constructor(owner: GameObject) {
     super(owner);
     // Gizmo éditeur simple (facultatif)
@@ -75,6 +75,7 @@ export default class SphereCollider extends Collider {
     this._physicsShape?.dispose();
     const shape = new BABYLON.PhysicsShapeSphere(BABYLON.Vector3.Zero(), radiusWorld, this._scene);
     (shape as any).isTrigger = this._isTrigger;
+    this._applyMaterial(shape);
     this._physicsShape = shape;
 
     // si un body statique existait, on le jette
@@ -113,6 +114,7 @@ export default class SphereCollider extends Collider {
     // NB: PhysicsShapeSphere n’a pas de paramètre de rotation → la sphère est isotrope (OK)
     const shape = new BABYLON.PhysicsShapeSphere(node.position, radiusWorld, this._scene);
     (shape as any).isTrigger = this._isTrigger;
+    this._applyMaterial(shape);
 
     this._physicsBody.shape = shape;
     this._physicsShape = shape;

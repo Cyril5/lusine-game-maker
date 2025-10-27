@@ -42,19 +42,24 @@ export default class KartController {
   private brakeInput = 0;   // 0..1 (LT / Down)
 
   // Tuning
-  public moveForce = 500;       // poussée moteur
+  // Accélération plus punchy à 120 kg
+  public moveForce = 1200;   // (≈ 10 m/s² max à throttle 1)
+  public maxSpeed = 55;     // ~ 200 km/h arcade
+
+  // Grip & stabilité (scalés pour 120 kg)
+  public lateralGrip = 1200;   // anti-drift plus fort
+  public steerAssist = 500;    // réalignement plus énergique
+  public downforce = 300;    // colle un peu plus au sol
+
+  // Freins (moteur + pédale) adaptés masse
+  public engineBrake = 1500;
+  public brakeForce = 4000;
+  public minStopSpeed = 0.5;
+
   public turnStrength = 40;    // degrés/s (rotation du root)
   public groundOffset = 0.45;   // hauteur visuelle
   public useMaxSpeedClamp = true;
-  public maxSpeed = 130;         // m/s 
 
-  // Stabilité / adhérence
-  public lateralGrip = 80;      // force opposée au slide latéral
-  public steerAssist = 30;      // aide à réaligner la vitesse dans l'axe
-  public downforce = 160;        // colle au sol
-  public engineBrake = 900;      // frein moteur (quand pas de RT/Up)
-  public brakeForce = 2000;      // frein (LT/Down)
-  public minStopSpeed = 0.3;    // sous ce seuil + frein → snap à 0
   public allowReverse = false;  // pas de marche arrière pour l’instant
 
   /** Lissage de l’alignement (0.0 = instantané, ~0.1-0.2 confortable) */
@@ -91,9 +96,9 @@ export default class KartController {
 
     // --- AVANT la physique : inputs → rotation root → forces
     this.scene.onBeforePhysicsObservable.add(() => {
-     
-       if(!Game.getInstance().isRunning)
-          return;
+
+      if (!Game.getInstance().isRunning)
+        return;
 
       const dt = this.scene.getEngine().getDeltaTime() * 0.001;
 
@@ -209,7 +214,7 @@ export default class KartController {
     // --- APRÈS la physique : recoller root/mesh sur la sphère (position)
     this.scene.onAfterPhysicsObservable.add(() => {
 
-      if(!Game.getInstance().isRunning)
+      if (!Game.getInstance().isRunning)
         return;
 
       const dt = this.scene.getEngine().getDeltaTime() * 0.001;
