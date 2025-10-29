@@ -1,17 +1,10 @@
-# LUsine Game Maker Alpha 0.1
+# Lusine Game Maker Alpha 0.2.6
 
-![image](https://github.com/Cyril5/lusine-game-maker/assets/73618602/41444741-b2b3-449b-afd1-e5f777d0b24f)
+<img width="1917" height="1030" alt="Capture d'écran 2025-10-29 235632" src="https://github.com/user-attachments/assets/44d822b5-e3e5-4810-bfc7-241498037d91" />
 
-Environnement de développement de jeux-vidéo ou applications 3D. Basé sur le concept de la Finite State Machine, Unity, PlayMaker; 3DRad Engine, Scratch, Clickteam Fusion 2.5+.
+Lusine Game Maker (LGM3D) est un environnement de développement de jeux-vidéo ou applications 3D. Basé sur le concept de la Finite State Machine, Unity, PlayMaker; 3DRad Engine, Scratch, Clickteam Fusion 2.5+.
 
-Le but est de développer une application comme Scratch mais avec une 3eme dimensions en utilisant les possibilités de WEBGL grâce à la librairie BabylonJS.
-
-Le nom LUsine GM est temporaire.
-
-Ce projet est le successeur de : (https://github.com/Cyril5/clight-game-maker)
-
-Version actuelle : Alpha 0.1.1 (7 Septembre 2023)
-
+Le but est de développer une application comme Scratch mais avec une 3eme dimensions en utilisant les possibilités de WEBGL/WebGPU grâce à la librairie BabylonJS.
 
 ## Installation
 Installez une version de NodeJS sur votre poste puis lancez le fichier ```INSTALL EDITOR.bat``` qui éxécutera automatiquement la commande :
@@ -34,7 +27,6 @@ $ npm run dev
 * CodeMirror
 * Bootstrap + Bootswatch
 * Fontawesome
-* drawflow (modifié)
 * @minoru/react-dnd-treeview
 
 -----------------------------------------------------------
