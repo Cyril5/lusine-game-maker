@@ -1,9 +1,7 @@
-import { Game } from "../Game";
 import { GameObject } from "../GameObject";
 import { FiniteStateMachine } from "../FSM/lgm3D.FiniteStateMachineOLD";
-import { ProgrammableGameObject } from "../ProgrammableGameObject";
 import Collider from "./lgm3D.Collider";
-import { ColliderMetaData, GameObjectComponentMetaData } from "../structs/ComponentsMetaData";
+import { ColliderMetaData } from "../structs/ComponentsMetaData";
 import BoxColliderInspector, { InspectorComponent } from "@renderer/components/Objects/BoxColliderComponentInspector";
 import Utils from "../utils/lgm3D.Utils";
 import { ColliderSystem } from "./lgm3D.ColliderSystem";
@@ -34,42 +32,37 @@ export default class BoxCollider extends Collider {
         this._scene = this._gameObject.scene;
 
         // Si il y a déjà un maillage alors prendre les dimensions de ce dernier
-        let mesh = this._gameObject.transform.getChildMeshes(true)[0];
-        if (!mesh) {
-            mesh = BABYLON.MeshBuilder.CreateBox("__MeshBoxCollider__", { height: 1, width: 1, depth: 1 }, this._scene);
-            mesh.setParent(this._gameObject.transform);
-            mesh.setPositionWithLocalVector(new BABYLON.Vector3(0, 0, 0));
-        }
+        // let mesh = this._gameObject.transform.getChildMeshes(true)[0];
+        // if (!mesh) {
+        //     mesh = BABYLON.MeshBuilder.CreateBox("__MeshBoxCollider__", { height: 1, width: 1, depth: 1 }, this._scene);
+        //     mesh.setParent(this._gameObject.transform);
+        //     mesh.setPositionWithLocalVector(new BABYLON.Vector3(0, 0, 0));
+        // }
+        const mesh = BABYLON.MeshBuilder.CreateBox("__MESH_BOX_COLL__", { height: 1, width: 1, depth: 1 }, this._scene);
+        mesh.setParent(this._gameObject.transform);
+        mesh.setPositionWithLocalVector(new BABYLON.Vector3(0, 0, 0));
+        mesh.receiveShadows = false;
         this._editorGizmo = mesh;
         this._editorGizmo.doNotSerialize = true;
-
-        this._editorGizmo.isVisible = true;
-        this._editorGizmo.visibility = 0.5;
-
-        //this._physicsBody.setMassProperties({ mass: 0 });
-        //this.register();
-
-        if (!Collider.COLLIDER_MAT) {
-            Collider.COLLIDER_MAT = new BABYLON.StandardMaterial("_EDITOR_COLLIDER_MAT_", this._scene);
-            Collider.COLLIDER_MAT.wireframe = true;
-            Collider.COLLIDER_MAT.doNotSerialize = true;
-        }
+        this._editorGizmo.scaling = BABYLON.Vector3.One();
+        this._editorGizmo.rotation = BABYLON.Vector3.Zero();
         // Appliquer le matériau au cube
         this._editorGizmo.material = BoxCollider.COLLIDER_MAT;
-        this._editorGizmo.renderOverlay = true;
-        this._editorGizmo.outlineWidth = 0.5;
-        this._editorGizmo.overlayColor = BABYLON.Color3.Green();
-
-        this._editorGizmo.name += this._editorGizmo.uniqueId;
+        // this._editorGizmo.renderOverlay = true;
+        // this._editorGizmo.outlineWidth = 0.5;
+        // this._editorGizmo.overlayColor = BABYLON.Color3.Green();
         this._editorGizmo.isPickable = false;
-
+        this._editorGizmo.receiveShadows = false;
+        this._editorGizmo.checkCollisions = false;
+        this._editorGizmo.renderingGroupId = 2;
+        this._editorGizmo.name += this._editorGizmo.uniqueId;
         this.isTrigger = false;
 
-        // Cet évenement est appelé après l'activation du moteur physique
-        // TODO : enlever cet event quand le collider est supprimé
-        Game.getInstance().onGameStarted.add(this.onGameStartedEvent());
+        this._worldChangedObserver = owner.onWorldTransformChanged.add(() => {
+            this._handleWorldTransformChanged();
+        });
 
-        Game.getInstance().onGameStopped.add(this.onGameStoppedEvent());
+        this._handleWorldTransformChanged();
     }
 
     // ---------- Construction dynamique (attaché à un Rigidbody parent) ----------
@@ -121,7 +114,7 @@ export default class BoxCollider extends Collider {
         // --- (Re)create shape centered at 0,0,0 (we pass offset/rot to the container) ---
         this._physicsShape?.dispose();
         const shape = new BABYLON.PhysicsShapeBox(
-            node.position,               // center in shape-local
+            BABYLON.Vector3.Zero(),               // center in shape-local
             BABYLON.Quaternion.Identity(),        // rotation in shape-local
             sizeWorld,                            // final size in world units
             scene
@@ -131,9 +124,9 @@ export default class BoxCollider extends Collider {
         this._physicsShape = shape;
 
         // If a static body was left over, remove it
-        if (this._physicsBody) { 
-            this._physicsBody.dispose(); 
-            this._physicsBody = undefined; 
+        if (this._physicsBody) {
+            this._physicsBody.dispose();
+            this._physicsBody = undefined;
         }
 
         // Inject into the RB container with correct offset/rotation
@@ -165,69 +158,52 @@ export default class BoxCollider extends Collider {
         const node = this.gameObject.transform;
         node.computeWorldMatrix(true);
 
-        // 1) Récupérer le mesh proxy (cube vert, par ex.)
-        const mesh = node.getChildMeshes(true)[0];
-        if (!mesh) {
-            console.warn(`[BoxCollider] Aucun mesh trouvé pour ${node.name}`);
-            return;
-        }
+        // Toujours le gizmo du collider
+        const mesh = this._editorGizmo as BABYLON.Mesh;
+        if (!mesh) return;
         mesh.computeWorldMatrix(true);
 
-        // 2) BoundingBox du mesh en MONDE
         const bb = mesh.getBoundingInfo().boundingBox;
-        const sizeWorld = bb.extendSizeWorld.scale(2);
 
-        // 3) Calcul offset/rot locaux par rapport au collider root
+        // 1) TAILLE MONDE = taille locale × scale monde (pas d’AABB monde)
+        const sizeLocal = bb.maximum.subtract(bb.minimum);
+        const s = new BABYLON.Vector3();
+        const qMesh = new BABYLON.Quaternion();
+        const p = new BABYLON.Vector3();
+        mesh.getWorldMatrix().decompose(s, qMesh, p);
+
+        const sizeWorld = new BABYLON.Vector3(
+            Math.abs(sizeLocal.x * s.x),
+            Math.abs(sizeLocal.y * s.y),
+            Math.abs(sizeLocal.z * s.z)
+        );
+        sizeWorld.scaleInPlace(this.PHYSICS_MARGIN);
+
+        // 2) OFFSET local = centre du gizmo converti dans l'espace du collider
         const colliderWM = node.getWorldMatrix();
+        const colliderInv = BABYLON.Matrix.Invert(colliderWM);
+        const offsetLocal = BABYLON.Vector3.TransformCoordinates(bb.centerWorld, colliderInv);
 
-        // Centre du mesh -> en local du collider
-        const offsetLocal = node.position;
+        // 3) ROTATION locale = rot(meshWorld) * inv(rot(colliderWorld))
+        const qNode = BABYLON.Quaternion.FromRotationMatrix(colliderWM.getRotationMatrix());
+        const rotLocal = qMesh.multiply(qNode.conjugate());
 
-        // Rotation locale = rot(meshWorld) * inverse(rot(colliderWorld))
-        const meshRotWorld = BABYLON.Quaternion.FromRotationMatrix(mesh.getWorldMatrix().getRotationMatrix());
-        const nodeRotWorld = BABYLON.Quaternion.FromRotationMatrix(colliderWM.getRotationMatrix());
-        const rotLocal = meshRotWorld.multiply(nodeRotWorld.conjugate());
-
-        // 4) Créer le body si inexistant
+        // 4) Body statique + shape
         if (!this._physicsBody) {
             this._physicsBody = new BABYLON.PhysicsBody(
-                node,
-                BABYLON.PhysicsMotionType.STATIC,
-                false,
-                this._scene
+                node, BABYLON.PhysicsMotionType.STATIC, false, this._scene
             );
         }
 
-        // 5) Jeter l’ancienne shape si elle existe
-        if (this._physicsShape) {
-            this._physicsShape.dispose();
-            this._physicsShape = undefined;
-        }
-
-        // 6) Créer la nouvelle shape
+        this._physicsShape?.dispose();
         const shape = new BABYLON.PhysicsShapeBox(offsetLocal, rotLocal, sizeWorld, this._scene);
         (shape as any).isTrigger = this._isTrigger;
         this._applyMaterial(shape);
 
-        // 7) Assigner au body
         this._physicsBody.shape = shape;
         this._physicsShape = shape;
 
         console.log(`[BoxCollider] Build Static body pour ${node.name}`);
-    }
-
-    private onGameStoppedEvent() {
-        if (this._physicsBody) {
-            this._physicsBody.setCollisionCallbackEnabled(false);
-            this._physicsBody.getCollisionObservable().removeCallback(this.detectionCollision);
-        }
-    }
-
-    private onGameStartedEvent() {
-        if (this._physicsBody) {
-            this._physicsBody.setCollisionCallbackEnabled(true);
-            this._physicsBody.getCollisionObservable().add(this.detectionCollision);
-        }
     }
 
     public copyFrom<BoxCollider>(componentSource: BoxCollider) {
@@ -241,14 +217,7 @@ export default class BoxCollider extends Collider {
     * Supprime le composant BoxCollider de l'objet.
     */
     destroy(): void {
-        ColliderSystem.unregisterCollider(this);
-        Game.getInstance().onGameStarted.removeCallback(this.onGameStartedEvent);
-        this._physicsBody?.setCollisionCallbackEnabled(false);
-        this._physicsBody?.getCollisionObservable().removeCallback(this.detectionCollision);
-        this._physicsBody?.dispose();
-        this._physicsBody.dispose();
-        this._editorGizmo.dispose();
-
+        ColliderSystem.unregisterCollider(this); // TODO : A voir si on peut le déplacer dans la classe Collider directement
         //TODO: Vérifier si le body du collider est relié à un rigidbody parent
     }
 
@@ -256,47 +225,6 @@ export default class BoxCollider extends Collider {
         this.metaData.type = Utils.BX_COLLIDER_COMPONENT_TYPE;
         (this.metaData as ColliderMetaData).isTrigger = this.isTrigger;
         return this.metaData;
-    }
-
-    detectionCollision(collisionEvent: BABYLON.IPhysicsCollisionEvent): void {
-        if (collisionEvent.type == "COLLISION_STARTED") {
-            // envoyer le message à l'objet root qui a un FSM
-            console.log("COLLISION STARTED !!");
-        }
-    }
-
-    // Deprecated
-    detectCollisionTrigger(event: string, trigger: boolean): void {
-
-        for (let [key, otherCollider] of BoxCollider.colliders) {
-            const otherColliderMesh = otherCollider.shape;
-            if (trigger) {
-                switch (event) {
-                    case 'enter':
-                        this._boxMesh.actionManager.registerAction(
-                            new BABYLON.ExecuteCodeAction(
-                                {
-                                    trigger: BABYLON.ActionManager.OnIntersectionEnterTrigger,
-                                    parameter: {
-                                        mesh: otherColliderMesh,
-                                        usePreciseIntersection: false // false pour les boxCollider 
-                                    }
-                                },
-                                () => {
-                                    if (otherCollider) {
-                                        console.log(`collision : ${this._boxMesh.name} & ${otherColliderMesh.name}`);
-
-                                        (this._gameObject as ProgrammableGameObject)?.finiteStateMachines[0].onCollisionEnter.notifyObservers(otherCollider);
-                                    }
-                                }
-
-                            )
-                        );
-                        break;
-                }
-            }
-        }
-
     }
 
 }

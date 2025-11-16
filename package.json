@@ -1,6 +1,6 @@
 {
   "name": "lusine-game-maker",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "Lusine Game Maker ou LGM3D est un environnement de développement de jeux-vidéo ou applications 3D. Basé sur le concept de la Finite State Machine, Unity, PlayMaker; 3DRad Engine, Scratch, Clickteam Fusion 2.5+.",
   "main": "./out/main/index.js",
   "author": "Cyril5",

@@ -9,12 +9,12 @@ import Utils from "@renderer/engine/utils/lgm3D.Utils";
 import LGM3DEditor from "./LGM3DEditor";
 
 // ESM uniquement
-import { Material, Observable, Scene} from "@babylonjs/core";
+import { Observable, Scene} from "@babylonjs/core";
 import "@babylonjs/core/Loading/Plugins/babylonFileLoader";   // plugin .babylon
 import "@babylonjs/core/Materials/standardMaterial";          // Standard
 import "@babylonjs/core/Materials/PBR/pbrMaterial";           // PBR
 import "@babylonjs/core/Materials/PBR/pbrMetallicRoughnessMaterial"; // pour __GLTFLoader._default si présent
-import "@babylonjs/serializers";
+//import "@babylonjs/serializers";
 
 import { Rigidbody } from "@renderer/engine/physics/lgm3D.Rigidbody";
 import { FiniteStateMachine } from "@renderer/engine/FSM/lgm3D.FiniteStateMachineOLD";
@@ -286,7 +286,7 @@ export default abstract class GameLoader {
         FileManager.fileIsEmpty(projectFile, (isEmpty) => {
 
             if (isEmpty) {
-                editor.setupBaseScene();
+                processNodes(scene);
                 return;
             } else {
                 editor.clearScene(scene);
@@ -352,8 +352,8 @@ export default abstract class GameLoader {
                 let go: GameObject | null = null;
 
                 if (nodeData?.type) {
-
                     if (node.metadata.type === Model3D.name) {
+                        return;
                         const model3d: Model3D = Model3D.createEmptyFromNodeData(node);
                         console.log(nodeData);
                         if (nodeData.parentId) {

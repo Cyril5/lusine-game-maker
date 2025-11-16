@@ -1,6 +1,6 @@
 import Blockly from 'blockly';
 import { javascriptGenerator } from 'blockly/javascript';
-import { Mathf } from '../../math/mathf';
+import { Lgm3DMath } from '../../math/lgm3D.Mathf';
 
 export class GameObjectRotateYBlock {
 

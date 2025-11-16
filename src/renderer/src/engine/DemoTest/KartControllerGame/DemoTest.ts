@@ -15,10 +15,16 @@ export default class DemoTest {
     private kart!: KartController;
     static initialized: boolean;
     body?: BABYLON.PhysicsBody;
+    initFailed = false;
 
     init = async (scene: BABYLON.Scene) => {
 
         console.log("INIT");
+
+        if(!GameObject.getById(CAR_MODEL_ID)) {
+            this.initFailed = true;
+            return;
+        }
 
         if (DemoTest.initialized)
             return;
@@ -96,7 +102,7 @@ export default class DemoTest {
             followCam.cameraAcceleration = 0.15;
         }
 
-        initKart();
+        //initKart();
 
         // BABYLON.SceneLoader.ImportMesh("", "https://models.babylonjs.com/", "StanfordBunny.obj", scene, async (meshes) => {
         // });
@@ -123,6 +129,7 @@ export default class DemoTest {
     }
 
     start() {
+        if(this.initFailed) return;
         console.log("DemoTest started ✅");
         this.scene.setActiveCameraByName("cam");
     }

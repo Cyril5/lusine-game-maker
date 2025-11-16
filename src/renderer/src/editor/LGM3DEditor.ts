@@ -12,7 +12,8 @@ import { ProgrammableGameObject } from "@renderer/engine/ProgrammableGameObject"
 import { Game } from "@renderer/engine/Game";
 import OriginAxis from "@renderer/editor/OriginAxis";
 import { GridMaterial } from "@babylonjs/materials/grid";
-import defaultEnvTexture from '@renderer/engine/Studio_Softbox_2Umbrellas_cube_specular.env?url';
+import defaultEnvTexture from '@renderer/engine/hdr/environment.env?url';
+import skyboxSample from "@renderer/engine/skyboxes/TropicalSunnyDay_nx.jpg?url";
 import { snapshotTransform, TransformSnapshot } from "./snapshots/TransformSnapshot";
 import { MoveGOTransformCommand } from "./commands/MoveGOTransformCommand";
 import { commands } from "./CommandsInvoker";
@@ -21,6 +22,9 @@ import FileManager from "@renderer/engine/lgm3D.FileManager";
 import AssetsManager from "@renderer/engine/lgm3D.AssetsManager";
 import { PostFXManager } from "@renderer/engine/lgm3D.PostFX";
 import { FiniteStateMachine } from "@renderer/engine/FSM/lgm3D.FiniteStateMachine";
+
+import * as BABYLON from "@babylonjs/core";
+import SphereCollider from "@renderer/engine/physics/lgm3D.SphereCollider";
 
 export enum Mode {
     LevelEditor = 1,
@@ -262,6 +266,14 @@ export default class LGM3DEditor {
         const scene = this._renderer!.scene;
         const boxCollider = new GameObject("BoxCollider", scene);
         boxCollider.addComponent(Utils.BX_COLLIDER_COMPONENT_TYPE, new BoxCollider(boxCollider));
+        this.selectGameObject(boxCollider.Id);
+        this.updateObjectsTreeView();
+    }
+
+    addSphereCollider() {
+        const sphCollider = new GameObject("SphereCollider", this._renderer!.scene);
+        sphCollider.addComponent("SphereCollider",new SphereCollider(sphCollider));
+        this.selectGameObject(sphCollider.Id);
         this.updateObjectsTreeView();
     }
 
@@ -284,7 +296,7 @@ export default class LGM3DEditor {
         // quand je clic sur un mesh je peux le sélectionner dans l'éditeur
         // Créer un action manager pour le parentNode
         // Abonnement à l'événement onModelLoaded
-        model.onLoaded.add((model3d) => {
+        model.onLoaded.addOnce((model3d) => {
             // const children = model.transform.getChildren();
             // children.forEach((child) => {
 
@@ -296,10 +308,18 @@ export default class LGM3DEditor {
             //         // this.selectGameObject(pog.Id);
             //     }));
             // });
-            if (callback) {
-                callback(model);
-            }
+            // model.transform.getChildren(undefined, true).forEach((node: Node) => {
+            //     if ((node as any).receiveShadows !== undefined) {
+            //         node.receiveShadows = true;
+            //         shadowGen.addShadowCaster(node);
+            //     }
+            // });
+
+            // if (callback) {
+            //     callback(model);
+            // }
             // Raffraichir la treeview des gameObjects
+            this.selectGameObject(model3d.Id);
             this.updateObjectsTreeView();
 
         });
@@ -498,12 +518,12 @@ export default class LGM3DEditor {
         Game.getInstance().stop();
     }
 
-    private _htmlRootInspector? : HTMLElement;
+    private _htmlRootInspector?: HTMLElement;
     private _showDebugInspector = false;
     showDebugInspector(): void {
         this._showDebugInspector = !this._showDebugInspector;
-        if(this._showDebugInspector) {
-            if(!this._htmlRootInspector) this._htmlRootInspector = document.getElementById("inspector-host")!
+        if (this._showDebugInspector) {
+            if (!this._htmlRootInspector) this._htmlRootInspector = document.getElementById("inspector-host")!
 
             this._renderer?.scene.debugLayer.show({
                 embedMode: true,
@@ -512,7 +532,7 @@ export default class LGM3DEditor {
                 globalRoot: this._htmlRootInspector,
                 enableClose: false,
             });
-        }else{
+        } else {
             this._renderer?.scene.debugLayer.hide();
         }
         this._htmlRootInspector!.style.visibility = this._showDebugInspector ? "visible" : "hidden";
@@ -559,26 +579,51 @@ export default class LGM3DEditor {
 
         if (setupEnvPBR) {
 
-            // IBL (environnement .env préfiltré, même une neutre “studio”)
+            //IBL (environnement .env préfiltré, même une neutre “studio”)
             const env = BABYLON.CubeTexture.CreateFromPrefilteredData(defaultEnvTexture, scene);
             scene.environmentTexture = env;
-            const skyBox = scene.createDefaultSkybox(env, true, 1000, 0.6); // skybox douce
-            skyBox!.doNotSerialize = true;
-            skyBox!.material!.doNotSerialize = true;
-            skyBox!.material!.name = "_LEVEL_ENV_MAT_SKYBOX_";
-            skyBox!.name = "_LEVEL_ENV_SKYBOX_";
+            const skyBoxHdr = scene.createDefaultSkybox(env, true, 1000, 0.6); // skybox douce
+            skyBoxHdr!.doNotSerialize = true;
+            skyBoxHdr!.material!.doNotSerialize = true;
+            skyBoxHdr!.material!.name = "_LEVEL_ENV_MAT_HDR_";
+            skyBoxHdr!.name = "_LEVEL_ENV_HDR_";
+            skyBoxHdr!.isVisible = false;
 
             // Key light (directionnelle) avec ombres douces
-            const keyLight = new BABYLON.DirectionalLight("_LEVEL_ENV_DIR_KEY_LIGHT_", new BABYLON.Vector3(-0.5, -1, -0.3), scene);
-            keyLight.intensity = 1.0;
-            keyLight.doNotSerialize = true;
+            const keyLight = new BABYLON.DirectionalLight("_LEVEL_KEY_LIGHT_", new BABYLON.Vector3(-0.3, -1, -0.3), scene);
+            keyLight.position = new BABYLON.Vector3(0, 20, 0);
+            keyLight.intensity = 1.2;
+            keyLight.shadowMinZ = 0;
+            keyLight.shadowMaxZ = 50;
+            keyLight.castShadows = true;
 
-            const sg = new BABYLON.ShadowGenerator(2048, keyLight);
-            sg.usePercentageCloserFiltering = true; // PCF = ombres filmic propres
-            sg.filteringQuality = BABYLON.ShadowGenerator.QUALITY_HIGH;
-            sg.bias = 0.0005;
-            sg.normalBias = 0.5;
-            sg.doNotSerialize = true;
+            // const box = BABYLON.Mesh.CreateBox("box", 3);
+            // box.position.y = 10;
+
+            // const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 40, height: 40 }, scene);
+            // ground.receiveShadows = true;
+            // ground.material = new BABYLON.StandardMaterial("mat", scene);
+
+            // Au moment où l’on charge un modèle, Babylon ajoute les meshes AVANT que le callback soit attaché.
+            // Donc on doit aussi traiter ceux déjà existants une fois le shadowGen créé.
+            const autoWire = (m: BABYLON.AbstractMesh) => {
+                if (m.name.startsWith("_EDITOR_") || m.name.startsWith("_LEVEL_")) return;
+                console.log("Mesh added generate shadows");
+                m.receiveShadows = true;
+                sg.addShadowCaster(m);
+            };
+
+            // Skybox
+            const skybox = BABYLON.MeshBuilder.CreateBox("_LEVEL_ENV_SKYBOX_", { size: 1000.0 }, scene);
+            const skyboxMaterial = new BABYLON.StandardMaterial("_LEVEL_ENV_MAT_SKYBOX_", scene);
+            skyboxMaterial.backFaceCulling = false;
+            skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture(skyboxSample.replace('_nx.jpg', ''), scene);
+            skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+            skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+            skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+            skybox.material = skyboxMaterial;
+            skybox!.doNotSerialize = true;
+            skyboxMaterial.doNotSerialize = true;
 
             // Fill light (hémisphérique) – adoucit les ombres
             const hemi = new BABYLON.HemisphericLight("_LEVEL_ENV_HEMI_LIGHT_", new BABYLON.Vector3(0, 1, 0), scene);
@@ -592,14 +637,30 @@ export default class LGM3DEditor {
             rim.intensity = 0.35;
             rim.doNotSerialize = true;
 
-            //const glow = new BABYLON.GlowLayer("glow", scene, { blurKernelSize: 16 });
-            //glow.intensity = 0.35;
+            const sg = new BABYLON.ShadowGenerator(1024, keyLight);
+            sg.usePercentageCloserFiltering = true;
+            sg.filteringQuality = BABYLON.ShadowGenerator.QUALITY_HIGH;
+            sg.bias = 0.0002;
+            sg.normalBias = 0.06;
+            //sg.darkness = 0.8; // ← 🌑 ombre plus dark
 
-            // Pense à activer la réception d’ombres
-            scene.meshes.forEach(m => m.receiveShadows = true);
+            keyLight.intensity = 1.5;
+            hemi.intensity = 0.5;
+            // évite l’auto-detach des faces avant
+            //sg.forceBackFacesOnly = true;
 
+            // évite acne/peter-panning (ajuste selon l’échelle de ta scène)
+            sg.bias = 0.0002;
+            sg.normalBias = 0.06;
+            // add initial caster
+            //sg.addShadowCaster(box);
+            scene.meshes.forEach(autoWire);
+            scene.onNewMeshAddedObservable.add(autoWire);
 
-            // PostFX
+            // bornes auto (pratique en éditeur)
+            //(keyLight as BABYLON.DirectionalLight).autoCalcShadowZBounds = true;
+
+            //PostFX
             this._postFX = new PostFXManager(scene);
             this._postFX.init(camera, {
                 fxaa: true,
@@ -612,9 +673,6 @@ export default class LGM3DEditor {
                 bloomThreshold: 0.9,
                 bloomWeight: 0.35
             });
-
-            // Choisis un preset de départ
-            //this._postFX.applyPreset("toon3d");
         }
 
         if (scene.lights.length === 0) {
@@ -623,7 +681,7 @@ export default class LGM3DEditor {
 
         const axis = new OriginAxis(scene);
         BABYLON.Tags.AddTagsTo({ ground }, EditorUtils.EDITOR_TAG);
-        this.setTransformGizmoMode('TRANSLATE'); //maj du gizmo et de ses events
+        //this.setTransformGizmoMode('TRANSLATE'); //maj du gizmo et de ses events
     }
 
 

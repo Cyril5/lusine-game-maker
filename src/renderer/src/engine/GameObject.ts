@@ -115,11 +115,47 @@ export class GameObject {
     }
 
     // --- Rotation (Euler locale) ---
-    get rotation() { return this._transform.rotation; }
-    setRotationEuler(v: BABYLON.Vector3): void {
-        if (Utils.vector3Equals(this._transform.rotation, v)) return;
-        this._transform.rotation.copyFrom(v);
-        this.onLocalTransformChanged.notifyObservers(this);
+    // Retourne la rotation locale en Euler, même si un quaternion est utilisé.
+    get rotation(): BABYLON.Vector3 {
+        // Si on a un quaternion, on le convertit en euler
+        if (this._transform.rotationQuaternion) {
+            return this._transform.rotationQuaternion.toEulerAngles();
+        }
+        return this._transform.rotation;
+    }
+
+    // Surcharges TS
+    setRotationEuler(v: BABYLON.Vector3): void;
+    setRotationEuler(x: number, y: number, z: number): void;
+    setRotationEuler(a: BABYLON.Vector3 | number, b?: number, c?: number): void {
+        let euler: BABYLON.Vector3;
+
+        if (a instanceof BABYLON.Vector3) {
+            euler = a;
+        } else {
+            euler = new BABYLON.Vector3(a, b ?? 0, c ?? 0);
+        }
+
+        // Si on travaille en quaternion (cas actuel : toujours true)
+        if (this._transform.rotationQuaternion) {
+            const newQ = BABYLON.Quaternion.FromEulerVector(euler);
+            const rq = this._transform.rotationQuaternion;
+
+            // évite les petites variations inutiles
+            if (BABYLON.Quaternion.Dot(rq, newQ) > 0.999999) return;
+
+            rq.copyFrom(newQ);
+            // on peut garder rotation comme "cache" mais c'est optionnel
+            this._transform.rotation.copyFrom(euler);
+            this.onLocalTransformChanged.notifyObservers(this);
+            return;
+        }
+
+        // Sinon, on est en mode "rotation Euler pure"
+        if (!Utils.vector3Equals(this._transform.rotation, euler)) {
+            this._transform.rotation.copyFrom(euler);
+            this.onLocalTransformChanged.notifyObservers(this);
+        }
     }
 
     get worldRotationQuaternion() { return this._transform.absoluteRotationQuaternion }
@@ -136,11 +172,28 @@ export class GameObject {
     get scale() {
         return this._transform.scaling;
     }
-    setScale(v: BABYLON.Vector3) {
-        //if (this._transform.scaling.equals(v)) return;
-        if (Utils.vector3Equals(this._transform.scaling, v)) return;
-        this._transform.scaling.copyFrom(v);
-        this.onLocalTransformChanged.notifyObservers(this);
+
+    setScale(v: BABYLON.Vector3): void;
+    setScale(x: number, y: number, z: number): void;
+    setScale(a: any, b?: any, c?: any): void {
+
+        if (a instanceof BABYLON.Vector3) {
+            if (!Utils.vector3Equals(this._transform.scaling, a)) {
+                this._transform.scaling.copyFrom(a);
+                this.onLocalTransformChanged.notifyObservers(this);
+            }
+            return;
+        }
+        if (typeof a === "number" && typeof b === "number" && typeof c === "number") {
+            const temp = new BABYLON.Vector3(a, b, c);
+            if (!Utils.vector3Equals(this._transform.scaling, temp)) {
+                this._transform.scaling.copyFrom(temp);
+                this.onLocalTransformChanged.notifyObservers(this);
+            }
+            return;
+        }
+
+        console.error("GameObject.setRotationEuler: arguments invalid", a, b, c);
     }
 
     set type(value) {

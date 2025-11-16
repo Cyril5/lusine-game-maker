@@ -14,6 +14,8 @@ import { DockDesk } from "@renderer/components/DockDesk";
 import { DockableWindowPanel } from "@renderer/components/DockableWindowPanel";
 import { DemoTreeView } from "@renderer/components/TreeViewObjects";
 import MaterialsList from "@renderer/components/MaterialsList";
+import EdgePeekOffcanvas, { FloatingHierarchyTab } from "./EdgePeekOffCanvas";
+import { Game } from "@renderer/engine/Game";
 
 
 const LevelEditor = (props) => {
@@ -35,6 +37,8 @@ const LevelEditor = (props) => {
 
     }
 
+    const [api, setApi] = useState<null | { open: () => void; close: () => void; toggle: () => void; isOpen: () => boolean }>(null);
+
     useEffect(() => {
     }, []);
 
@@ -51,27 +55,47 @@ const LevelEditor = (props) => {
         <>
             <div className="level-editor">
                 <Container fluid={true}>
-                                <ButtonToolbar aria-label="Toolbar with button groups">
-                                <ButtonGroup className="me-2" aria-label="First group">
-                                    <Button onClick={() => editor.setTransformGizmoMode("TRANSLATE")} variant="secondary"><FontAwesomeIcon icon="arrows-up-down-left-right" /></Button>
-                                    <Button onClick={() => setTransformMode("ROTATE")} variant="secondary"><FontAwesomeIcon icon="arrows-rotate" /></Button>
-                                    <Button onClick={() => editor.setTransformGizmoMode("SCALE")} variant="secondary"><FontAwesomeIcon icon="maximize" /></Button>
-                                    <Button onClick={() => editor.setTransformGizmoMode("BOUND_BOX")} variant="secondary" disabled={true}><FontAwesomeIcon icon="up-right-from-square" /></Button>
-                                </ButtonGroup>
-                                <ButtonGroup className="me-2" aria-label="Second group">
-                                    <Button disabled variant="secondary"><FontAwesomeIcon icon="earth-europe" /> Monde</Button>
-                                    <Button variant="secondary"><FontAwesomeIcon icon="location-crosshairs" /> Local</Button>
-                                    <Button variant="danger" onClick={() => editor.deleteSelection()}><FontAwesomeIcon icon="trash" /></Button>
-                                </ButtonGroup>
-                            </ButtonToolbar>
+                    <div className="level-editor-toolbar">
+                        <ButtonToolbar aria-label="Toolbar with button groups">
+                            <ButtonGroup className="me-2" aria-label="First group">
+                                <Button onClick={() => editor.setTransformGizmoMode("TRANSLATE")} variant="secondary"><FontAwesomeIcon icon="arrows-up-down-left-right" /></Button>
+                                <Button onClick={() => setTransformMode("ROTATE")} variant="secondary"><FontAwesomeIcon icon="arrows-rotate" /></Button>
+                                <Button onClick={() => editor.setTransformGizmoMode("SCALE")} variant="secondary"><FontAwesomeIcon icon="maximize" /></Button>
+                                <Button onClick={() => editor.setTransformGizmoMode("BOUND_BOX")} variant="secondary" disabled={true}><FontAwesomeIcon icon="up-right-from-square" /></Button>
+                            </ButtonGroup>
+                            <ButtonGroup className="me-2" aria-label="Second group">
+                                <Button variant="secondary"><FontAwesomeIcon icon="earth-europe" /> Monde</Button>
+                                <Button variant="secondary"><FontAwesomeIcon icon="location-crosshairs" /> Local</Button>
+                                <Button variant="danger" onClick={() => editor.deleteSelection()}><FontAwesomeIcon icon="trash" /></Button>
+                            </ButtonGroup>
+                        </ButtonToolbar>
+                        <p>(G) Déplacer, (R) Pivoter, (S) Mise à l'échelle, (F) Focus, (Alt+RMB) Tourner autour la sélect..</p>
+                    </div>
                     <Row>
-                        <Col sm={2}>
+                        {/* Tab flottant : visible uniquement quand le panneau est fermé */}
+                        <FloatingHierarchyTab
+                            show={!api?.isOpen?.()}                // si le panneau est ouvert, on cache le tab
+                            onClick={() => api?.toggle?.()}
+                            topPx={158}
+                            title="Objets"
+                        />
+                        <EdgePeekOffcanvas
+                            enabled={true}          // <- en Play, edge peek OFF
+                            allowHotkeyInPlay={true}        // <- Ctrl+H marche même en Play
+                            hotkey={{ code: "KeyH", ctrl: true }}
+                            widthPx={380}
+                            title="Objets"
+                            backdrop={false}
+                            onRegisterApi={setApi}
+                        >
                             <GameObjectsTreeModal gameobjectslist={gameObjects} show={false} />
-                        </Col>
+                        </EdgePeekOffcanvas>
+                        {/* <Col sm={2}>
+                        </Col> */}
                         <Col>
                             <div className="scene-level-editor">
                                 <RendererComponent />
-                                <div id="inspector-host"/>
+                                <div id="inspector-host" />
                             </div>
                         </Col>
                         <Col sm={2}>
@@ -79,7 +103,7 @@ const LevelEditor = (props) => {
                                 id={objetJeu?.Id}
                                 gameobject_name={objetJeu?.name}
                                 parentid={objetJeu?.transform.parent?.uniqueId}
-                            /> 
+                            />
                         </Col>
                     </Row>
                 </Container>

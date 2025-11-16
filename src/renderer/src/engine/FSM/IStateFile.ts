@@ -5,6 +5,7 @@ export class StateFile {
   outputCode: string = "";     // contiendra le TypeScript complet du state
   language: "ts" | "js" = "ts";
   private static _stateFiles : Map<string, StateFile> = new Map<string, StateFile>();
+    name: any;
   
   static getStateFiles(){
     return StateFile._stateFiles;

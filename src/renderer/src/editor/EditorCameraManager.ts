@@ -3,6 +3,7 @@ import { Game } from "@renderer/engine/Game";
 import LGM3DEditor from "./LGM3DEditor";
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
+const DISABLE_CONTROL_ON_GAME_RUN = false; // Désactiver les contrôles de la caméra lorsque le jeu tourne (TODO : Désactiver si il y a une autre caméra actif en mode jeu)
 enum CamMode { Fly, Orbit, Ortho }
 
 export default class EditorCameraManager {
@@ -63,7 +64,7 @@ export default class EditorCameraManager {
 
         scene.onPointerObservable.add(pi => {
 
-            if (Game.getInstance().isRunning) return;
+            if (Game.getInstance().isRunning && DISABLE_CONTROL_ON_GAME_RUN) return;
 
             if (pi.type === BABYLON.PointerEventTypes.POINTERWHEEL) this._onWheel(pi.event as WheelEvent);
             if (pi.type === BABYLON.PointerEventTypes.POINTERDOWN) this._onPointerDown(pi.event as PointerEvent);
@@ -201,7 +202,7 @@ export default class EditorCameraManager {
     // ====== Update ======
     private _update() {
 
-        if (Game.getInstance().isRunning) return;
+        if (Game.getInstance().isRunning && DISABLE_CONTROL_ON_GAME_RUN) return;
 
         const dt = this._scene.getEngine().getDeltaTime() / 1000;
 
@@ -266,7 +267,7 @@ export default class EditorCameraManager {
         if (this._keys['KeyD'] || this._keys['ArrowRight']) wish.addInPlace(this._flyRight());
         if (this._keys['KeyA'] || this._keys['ArrowLeft']) wish.addInPlace(this._flyRight().scale(-1));
         if (this._keys['Space']) wish.addInPlace(BABYLON.Axis.Y);
-        
+
         if (wish.lengthSquared() > 0) wish.normalize();
 
         const speed = (this._keys['ShiftLeft'] || this._keys['ShiftRight'])
@@ -336,4 +337,30 @@ export default class EditorCameraManager {
             this._mode = CamMode.Fly;
         }
     }
+
+    createEditorUtilityLayer(scene: BABYLON.Scene) {
+        const utilityLayer = new BABYLON.UtilityLayerRenderer(scene);
+        utilityLayer.pickUtilitySceneFirst = false; // on veut d’abord picker la scène principale
+
+        const gizmoScene = utilityLayer.utilityLayerScene;
+
+        // Caméra de la utility scene : on la “suit” parente de la mainCamera
+        const mainCamera = scene.activeCamera!;
+        const gizmoCamera = new BABYLON.ArcRotateCamera(
+            "__EDITOR_GIZMO_CAM__",
+            mainCamera.alpha ?? 0,
+            mainCamera.beta ?? 0,
+            mainCamera.radius ?? 10,
+            mainCamera.target,
+            gizmoScene
+        );
+
+        gizmoCamera.doNotSerialize = true;
+        gizmoCamera.parent = mainCamera;       // même mouvement que la caméra principale
+        gizmoScene.activeCamera = gizmoCamera;
+
+        return { utilityLayer, gizmoScene, gizmoCamera };
+    }
 }
+
+

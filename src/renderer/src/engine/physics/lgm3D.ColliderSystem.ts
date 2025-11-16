@@ -9,6 +9,8 @@ export class ColliderSystem {
   private static collidersByGO = new Map<GameObject, Set<Collider>>();
   private static dirtyGOs = new Set<GameObject>();
   private static _installed = false;
+  private static _wasPhysicsReady = false;
+
 
   // Tolérances
   private static readonly EPS_POS = 1e-3;                  // ~1 mm
@@ -56,13 +58,24 @@ export class ColliderSystem {
     }
   }
 
-  static markDirty(go: GameObject) {
-    const left = this._cooldown.get(go) ?? 0;
-    if (left > 0) return;                 // encore en cooldown → ignore
-    this._cooldown.set(go, this.FRAMES_COOLDOWN);
+  // static markDirty(go: GameObject) {
+  //   const left = this._cooldown.get(go) ?? 0;
+  //   if (left > 0) return;                 // encore en cooldown → ignore
+  //   this._cooldown.set(go, this.FRAMES_COOLDOWN);
 
+  //   this.dirtyGOs.add(go);
+
+  //   const set = this.collidersByGO.get(go);
+  //   if (set) for (const col of set) col._setDirty?.(true);
+  // }
+
+  static markDirty(go: GameObject, force = false) {
+    if (!force) {
+      const left = this._cooldown.get(go) ?? 0;
+      if (left > 0) return;
+      this._cooldown.set(go, this.FRAMES_COOLDOWN);
+    }
     this.dirtyGOs.add(go);
-
     const set = this.collidersByGO.get(go);
     if (set) for (const col of set) col._setDirty?.(true);
   }
@@ -72,9 +85,10 @@ export class ColliderSystem {
     this._installed = true;
 
     scene.onBeforePhysicsObservable.add(() => this._process(scene));
-    scene.onBeforeRenderObservable.add(() => {
-      if (!Game.getInstance().isRunning) this._process(scene);
-    });
+
+    // scene.onBeforeRenderObservable.add(() => {
+    //   if (!Game.getInstance().isRunning) this._process(scene);
+    // });
   }
 
   static markDirtySubtree(root: GameObject) {
@@ -91,10 +105,13 @@ export class ColliderSystem {
 
   private static _process(_scene: BABYLON.Scene) {
 
-    // En tête de _process(scene)
-    if (!_scene.getPhysicsEngine()) {
+    const physicsReady = !!_scene.getPhysicsEngine();
+    const isRunning = Game.getInstance().isRunning;
+
+    // Pas de moteur ou pas en Play → on NE reconstruit rien
+    if (!physicsReady || !isRunning) {
       this._tickCooldowns();
-      return; // on attend que la physique soit activée
+      return;
     }
 
     if (this.dirtyGOs.size === 0) {
@@ -121,20 +138,22 @@ export class ColliderSystem {
     for (const [rb, list] of perRb) {
       if (rb) {
         rb.rebuildShapes(() => {
-          for (const col of list) {
-            col._setDirty?.(true);
-            col.buildShapeIntoBody(rb);
-          }
+          for (const c of list) { c._setDirty?.(true); c.buildShapeIntoBody(rb); }
         });
       } else {
-        for (const col of list) {
-          col._setDirty?.(true);
-          col.buildStatic();
+        for (const c of list) {
+          // ⬇️ nouveau: si on EST en Play et qu’un RB ancêtre existe (composant vu),
+          // alors on re-queue (pas de statique “accidentel” la 1ère frame)
+          const maybe = c.findRigidbody?.();
+          if (Game.getInstance().isRunning && maybe) {
+            this.markDirty(c.gameObject, /*force*/ true); // re-différer une frame
+            continue;
+          }
+          c._setDirty?.(true);
+          c.buildStatic();
         }
       }
     }
-
-    this._tickCooldowns();
   }
 
   private static _tickCooldowns() {

@@ -228,6 +228,12 @@
   width: 100%;
   height: 70vh;
   flex-direction: column;
+
+  .level-editor-toolbar {
+    display: flex;
+    justify-content: center;
+    padding: 5px;
+  }
 }
 
 .scene-level-editor {
@@ -287,6 +293,11 @@ body {
     padding-left: 16px;
     padding-top: 3px;
   }
+}
+
+.offcanvas {
+  margin-top: 118px;
+  //margin-bottom: 200px;
 }
 
 // :root {

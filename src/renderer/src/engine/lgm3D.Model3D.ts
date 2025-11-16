@@ -1,4 +1,4 @@
-import { Observable, SceneLoader, Node, TransformNode, Material, Scene } from "@babylonjs/core";
+import { Observable, SceneLoader, Node, TransformNode, Material, Scene, AbstractMesh } from "@babylonjs/core";
 import { GameObject } from "./GameObject";
 import EditorUtils from "@renderer/editor/EditorUtils";
 import AssetsManager from "./lgm3D.AssetsManager";
@@ -237,7 +237,7 @@ export class Model3D extends GameObject {
                     return;
                 }
 
-                if(!arg.options.autoReuseMaterials) { // si on est pas en import auto                    
+                if (!arg.options.autoReuseMaterials) { // si on est pas en import auto                    
                     TransformsAnalyzer.sanitizeImportedNodes(
                         this.scene,
                         meshes,

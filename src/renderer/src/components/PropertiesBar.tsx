@@ -16,14 +16,6 @@ import { FiniteStateMachine } from "@renderer/engine/FSM/lgm3D.FiniteStateMachin
 const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
 
     const gameObjectRef = useRef<GameObject>(null);
-
-    // useEffect(() => {
-    //     // Update the 3D object represented by Babylon.TransformNode based on the props
-    //     const { x, y, z } = position;
-    //     const { x: rx, y: ry, z: rz } = rotation;
-    //     const { x: sx, y: sy, z: sz } = scaling;
-    //   }, [position, rotation, scaling]);
-
     const [show, setShow] = useState(false);
     const [name, setName] = useState(gameobject_name);
 
@@ -62,7 +54,9 @@ const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
     }
 
     const handleAddRigidbody = () => {
-        LGM3DEditor.getInstance().selectedGameObject!.addRigidbody({ mass: 1, restitution: 0.2, friction: 0.5 });
+        const go = LGM3DEditor.getInstance().selectedGameObject;
+        if(!go || go.getComponent(Rigidbody)) return;
+        go.addComponent("Rigidbody",new Rigidbody(go, go.scene));
     }
 
     const style = {
@@ -155,7 +149,7 @@ const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
 
                         </Accordion>
                     )}
-                    <Button>Ajouter composant</Button>
+                    <Button onClick={handleAddRigidbody} disabled={!gameObjectRef.current || gameObjectRef.current!.getComponent(Rigidbody)}>Ajouter un corps physique à l'objet</Button>
                 {/* </Offcanvas.Body>
             </Offcanvas> */}
 
