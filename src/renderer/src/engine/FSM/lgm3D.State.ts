@@ -11,6 +11,7 @@ function toValidClassName(src: string, fallback = "State") {
 }
 
 export class State {
+
     public instance: any = null;
     name: string = "State";
     fsm?: FiniteStateMachine; // fsm owner
@@ -62,4 +63,13 @@ export class State {
     onEnter() { try { this.instance?.onEnter?.(); } catch (e) { console.error(e); } }
     onUpdate(dt: number) { try { this.instance?.onUpdate?.(dt); } catch (e) { console.error(e); } }
     onExit() { try { this.instance?.onExit?.(); } catch (e) { console.error(e); } }
+
+    toJson(): any {
+        return {
+            "stateFile": {
+                "clsName": this.stateFile?.clsName,
+                "filename": this.stateFile?.filename,
+            }
+        }
+    }
 }

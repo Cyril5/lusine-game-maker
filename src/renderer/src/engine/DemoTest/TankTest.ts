@@ -65,7 +65,7 @@ export class Tank extends GameObject {
     // --- Enfant "Collider" avec BoxCollider (s’enregistre dans le container du RB)
     const colliderGO = new GameObject("Collider", scene);
         // taille de la hitbox : même que chassis
-    colliderGO.addComponent(Utils.BX_COLLIDER_COMPONENT_TYPE, new BoxCollider(colliderGO));
+    colliderGO.addComponent(Utils.BX_COLL_COMPONENT_TYPE, new BoxCollider(colliderGO));
 
     colliderGO.setParent(this);
     colliderGO.setLocalPosition(0, 0.3, 0); // centre local de la box

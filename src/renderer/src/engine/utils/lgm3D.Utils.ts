@@ -3,7 +3,10 @@ import { Matrix, Vector3 } from "@babylonjs/core";
 export default class Utils {
 
     static readonly RB_COMPONENT_TYPE: string = "Rigidbody";
-    static readonly BX_COLLIDER_COMPONENT_TYPE: string = "BoxCollider";
+    static readonly COLLIDER_COMPONENT_TYPE: "Collider";
+    static readonly BX_COLL_COMPONENT_TYPE: string = "BoxCollider";
+    static readonly SPHERE_COLL_COMPONENT_TYPE: string = "SphereCollider"
+    static readonly FSM_COMPONENT_TYPE: string = "FiniteStateMachine";
 
     static convertImgToBase64URL(imageData, type: 'png' | 'jpeg'): string {
 

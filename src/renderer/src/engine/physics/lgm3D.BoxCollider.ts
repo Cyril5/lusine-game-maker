@@ -1,29 +1,20 @@
 import { GameObject } from "../GameObject";
 import { FiniteStateMachine } from "../FSM/lgm3D.FiniteStateMachineOLD";
 import Collider from "./lgm3D.Collider";
-import { ColliderMetaData } from "../structs/ComponentsMetaData";
-import BoxColliderInspector, { InspectorComponent } from "@renderer/components/Objects/BoxColliderComponentInspector";
-import Utils from "../utils/lgm3D.Utils";
 import { ColliderSystem } from "./lgm3D.ColliderSystem";
 import { Rigidbody } from "./lgm3D.Rigidbody";
 import * as BABYLON from "@babylonjs/core";
 
-@InspectorComponent(BoxColliderInspector)
 export default class BoxCollider extends Collider {
     size: BABYLON.Vector3 = new BABYLON.Vector3(1, 1, 1);  // dimensions of the box
-
-    public metaData: ColliderMetaData = {
-        shape: undefined,
-        isTrigger: false,
-        physicsBody: {
-            material: undefined
-        },
-        type: ""
-    };
 
     // Le fsm qui appelera l'event OnCollisionEnter
     setEventReceiverFSM(fsm: FiniteStateMachine) {
         this._receiverFSM = fsm;
+    }
+
+    public override getType(): string {
+        return "BoxCollider";
     }
 
     constructor(owner: GameObject) {
@@ -221,10 +212,10 @@ export default class BoxCollider extends Collider {
         //TODO: Vérifier si le body du collider est relié à un rigidbody parent
     }
 
-    public toJson() {
-        this.metaData.type = Utils.BX_COLLIDER_COMPONENT_TYPE;
-        (this.metaData as ColliderMetaData).isTrigger = this.isTrigger;
-        return this.metaData;
+    public override toJson() : any {
+        const json = super.toJson(); // récupère type + enabled + data:{}
+        json.data.shape = "BOX";
+        return json;
     }
 
 }

@@ -185,8 +185,8 @@ export class Rigidbody extends Component {
   }
 
   public toJson() {
-      this.metaData.type = Utils.RB_COMPONENT_TYPE;
-      return this.metaData;
+      const json = super.toJson(); // récupère type + enabled + data:{}
+      return json;
   }
 
 }

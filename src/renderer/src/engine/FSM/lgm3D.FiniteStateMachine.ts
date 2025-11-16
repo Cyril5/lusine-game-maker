@@ -18,6 +18,10 @@ export type TransitionCondition = (ctx: {
 
 export class FiniteStateMachine extends Component {
 
+    public override getType(): string {
+        return "FiniteStateMachine";
+    }
+
     public Variables: Map<string, FSMVariable> = new Map<string, FSMVariable>();
     private _varsByName: Map<string, FSMVariable> = new Map();
 
@@ -188,5 +192,15 @@ export class FiniteStateMachine extends Component {
                 }
             }
         })();
+    }
+
+    public override toJson() {
+        const json = super.toJson(); // récupère type + enabled + data:{}
+        json.data.name = this.name;
+        const states : any = {};
+        this.states.forEach((state)=>{
+            states.push(state.toJson());
+        });
+        return json;
     }
 }

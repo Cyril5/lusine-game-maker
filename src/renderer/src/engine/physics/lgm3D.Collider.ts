@@ -1,11 +1,21 @@
 import { Game } from "../Game";
 import { GameObject } from "../GameObject";
 import Component from "../lgm3D.Component";
+import { ColliderMetaData } from "../structs/ComponentsMetaData";
+import Utils from "../utils/lgm3D.Utils";
 import ColliderSystem from "./lgm3D.ColliderSystem";
 import { Rigidbody } from "./lgm3D.Rigidbody";
 import * as BABYLON from "@babylonjs/core";
 
 export default abstract class Collider extends Component {
+
+  public metaData: ColliderMetaData = {
+    isTrigger: false,
+    physicsBody: {
+      material: undefined
+    },
+    type: ""
+  };
 
   protected PHYSICS_MARGIN = 0.998; // ou 0.995 (correction visuelle pour compenser la marge physique).
   static COLLIDER_MAT: BABYLON.StandardMaterial;
@@ -20,6 +30,10 @@ export default abstract class Collider extends Component {
     restitution: 0.0,
   };
   protected _worldChangedObserver;
+
+  public getType(): string {
+    return "Collider";
+  }
 
   /** Définit la friction du matériau physique. */
   public setFriction(value: number) {
@@ -182,6 +196,12 @@ export default abstract class Collider extends Component {
       // envoyer le message à l'objet root qui a un FSM
       console.log("COLLISION STARTED !!");
     }
+  }
+
+  public override toJson(): any {
+    const json = super.toJson();
+    json.data.isTrigger = this.isTrigger;
+    return json;
   }
 
   // Deprecated

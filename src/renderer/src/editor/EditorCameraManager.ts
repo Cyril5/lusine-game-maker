@@ -194,7 +194,10 @@ export default class EditorCameraManager {
         if (down) {
             switch (ev.code) {
                 case 'KeyF': this._focusSelection(0.25); break;
-                case 'KeyG': this._scene.activeCamera = this._camera; this._mode = CamMode.Fly; break;
+                case 'KeyG': LGM3DEditor.getInstance().setTransformGizmoMode("TRANSLATE"); break;
+                case 'KeyR': LGM3DEditor.getInstance().setTransformGizmoMode("ROTATE"); break;
+                case 'KeyS': LGM3DEditor.getInstance().setTransformGizmoMode("SCALE"); break;
+                case 'KeyM': this._scene.activeCamera = this._camera; this._mode = CamMode.Fly; break;
             }
         }
     }

@@ -265,7 +265,7 @@ export default class LGM3DEditor {
     addBoxCollider() {
         const scene = this._renderer!.scene;
         const boxCollider = new GameObject("BoxCollider", scene);
-        boxCollider.addComponent(Utils.BX_COLLIDER_COMPONENT_TYPE, new BoxCollider(boxCollider));
+        boxCollider.addComponent(Utils.BX_COLL_COMPONENT_TYPE, new BoxCollider(boxCollider));
         this.selectGameObject(boxCollider.Id);
         this.updateObjectsTreeView();
     }
@@ -596,6 +596,7 @@ export default class LGM3DEditor {
             keyLight.shadowMinZ = 0;
             keyLight.shadowMaxZ = 50;
             keyLight.castShadows = true;
+            keyLight.doNotSerialize = true;
 
             // const box = BABYLON.Mesh.CreateBox("box", 3);
             // box.position.y = 10;

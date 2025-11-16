@@ -9,7 +9,7 @@ import Utils from "@renderer/engine/utils/lgm3D.Utils";
 import LGM3DEditor from "./LGM3DEditor";
 
 // ESM uniquement
-import { Observable, Scene} from "@babylonjs/core";
+import { Observable, Scene } from "@babylonjs/core";
 import "@babylonjs/core/Loading/Plugins/babylonFileLoader";   // plugin .babylon
 import "@babylonjs/core/Materials/standardMaterial";          // Standard
 import "@babylonjs/core/Materials/PBR/pbrMaterial";           // PBR
@@ -23,6 +23,8 @@ import { rebindMaterialsFromMetadataAndCleanup } from "@renderer/engine/utils/Ma
 import ShortUniqueId from "short-unique-id";
 import { TransformsAnalyzer } from "@renderer/engine/utils/lgm3D.TransformsAnalyzer";
 import AssetsManager from "@renderer/engine/lgm3D.AssetsManager";
+import SphereCollider from "@renderer/engine/physics/lgm3D.SphereCollider";
+import Collider from "@renderer/engine/physics/lgm3D.Collider";
 const uid = new ShortUniqueId({ length: 10 });
 
 export default abstract class GameLoader {
@@ -196,7 +198,7 @@ export default abstract class GameLoader {
         // 1) Laisse chaque GO snapshotter ses metadata si ton moteur le fait
         try {
             // Si GameObject n'est pas accessible ici, commente cette ligne.
-            GameObject.gameObjects?.forEach((go) => go.save?.());
+            GameObject.gameObjects?.forEach((go) => go.serialize?.());
         } catch (e) {
             console.warn("[SAVE] GameObject.save pass:", e);
         }
@@ -223,7 +225,7 @@ export default abstract class GameLoader {
         console.log("saving");
 
         GameObject.gameObjects.forEach((gameObject) => {
-            gameObject.save();
+            gameObject.serialize();
         });
 
         const serializedScene = BABYLON.SceneSerializer.Serialize(scene);
@@ -353,7 +355,7 @@ export default abstract class GameLoader {
 
                 if (nodeData?.type) {
                     if (node.metadata.type === Model3D.name) {
-                        return;
+                        //return;
                         const model3d: Model3D = Model3D.createEmptyFromNodeData(node);
                         console.log(nodeData);
                         if (nodeData.parentId) {
@@ -372,65 +374,88 @@ export default abstract class GameLoader {
                     }
                     goCreated = true;
 
-                    //FSM
-                    node.metadata.finiteStateMachines?.forEach((fsmData, index) => {
-                        const fsm = go?.addComponent("FiniteStateMachine" + index, new FiniteStateMachine(go!));
-                        fsm!.name = fsmData.name;
-                        fsmData.states.forEach((stateData, index) => {
-                            const state = fsm.states[index];
-                            if (stateData.statefile?.name) {
-                                state.stateFile = StateEditorUtils.getStateFile(stateData.statefile.name);
-                            }
-                        });
-                    });
+                    //FSM (<= Alpha 0.2.6)
+                    // node.metadata.finiteStateMachines?.forEach((fsmData, index) => {
+                    //     const fsm = go?.addComponent("FiniteStateMachine" + index, new FiniteStateMachine(go!));
+                    //     fsm!.name = fsmData.name;
+                    //     fsmData.states.forEach((stateData, index) => {
+                    //         const state = fsm.states[index];
+                    //         if (stateData.statefile?.name) {
+                    //             state.stateFile = StateEditorUtils.getStateFile(stateData.statefile.name);
+                    //         }
+                    //     });
+                    // });
                 }
                 if (nodeData.components) {
                     nodeData.components.forEach(component => {
-                        if (component.type == Utils.BX_COLLIDER_COMPONENT_TYPE) {
-                            const bxcol = go!.addComponent(Utils.BX_COLLIDER_COMPONENT_TYPE, new BoxCollider(go!)) as BoxCollider;
-                            if (component.isTrigger)
-                                bxcol.isTrigger = component.isTrigger;
-                        } else if (component.type == Utils.RB_COMPONENT_TYPE) {
+                        if (component.type == Utils.RB_COMPONENT_TYPE || component.componentType == Utils.RB_COMPONENT_TYPE) {
                             go!.addComponent(Utils.RB_COMPONENT_TYPE, new Rigidbody(go!, go!.scene, BABYLON.PhysicsMotionType.DYNAMIC, 1));
                         }
-                    });
-                }
-            });
+                        let colliderComp: Collider | undefined;
+                        switch (component.componentType) {
+                            case Utils.SPHERE_COLL_COMPONENT_TYPE:
+                                colliderComp = go!.addComponent(Utils.SPHERE_COLL_COMPONENT_TYPE, new SphereCollider(go!)) as SphereCollider;
+                                break;
 
-            const defaultMat = scene.getMaterialById("default material");
-
-            scene.meshes.forEach((mesh: BABYLON.Mesh) => {
-                //Replace missing materials
-                if (!mesh.material) {
-                    return;
-                }
-
-                const subMaterials = mesh.material!.subMaterials;
-                if (subMaterials) {
-
-                    subMaterials.forEach((subMat, index) => {
-                        //alert(subMat+'  ===>'+mesh.material!.name);
-                        if (!subMat) {
-                            mesh.material.subMaterials[index] = defaultMat;
+                            case Utils.BX_COLL_COMPONENT_TYPE:
+                                colliderComp = go!.addComponent(Utils.BX_COLL_COMPONENT_TYPE, new BoxCollider(go!)) as BoxCollider;
+                                break;
+                            case Utils.FSM_COMPONENT_TYPE:
+                                const fsmData = component.data;
+                                const fsm = go?.addComponent("FiniteStateMachine", new FiniteStateMachine(go!));
+                                fsm!.name = fsmData.name;
+                                if(!fsmData.states) {
+                                    console.error("States array is missing on data");
+                                    return;
+                                }
+                                fsmData.states.forEach((stateData, index) => {
+                                    const state = fsm.states[index];
+                                    if (stateData.statefile?.name) {
+                                        state.stateFile = StateEditorUtils.getStateFile(stateData.statefile.name);
+                                    }
+                                });
+                            break;
                         }
+                        if (colliderComp) colliderComp.isTrigger = component.isTrigger;
                     });
                 }
-            });
 
-            goLinks.forEach(el => {
-                let source = GameObject.getById(el[0]);
-                const target = GameObject.getById(el[1]);
-                if (target && source) {
-                    console.log(`parent ${source.name} : ${source.Id} to => ${target.name} : ${target.Id}`);
-                    source.setParent(target);
-                }
-            });
 
-            editor.updateObjectsTreeView();
-            GameLoader.onLevelLoaded.notifyObservers(scene);
-            editor.states.setShowStartupModal(false);
+
+                const defaultMat = scene.getMaterialById("default material");
+
+                scene.meshes.forEach((mesh: BABYLON.Mesh) => {
+                    //Replace missing materials
+                    if (!mesh.material) {
+                        return;
+                    }
+
+                    const subMaterials = mesh.material!.subMaterials;
+                    if (subMaterials) {
+
+                        subMaterials.forEach((subMat, index) => {
+                            //alert(subMat+'  ===>'+mesh.material!.name);
+                            if (!subMat) {
+                                mesh.material.subMaterials[index] = defaultMat;
+                            }
+                        });
+                    }
+                });
+
+                goLinks.forEach(el => {
+                    let source = GameObject.getById(el[0]);
+                    const target = GameObject.getById(el[1]);
+                    if (target && source) {
+                        console.log(`parent ${source.name} : ${source.Id} to => ${target.name} : ${target.Id}`);
+                        source.setParent(target);
+                    }
+                });
+
+                editor.updateObjectsTreeView();
+                GameLoader.onLevelLoaded.notifyObservers(scene);
+                editor.states.setShowStartupModal(false);
+            });
         }
-
     }
 
     // ─── Méthode principale ─────────────────────────────────────────────────────

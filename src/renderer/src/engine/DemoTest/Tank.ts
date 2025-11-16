@@ -44,7 +44,7 @@ export class Tank extends GameObject {
       new Rigidbody(this, scene, BABYLON.PhysicsMotionType.DYNAMIC, 12));
 
     const colliderGO = new GameObject("Collider", scene);
-    colliderGO.addComponent(Utils.BX_COLLIDER_COMPONENT_TYPE, new BoxCollider(colliderGO));
+    colliderGO.addComponent(Utils.BX_COLL_COMPONENT_TYPE, new BoxCollider(colliderGO));
     colliderGO.setParent(this);
     colliderGO.setLocalPosition(0, 0, 0);
     colliderGO.setScale(new BABYLON.Vector3(0.54,0.52,1));

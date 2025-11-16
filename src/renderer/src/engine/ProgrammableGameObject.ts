@@ -85,7 +85,7 @@ export class ProgrammableGameObject extends GameObject {
 
     }
 
-    public save(): any {
+    public serialize(): any {
         this.metadata["finiteStateMachines"] = [];
         this._fsms.forEach((fsm) => {
 

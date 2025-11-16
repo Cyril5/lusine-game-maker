@@ -572,17 +572,26 @@ export class GameObject {
         this.type = this.metadata.type;
     }
 
-    public save(): any {
-        this.metadata.type = this.type;
-        this.metadata.gameObjectId = this.Id;
-        this.metadata.parentId = (this.parent ? this.parent.Id : null);
-        this.metadata["components"] = [];
-        this._components.forEach((component, key) => {
-            this.metadata.components.push(component.toJson());
+    public serialize(): any {
+        if (!this.metadata || typeof this.metadata !== "object") {
+            this.metadata = {};
+        }
+
+        const md: any = this.metadata;
+
+        md.type = this.type;                // "GameObject"
+        md.gameObjectId = this.Id;
+        md.name = this.name;
+        md.parentId = this.parent ? this.parent.Id : null;
+
+        md.components = [];
+        this._components.forEach((component) => {
+            md.components.push(component.toJson());
         });
-        console.log(JSON.stringify(this.metadata));
-        return this.metadata;
+
+        return md;
     }
+
 
 
 }

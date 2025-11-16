@@ -8,6 +8,10 @@ export default class SphereCollider extends Collider {
   /** Rayon “base” (avant scale). Si 0 → déduit du bounding. */
   radius = 0.5;
 
+  public override getType(): string {
+    return "SphereCollider";
+  }
+
   constructor(owner: GameObject) {
     super(owner);
     // Gizmo éditeur 
@@ -186,6 +190,12 @@ export default class SphereCollider extends Collider {
     // Marquer le collider dirty
     this._dirty = true;
     ColliderSystem.markDirty(this._gameObject);
+  }
+
+  public toJson() {
+    const json = super.toJson(); // récupère type + enabled + data:{}
+    json.data.shape = "SPHERE";
+    return json;
   }
 
 }
