@@ -7,7 +7,7 @@ import * as BABYLON from "@babylonjs/core";
 import '@renderer/assets/css/index.scss';
 import EditorUtils from '@renderer/editor/EditorUtils';
 import KartController from "./DemoTest/KartControllerGame/KartController";
-import EditorCameraManager from "@renderer/editor/EditorCameraManager";
+import EditorCameraManager from "@renderer/editor/camera/EditorCameraManager";
 
 
 export class Renderer {

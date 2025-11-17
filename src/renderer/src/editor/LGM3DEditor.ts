@@ -1,6 +1,6 @@
 import React from "react";
 import { setGameObjects, setMaterialIds } from "./EditorStore";
-import EditorCameraManager from "./EditorCameraManager";
+import EditorCameraManager from "./camera/EditorCameraManager";
 import { Renderer } from "@renderer/engine/Renderer";
 import { GameObject } from "@renderer/engine/GameObject";
 import EditorUtils from "./EditorUtils";
@@ -25,6 +25,7 @@ import { FiniteStateMachine } from "@renderer/engine/FSM/lgm3D.FiniteStateMachin
 
 import * as BABYLON from "@babylonjs/core";
 import SphereCollider from "@renderer/engine/physics/lgm3D.SphereCollider";
+import { OrthoViewDirection } from "./camera/OthoViewController";
 
 export enum Mode {
     LevelEditor = 1,
@@ -154,9 +155,9 @@ export default class LGM3DEditor {
             this.states.setShowLoadingModal(false);
 
             this._renderer = Renderer.getInstance();
-        });
-        AssetsManager.onMaterialsListChanged.add(this.onMaterialsListChangedEvent);
+            AssetsManager.onMaterialsListChanged.add(this.onMaterialsListChangedEvent);
 
+        });
     }
 
     onMaterialsListChangedEvent() {
@@ -272,7 +273,7 @@ export default class LGM3DEditor {
 
     addSphereCollider() {
         const sphCollider = new GameObject("SphereCollider", this._renderer!.scene);
-        sphCollider.addComponent("SphereCollider",new SphereCollider(sphCollider));
+        sphCollider.addComponent("SphereCollider", new SphereCollider(sphCollider));
         this.selectGameObject(sphCollider.Id);
         this.updateObjectsTreeView();
     }

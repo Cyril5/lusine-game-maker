@@ -1,6 +1,9 @@
 // EditorCameraManager.ts
+import * as BABYLON from "@babylonjs/core";
 import { Game } from "@renderer/engine/Game";
-import LGM3DEditor from "./LGM3DEditor";
+import { OrthoViewController, OrthoViewDirection } from "./OthoViewController";
+import LGM3DEditor from "../LGM3DEditor";
+import Utils from "@renderer/engine/utils/lgm3D.Utils";
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 const DISABLE_CONTROL_ON_GAME_RUN = false; // Désactiver les contrôles de la caméra lorsque le jeu tourne (TODO : Désactiver si il y a une autre caméra actif en mode jeu)
@@ -12,6 +15,8 @@ export default class EditorCameraManager {
 
     private _camera: BABYLON.UniversalCamera;
     private _orthoCam: BABYLON.FreeCamera;
+
+    private _ortho: OrthoViewController;
 
     private _mode: CamMode = CamMode.Fly;
     private _mouseLook = false;
@@ -46,7 +51,9 @@ export default class EditorCameraManager {
         this._scene = scene; this._canvas = canvas; this._camera = rendererCamera;
         this._camera.doNotSerialize = true; this._camera.minZ = 0.2; this._camera.maxZ = 1500; this._camera.inertia = 0;
 
-        this._orthoCam = new BABYLON.FreeCamera("_EDITOR_ORTHO", new BABYLON.Vector3(0, 10, 10), scene);
+        this._ortho = new OrthoViewController(scene, canvas);
+        this._orthoCam = this._ortho.cam;
+
         this._orthoCam.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA; this._orthoCam.minZ = 0.1; this._orthoCam.maxZ = 5000;
         this._orthoCam.doNotSerialize = true; this._setOrthoBounds(5);
 
@@ -61,6 +68,10 @@ export default class EditorCameraManager {
 
         this._canvas.addEventListener("contextmenu", e => e.preventDefault());
         this._canvas.style.touchAction = "none";
+
+        scene.getEngine().onResizeObservable.add(() => {
+            this._setOrthoBounds();
+        })
 
         scene.onPointerObservable.add(pi => {
 
@@ -91,10 +102,8 @@ export default class EditorCameraManager {
     private _onWheel(e: WheelEvent) {
         const d = Math.sign(e.deltaY);
         if (this._scene.activeCamera === this._orthoCam) {
-            const size = this._orthoCam.orthoRight - this._orthoCam.orthoLeft;
-            let half = size * 0.5 * (1 + d * 0.1);
-            half = clamp(half, this._orthoMin, this._orthoMax);
-            this._setOrthoBounds(half);
+            this._ortho.zoom(Math.sign(e.deltaY));
+            return;
         } else {
             const step = this._zoomStep * (e.ctrlKey ? 5 : 1);
             if (this._mode === CamMode.Orbit && this._pivot) {
@@ -111,22 +120,53 @@ export default class EditorCameraManager {
 
     private _onPointerDown(ev: PointerEvent) {
         if (ev.button === 2) { // RMB
-            this._mouseLook = true; this._lastPtr = { x: ev.clientX, y: ev.clientY }; this._vel.set(0, 0, 0);
+
+            // retour en vue perspective si on était en ortho
+            if (this._scene.activeCamera === this._orthoCam) {
+                this._scene.activeCamera = this._camera;
+            }
+
+            this._mouseLook = true;
+            this._lastPtr = { x: ev.clientX, y: ev.clientY };
+            this._vel.set(0, 0, 0);
             this._canvas.requestPointerLock?.();
+
             const wantOrbit = ev.altKey || this._orbitLockUntilMouseUp;
             if (wantOrbit) {
-                const info = this._getSelectionInfo();
-                if (info) {
-                    this._pivot = info.center; const dist = BABYLON.Vector3.Distance(this._camera.position, info.center);
-                    this._radius = Math.max(info.radius * 1.6, dist);
-                    const off = this._camera.position.subtract(info.center); const r = Math.max(1e-4, off.length());
+
+                // 👉 Si on sort d’un focus, on garde le pivot déjà calculé
+                if (this._orbitLockUntilMouseUp && this._pivot) {
+                    const off = this._camera.position.subtract(this._pivot);
+                    const r = Math.max(1e-4, off.length());
                     this._yaw = this._targetYaw = Math.atan2(off.x, off.z);
                     this._pitch = this._targetPitch = Math.asin(off.y / r);
                     this._mode = CamMode.Orbit;
-                } else { this._pivot = undefined; this._mode = CamMode.Fly; }
-            } else this._mode = CamMode.Fly;
+                    return;
+                }
+
+                // Sinon, on recalcule depuis la sélection
+                const info = this._getSelectionInfo();
+                if (info) {
+                    this._pivot = info.center;
+                    const dist = BABYLON.Vector3.Distance(this._camera.position, info.center);
+                    this._radius = Math.max(info.radius * 1.6, dist);
+
+                    const off = this._camera.position.subtract(info.center);
+                    const r = Math.max(1e-4, off.length());
+                    this._yaw = this._targetYaw = Math.atan2(off.x, off.z);
+                    this._pitch = this._targetPitch = Math.asin(off.y / r);
+                    this._mode = CamMode.Orbit;
+                } else {
+                    this._pivot = undefined;
+                    this._mode = CamMode.Fly;
+                }
+            }
         }
-        if (ev.button === 1) { this._mousePan = true; this._lastPtr = { x: ev.clientX, y: ev.clientY }; }
+
+        if (ev.button === 1) {
+            this._mousePan = true;
+            this._lastPtr = { x: ev.clientX, y: ev.clientY };
+        }
     }
 
     private _onPointerUp(ev: PointerEvent) {
@@ -152,12 +192,7 @@ export default class EditorCameraManager {
 
         if (this._scene.activeCamera === this._orthoCam) {
             if (this._mousePan) {
-                const r = this._orthoCam.getDirection(BABYLON.Axis.X);
-                const u = this._orthoCam.getDirection(BABYLON.Axis.Y);
-                const size = this._orthoCam.orthoRight - this._orthoCam.orthoLeft;
-                const k = size / this._canvas.clientHeight;
-                this._orthoCam.position.addInPlace(r.scale(-dx * k));
-                this._orthoCam.position.addInPlace(u.scale(dy * k));
+                this._ortho.pan(dx, dy);
                 ev.preventDefault();
             }
             return;
@@ -192,14 +227,39 @@ export default class EditorCameraManager {
     private _onKey(ev: KeyboardEvent, down: boolean) {
         this._keys[ev.code] = down;
         if (down) {
+            let sel = LGM3DEditor.getInstance()?.selectedGameObject?.transform;
+            let bounds;
             switch (ev.code) {
                 case 'KeyF': this._focusSelection(0.25); break;
                 case 'KeyG': LGM3DEditor.getInstance().setTransformGizmoMode("TRANSLATE"); break;
                 case 'KeyR': LGM3DEditor.getInstance().setTransformGizmoMode("ROTATE"); break;
                 case 'KeyS': LGM3DEditor.getInstance().setTransformGizmoMode("SCALE"); break;
                 case 'KeyM': this._scene.activeCamera = this._camera; this._mode = CamMode.Fly; break;
+                case 'Numpad6':
+                    if (!sel) return null;
+                    bounds = Utils.computeHierarchyBounds(sel);
+                    this.setOrthoView(OrthoViewDirection.Right, bounds.center, bounds.size);
+                    break;
+                case 'Numpad4':
+                    if (!sel) return null;
+                    bounds = Utils.computeHierarchyBounds(sel);
+                    this.setOrthoView(OrthoViewDirection.Left, bounds.center, bounds.size);
+                    break;
+                case 'Numpad0':
+                    this._scene.activeCamera = this._camera;
+                    break;
             }
         }
+    }
+
+    public setOrthoView(dir: OrthoViewDirection, center: BABYLON.Vector3, size: BABYLON.Vector3) {
+        const dist = size.length() * 2 || 10;
+
+        this._ortho.fitToBounds(size);
+        this._ortho.setView(dir, center, dist);
+
+        this._scene.activeCamera = this._orthoCam;
+        this._mode = CamMode.Ortho;
     }
 
     // ====== Update ======
@@ -226,7 +286,7 @@ export default class EditorCameraManager {
 
             if (tw.t >= tw.dur) {
                 this._focusTween = undefined;
-                // ⚠️ Très important : resync les cibles du smoothing
+                // Très important : resync les cibles du smoothing
                 this._targetYaw = this._yaw;
                 this._targetPitch = this._pitch;
             }
@@ -293,48 +353,108 @@ export default class EditorCameraManager {
         const up = BABYLON.Axis.Y;
         return BABYLON.Vector3.Cross(this._flyForward(), up).normalize().scale(-1);
     }
-    private _setOrthoBounds(half: number) {
-        this._orthoCam.orthoLeft = -half; this._orthoCam.orthoRight = half;
-        this._orthoCam.orthoTop = half; this._orthoCam.orthoBottom = -half;
-    }
-    private _getSelectionInfo(): { center: BABYLON.Vector3, radius: number } | null {
-        const sel = LGM3DEditor.getInstance()?.selectedGameObject; if (!sel) return null;
-        const bi = (sel as any).getBoundingInfo?.() as BABYLON.BoundingInfo | undefined;
-        if (bi) return { center: bi.boundingBox.centerWorld.clone(), radius: bi.boundingSphere.radiusWorld || 1 };
-        return { center: sel.localPosition.clone(), radius: 1 };
-    }
-    private _focusSelection(durationSec = 0.25) {
-        const info = this._getSelectionInfo(); if (!info) return;
-        const center = info.center, radius = Math.max(0.001, info.radius);
 
+    private _orthoRadius = 5; // rayon logique par défaut
+
+    private _setOrthoBounds(radius?: number) {
+
+        // Si on reçoit un radius → on met à jour la valeur interne
+        if (radius !== undefined) {
+            this._orthoRadius = clamp(radius, this._orthoMin, this._orthoMax);
+        }
+
+        const r = this._orthoRadius;
+        const engine = this._scene.getEngine();
+        const aspect = engine.getAspectRatio(this._orthoCam, true);
+
+        if (aspect >= 1) {
+            // écran plus large → étendre horizontalement
+            this._orthoCam.orthoTop = r;
+            this._orthoCam.orthoBottom = -r;
+
+            const horiz = r * aspect;
+            this._orthoCam.orthoLeft = -horiz;
+            this._orthoCam.orthoRight = horiz;
+
+        } else {
+            // écran plus haut → étendre verticalement
+            this._orthoCam.orthoLeft = -r;
+            this._orthoCam.orthoRight = r;
+
+            const vert = r / aspect;
+            this._orthoCam.orthoTop = vert;
+            this._orthoCam.orthoBottom = -vert;
+        }
+    }
+
+    private _getSelectionInfo(): { center: BABYLON.Vector3, radius: number } | null {
+        const sel = LGM3DEditor.getInstance()?.selectedGameObject;
+        if (!sel) return null;
+
+        // On part du TransformNode Babylon du GameObject
+        const root = sel.transform as BABYLON.Node;
+        if (!root) return null;
+
+        // 🔍 Bounding hiérarchique via Utils
+        const bounds = Utils.computeHierarchyBounds(root);
+        const radius = Math.max(0.001, bounds.radius || bounds.size.length() * 0.5);
+
+        return {
+            center: bounds.center.clone(),
+            radius,
+        };
+    }
+
+    private _focusSelection(durationSec = 0.25) {
+        const go = LGM3DEditor.getInstance()?.selectedGameObject;
+        if (!go) return;
+
+        const root = go.transform as BABYLON.Node;
+        if (!root) return;
+
+        // 🔍 Utilise le bounding hiérarchique
+        const bounds = Utils.computeHierarchyBounds(root);
+        const center = bounds.center;
+        const radius = Math.max(0.001, bounds.radius || bounds.size.length() * 0.5);
+
+        // Distance caméra en fonction du FOV et du rayon
         const fov = this._camera.fov;
         const dist = Math.max(0.5, radius / Math.tan(fov * 0.5)) + radius * 0.25;
 
         const fromPos = this._camera.position.clone();
         const fromDir = this._camera.getDirection(BABYLON.Axis.Z).scale(-1).normalize();
 
-        // Position finale visée
-        const toPos = center.subtract(center.subtract(this._camera.position).normalize().scale(dist));
-        // Direction finale visée (depuis la position finale vers le centre)
+        // Position cible : se met à dist du centre, dans la direction actuelle (évite les gros sauts d'angle)
+        const toPosDir = center.subtract(this._camera.position).normalize();
+        const toPos = center.subtract(toPosDir.scale(dist));
+
+        // Direction finale : regarde vers le centre depuis la position finale
         const toDir = center.subtract(toPos).normalize();
 
-        this._focusTween = { t: 0, dur: durationSec, fromPos, toPos, fromDir, toDir };
+        this._focusTween = {
+            t: 0,
+            dur: durationSec,
+            fromPos,
+            toPos,
+            fromDir,
+            toDir
+        };
 
-        // 👉 Définir d'avance la cible de smoothing sur la direction finale
+        // Aligne les cibles de smoothing sur la direction finale
         const endYaw = Math.atan2(toDir.x, toDir.z);
         const endPitch = Math.asin(clamp(toDir.y, -1, 1));
         this._targetYaw = endYaw;
         this._targetPitch = endPitch;
 
-        // Armer l’orbite pour RMB juste après le focus
+        // Prépare l’orbite autour de l’objet
         this._pivot = center.clone();
         this._radius = dist;
         this._orbitLockUntilMouseUp = true;
 
-        // Stopper tout drift de mouvement pendant le focus
+        // Stoppe la vélocité pendant le focus
         this._vel.set(0, 0, 0);
 
-        // S'assurer d'être sur la cam 3D
+        // S’assurer d’être sur la caméra 3D
         if (this._scene.activeCamera !== this._camera) {
             this._scene.activeCamera = this._camera;
             this._mode = CamMode.Fly;
