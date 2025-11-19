@@ -13,6 +13,7 @@ type EdgePeekOffcanvasProps = {
     closeDelayMs?: number;
     title?: string;
     backdrop?: boolean;
+    placement: "start" | "end" | "bottom" | "top";
     openGesture?: OpenGesture; // "edge" | "edge+Alt" | "button"
     hotkey?: { code: string; ctrl?: boolean; alt?: boolean; shift?: boolean }; // ex: Ctrl+H
     allowHotkeyInPlay?: boolean; // si enabled=false, on peut quand même ouvrir via hotkey si true
@@ -28,6 +29,7 @@ export default function EdgePeekOffcanvas({
     closeDelayMs = 1000,
     title,
     backdrop = false,
+    placement = "start",
     hotkey = { code: "KeyH", ctrl: true }, // Ctrl+H
     allowHotkeyInPlay = true,
     children,
@@ -111,18 +113,29 @@ export default function EdgePeekOffcanvas({
             if (closeTimer.current) window.clearTimeout(closeTimer.current);
         };
     }, []);
-
+    
+    const showRef = useRef(show);
+    
+    // garder show à jour dans un ref, sans relancer l’effet de registration
+    useEffect(() => {
+        showRef.current = show;
+    }, [show]);
+    
     useEffect(() => {
         if (!onRegisterApi) return;
+        
         const api = {
             open: () => setShow(true),
             close: () => setShow(false),
             toggle: () => setShow(s => !s),
-            isOpen: () => show,
+            isOpen: () => showRef.current, // on lit le ref, pas le state capturé
         };
+        
         onRegisterApi(api);
-    }, [onRegisterApi, show]);
-
+        // on ne veut PAS relancer ça à chaque render
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // <— important : tableau vide
+    
     const onEnterPanel = () => {
         isPointerInsidePanel.current = true;
         if (closeTimer.current) window.clearTimeout(closeTimer.current);
@@ -134,12 +147,11 @@ export default function EdgePeekOffcanvas({
 
     return (
         <Offcanvas
-            placement="start"
+            placement={placement}
             show={show}
             onHide={() => !pinned && setShow(false)}
             backdrop={backdrop}
             scroll
-            style={{ width: widthPx }}
             onMouseEnter={onEnterPanel}
             onMouseLeave={onLeavePanel}
         >
@@ -161,62 +173,46 @@ export default function EdgePeekOffcanvas({
     );
 }
 
-type FloatingHierarchyTabProps = {
+export type FloatingDockTabProps = {
+    className: string;
     onClick: () => void;
-    show?: boolean;        // afficher le tab ?
-    topPx?: number;        // position verticale (ex: 120)
-    title?: string;        // tooltip
+    show?: boolean;
+    leftPx?: number;   // <— nouveau
+    topPx?: number;    // <— déjà existant, on garde
+    tabWidth?: number; // <— nouveau
+    tabHeight?: number;// <— nouveau
+    label?: string;
+    title?: string;
 };
 
-export function FloatingHierarchyTab({
+export function FloatingDockTab({
     onClick,
+    className = "",
     show = true,
-    topPx = 120,
-    title = "Hiérarchie (Ctrl+H)"
-}: FloatingHierarchyTabProps) {
+    label = "Onglet",
+    title = "Ouvrir"
+}: FloatingDockTabProps) {
     if (!show) return null;
 
     return (
         <button
+            className={className}
             type="button"
             onClick={onClick}
             title={title}
-            aria-label="Ouvrir la hiérarchie"
-            style={{
-                position: "fixed",
-                left: 0,
-                top: topPx,
-                transform: "translateX(-6px)",       // léger débord pour “coller” au bord
-                width: 32,
-                height: 120,
-                borderRadius: "0 8px 8px 0",
-                border: "none",
-                cursor: "pointer",
-                outline: "none",
-                zIndex: 1060,                        // au-dessus du canvas
-                background: "rgba(40,40,48,255)",
-                color: "#fff",
-                boxShadow: "0 4px 14px rgba(0,0,0,0.25)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                writingMode: "vertical-rl",
-                textOrientation: "upright",
-                fontSize: 12,
-                letterSpacing: 1,
-                opacity: 0.7,
-                transition: "opacity 120ms, transform 120ms"
-            }}
+            aria-label={title}
             onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.opacity = "1";
-                (e.currentTarget as HTMLButtonElement).style.transform = "translateX(0)";
+                const el = e.currentTarget as HTMLButtonElement;
+                el.style.opacity = "1";
+                el.style.transform = "translateX(0)";
             }}
             onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.opacity = "0.7";
-                (e.currentTarget as HTMLButtonElement).style.transform = "translateX(-6px)";
+                const el = e.currentTarget as HTMLButtonElement;
+                el.style.opacity = "0.75";
+                el.style.transform = "translateX(-6px)";
             }}
         >
-            {title}
+            {label}
         </button>
     );
 }

@@ -6,6 +6,7 @@
   --bs-accordion-btn-icon-width: .75rem;
   --bs-accordion-btn-focus-box-shadow: none;
 }
+
 .small-acc .accordion-button,
 .small-acc .accordion-body {
   font-size: .85rem;
@@ -50,7 +51,8 @@
   height: 100%;
   width: 100%;
   margin-right: 256px;
-    transition: width 0.3s ease-in-out; /* anime le width */
+  transition: width 0.3s ease-in-out;
+  /* anime le width */
 
 
   .materialItem {
@@ -59,7 +61,8 @@
 }
 
 .materialsList.shrinked {
-  width: calc(100% - 300px); /* réduit de 300px (largeur approx de l’Offcanvas) */
+  width: calc(100% - 300px);
+  /* réduit de 300px (largeur approx de l’Offcanvas) */
 }
 
 #loadingScreen {
@@ -216,9 +219,10 @@
   height: 100%;
   //flex-grow: 1;
   touch-action: none;
+  max-height: 80vh;
 }
 
-#root {         
+#root {
   height: 100%;
 }
 
@@ -240,26 +244,83 @@
   display: flex;
   height: 100%;
   min-height: 0;
+
+  .lgm-tab {
+    position: fixed;
+    left: 10px;
+    // z-index: 1060;
+    width: 32px;
+    height: 120px;
+    border-radius: 0 8px 8px 0;
+    background: rgba(40, 40, 48, 0.9);
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+    opacity: 0.75;
+    transition: opacity .15s, transform .15s;
+    font-size: 10px;
+
+    &:hover {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+  }
+  
+  .lgm-tab-horizontal {
+    width: 120px;
+    height: 32px;
+    writing-mode: horizontal-tb;
+    text-orientation: horizontal-tb;
+    transition: opacity .15s, transform .15s;
+
+    &:hover {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .lgm-tab-objects {
+    top: 190px;
+  }
+
+  .lgm-tab-materials {
+    bottom: 50px;
+  }
+
+  .lgm-tab-properties {
+    left: 98%;
+    top: 190px;
+  }
+
+  .lgm-tab-console {
+    bottom: 50px;
+    left: 130px;
+  }
 }
 
 /* React-Bootstrap Tabs doivent laisser scroller leurs enfants */
-.tab-content, .tab-pane.active {
+.tab-content,
+.tab-pane.active {
   display: flex;
   flex: 1 1 auto;
-  min-height: 0;   // clé: autorise l'enfant à rétrécir et scroller
+  min-height: 0; // clé: autorise l'enfant à rétrécir et scroller
 }
 
 /* Host inspector à droite */
 #inspector-host {
-  width: 420px;          // comme l’inspector par défaut
+  width: 420px; // comme l’inspector par défaut
   min-width: 360px;
   height: 100%;
   min-height: 0;
-  overflow: hidden;      // l’inspector gère son propre scroll
+  overflow: hidden; // l’inspector gère son propre scroll
   visibility: hidden; //cacher au départ
 }
 
 #inspector-host {
+
   /* zone Scene Explorer */
   #scene-explorer-host {
     flex: 1 1 auto;
@@ -294,10 +355,9 @@ body {
   }
 }
 
-.offcanvas {
-  margin-top: 118px;
-  //margin-bottom: 200px;
-}
+// .offcanvas {
+//   margin-top: 118px;
+// }
 
 // :root {
 //   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
