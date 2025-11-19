@@ -275,11 +275,6 @@
     writing-mode: horizontal-tb;
     text-orientation: horizontal-tb;
     transition: opacity .15s, transform .15s;
-
-    &:hover {
-      opacity: 1;
-      transform: translateY(0);
-    }
   }
 
   .lgm-tab-objects {

@@ -121,7 +121,8 @@ const LevelEditor = (props) => {
                                 <div key={t.id}>
                                     <FloatingDockTab
                                         className={`lgm-tab lgm-tab-${t.id} ${t.placement === 'bottom' ? 'lgm-tab-horizontal' : ''}`}
-                                        show={!apis[t.id]?.isOpen?.()}
+                                        // show={!apis[t.id]?.isOpen?.()}
+                                        show={true}
                                         onClick={() => apis[t.id]?.toggle?.()}
                                         tabWidth={t.tab.tabWidth}
                                         tabHeight={t.tab.tabHeight}
