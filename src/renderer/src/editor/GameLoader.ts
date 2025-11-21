@@ -289,7 +289,6 @@ export default abstract class GameLoader {
 
             if (isEmpty) {
                 processNodes(scene);
-                return;
             } else {
                 editor.clearScene(scene);
                 try {

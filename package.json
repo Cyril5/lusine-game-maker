@@ -23,8 +23,8 @@
   },
   "private": true, "workspaces": ["packages/*"],
   "dependencies": {
-    "lgm3d-core-blocks": "file:./packages/lgm3d-core-blocks",
-    "lgm3d-rigidbody-blocks": "file:./packages/lgm3d-rigidbody-blocks",
+    "lgm3d-core-blocks": "workspace:*",
+    "lgm3d-rigidbody-blocks": "workspace:*",
     "@babylonjs/core": "^7.47.2",
     "@babylonjs/havok": "^1.3.4",
     "@babylonjs/inspector": "^7.47.2",

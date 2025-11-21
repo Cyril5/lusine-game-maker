@@ -5,7 +5,7 @@ export function registerGenerators() {
 
     jsGen.forBlock['lgm_custom_code_xPKZqW'] = function (block: any) {
         // TODO: change Order.ATOMIC to the correct operator precedence strength
-        const value_code = javascriptGenerator.valueToCode(block, 'CODE', Order.ATOMIC);
+        const value_code = jsGen.valueToCode(block, 'CODE', Order.ATOMIC);
 
         // TODO: Assemble javascript into the code variable.
         const code = '...';
@@ -15,11 +15,11 @@ export function registerGenerators() {
     jsGen.forBlock['lgm_gameobject_move_am9hZB'] = function (block: any) {
         const checkbox_move_rigidbody = block.getFieldValue('MOVE_RIGIDBODY');
         // TODO: change Order.ATOMIC to the correct operator precedence strength
-        const value_gameobject = javascriptGenerator.valueToCode(block, 'GAMEOBJECT', Order.ATOMIC);
+        const value_gameobject = jsGen.valueToCode(block, 'GAMEOBJECT', Order.ATOMIC);
 
         const dropdown_direction = block.getFieldValue('DIRECTION');
         // TODO: change Order.ATOMIC to the correct operator precedence strength
-        const value_speed = javascriptGenerator.valueToCode(block, 'SPEED', Order.ATOMIC);
+        const value_speed = jsGen.valueToCode(block, 'SPEED', Order.ATOMIC);
 
         let code = '';
         if (checkbox_move_rigidbody) {

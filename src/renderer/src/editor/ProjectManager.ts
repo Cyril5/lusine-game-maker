@@ -120,9 +120,8 @@ export default class ProjectManager {
                         FileManager.writeInFile(ProjectManager.getFilePath(ProjectManager._currentProjectDir,'game.lgm'),'');
                         //Charger le projet
                         StateEditorUtils.loadStateFilesList();
-                        LGM3DEditor.getInstance().setupBaseScene();
+                        LGM3DEditor.getInstance().load();
                         EditorUtils.showInfoMsg(`Projet : ${ProjectManager._projectName} crée !`);
-                        LGM3DEditor.getInstance().showStartupModal(true);
 
                     } catch (error: any) {
                         EditorUtils.showErrorMsg(error.message, "Error");
