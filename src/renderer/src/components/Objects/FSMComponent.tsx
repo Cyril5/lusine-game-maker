@@ -14,5 +14,4 @@ export const FSMComponent = (props) => {
             {/* <Button variant="primary">Ajouter</Button> */}
         </>
     )
-
 }

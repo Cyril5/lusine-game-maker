@@ -55,7 +55,7 @@ const LevelEditor = (props) => {
             hotkey: { code: "KeyP", ctrl: true },
             panelWidth: 380,
             tab: { leftPx: "100%", topPx: 158, tabWidth: 32, tabHeight: 120 },
-            content: <PropertiesBar id={objetJeu?.Id} gameobject_name={objetJeu?.name} parentid={objetJeu?.transform.parent?.uniqueId} />
+            content: <PropertiesBar id={objetJeu?.Id} gameobject_name={objetJeu?.name} parentid={objetJeu?.parent?.Id} />
         },
         {
             id: "materials",

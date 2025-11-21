@@ -1,47 +1,77 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Accordion, Button, Dropdown, Form, Offcanvas } from "react-bootstrap";
+import { useEffect, useState } from "react";
+import { Accordion, Button, Form } from "react-bootstrap";
+
 import { FSMComponent } from "./Objects/FSMComponent";
-import '@renderer/assets/css/properties-bar.scss';
+import "@renderer/assets/css/properties-bar.scss";
 import TransformComponent from "./Objects/TransformComponent";
 import { GameObject } from "@renderer/engine/GameObject";
 import ColliderComponent from "./Objects/ColliderComponent";
 import PhysicComponent from "./Objects/PhysicComponent";
-import BoxCollider from "@renderer/engine/physics/lgm3D.BoxCollider";
 import { Rigidbody } from "@renderer/engine/physics/lgm3D.Rigidbody";
-import { ProgrammableGameObject } from "@renderer/engine/ProgrammableGameObject";
 import LGM3DEditor from "@renderer/editor/LGM3DEditor";
 import { FiniteStateMachine } from "@renderer/engine/FSM/lgm3D.FiniteStateMachine";
+import Collider from "@renderer/engine/physics/lgm3D.Collider";
 
-const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
+type PropertiesBarProps = {
+    id?: number | string;
+    gameobject_name?: string;
+    parentid?: number | string;
+};
 
-    const gameObjectRef = useRef<GameObject>(null);
-    const [show, setShow] = useState(false);
-    const [name, setName] = useState(gameobject_name);
+/**
+ * Inspector / Panneau de propriétés
+ * - Ne reçoit que l'ID en props (pas de GameObject pour éviter les gros objets React)
+ * - Récupère le GameObject courant via LGM3DEditor
+ * - Affiche Transform / Collider / Rigidbody / FSM selon les composants existants
+ */
+const PropertiesBar = ({ id, gameobject_name = "", parentid }: PropertiesBarProps) => {
+    const editor = LGM3DEditor.getInstance();
 
+    // nom éditable dans le formulaire
+    const [name, setName] = useState<string>(gameobject_name ?? "");
+    // simple "version" pour forcer un re-render quand on ajoute/supprime un composant
+    const [version, setVersion] = useState(0);
 
-    const handleClose = () => setShow(false);
-    const toggleShow = () => setShow((s) => !s);
-
-    // Si c'est un autre gameObject on met à jour la vue
-    useEffect(() => {
-        gameObjectRef.current = LGM3DEditor.getInstance().selectedGameObject;
-        console.log(gameObjectRef.current);
-        if (gameObjectRef.current) {
-            setName(gameObjectRef.current.name);
-            console.log(gameObjectRef.current.getComponentOfType<BoxCollider>("BoxCollider"));
+    // --- Récupération du GameObject à partir de l'ID / sélection ---
+    let go: GameObject | null = null;
+    if (id != null) {
+        const selected = editor.selectedGameObject as GameObject | null;
+        // On suppose que l'id passé correspond à Id ou uniqueId du GameObject
+        if (selected && (selected as any).Id == id || (selected as any).uniqueId == id) {
+            go = selected;
         } else {
-            handleClose();
+            go = selected; // fallback : on ne bloque pas l'UI
         }
-    }, [id]);
+    }
 
+    // --- Sync du nom quand on change d'objet ---
+    useEffect(() => {
+        if (go) {
+            setName(go.name ?? "");
+        } else {
+            setName(gameobject_name ?? "");
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [id, version]);
 
-    const handleSetGameObjectName = ((e: any) => {
-        const newGameObjectName = e.target.value;
-        LGM3DEditor.getInstance().selectedGameObject!.name = newGameObjectName;
-        setName(newGameObjectName);
-        LGM3DEditor.getInstance().updateObjectsTreeView();
-    });
+    // --- Présence des composants (on recalcule à chaque render, c'est léger) ---
+    const hasCollider = go?.getComponent(Collider);
+    const hasRigidbody = go?.getComponent(Rigidbody);
+    const hasFSM = go?.getComponents(FiniteStateMachine);
+
+    // --- Handlers ---
+
+    const handleSetGameObjectName = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newName = e.target.value;
+        setName(newName);
+        if (!go) return;
+        go.name = newName;
+    };
+
+    const handleAddRigidbody = () => {
+        go!.addComponent("Rigidbody", new Rigidbody(go!, go!.scene));
+    };
 
     // Déparenter l'objet sélectionné
     const handleUnparent = () => {
@@ -50,109 +80,132 @@ const PropertiesBar = ({ id, gameobject_name = '', parentid, ...props }) => {
     }
 
     const handleSelectParent = () => {
-        LGM3DEditor.getInstance().selectGameObject(gameObjectRef.current!.transform.parent.uniqueId);
+        LGM3DEditor.getInstance().selectGameObject(go!.parent.Id);
     }
 
-    const handleAddRigidbody = () => {
-        const go = LGM3DEditor.getInstance().selectedGameObject;
-        if(!go || go.getComponent(Rigidbody)) return;
-        go.addComponent("Rigidbody",new Rigidbody(go, go.scene));
+    // const handleAddFSM = () => {
+    //     if (!go || hasFSM) return;
+    //     (go as any).addComponent?.(FiniteStateMachine ?? ProgrammableGameObject);
+    //     setVersion(v => v + 1);
+    // };
+
+    // const handleRemoveComponent = (componentCtor: any) => {
+    //     if (!go) return;
+    //     const comp = go.getComponentOfType?.(componentCtor);
+    //     if (!comp) return;
+    //     (go as any).removeComponent?.(comp);
+    //     setVersion(v => v + 1);
+    // };
+
+    // --- UI ---
+
+    // Aucun objet sélectionné
+    if (!id) {
+        return (
+            <div className="properties-bar properties-bar--empty">
+                <p>
+                    <FontAwesomeIcon icon="info-circle" /> Aucun objet sélectionné.
+                </p>
+                <p>Sélectionne un GameObject dans la hiérarchie pour voir ses propriétés.</p>
+            </div>
+        );
     }
 
-    const style = {
-        top: '116px',
-        height: '87vh'
-    };
-
-    const fsms = (gameObjectRef.current as ProgrammableGameObject)?.getComponents(FiniteStateMachine);
     return (
+        <div className="properties-bar">
+            <Accordion defaultActiveKey={["0", "1"]} alwaysOpen className="small-acc">
+                {/* Onglet Objet */}
+                <Accordion.Item eventKey="0">
+                    <Accordion.Header>Objet</Accordion.Header>
+                    <Accordion.Body>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Nom</Form.Label>
+                            <Form.Control
+                                type="text"
+                                onChange={handleSetGameObjectName}
+                                value={name}
+                            />
+                        </Form.Group>
 
-        <div>
-            {/* <Button variant="secondary" onClick={toggleShow} className="me-2 properties-btn">
-                <FontAwesomeIcon icon="wrench" />
-            </Button> */}
-            {/* <Offcanvas className="properties-bar" style={style} placement="end" scroll backdrop={false} show={show} onHide={handleClose} {...props}>
-                <Offcanvas.Header closeButton>
-                    <Offcanvas.Title>Propriétées <FontAwesomeIcon icon="wrench" /></Offcanvas.Title>
-                </Offcanvas.Header>
-                <Offcanvas.Body> */}
-                    {gameObjectRef.current && (
-
-                        
-                        <Accordion defaultActiveKey={['0', '1']} alwaysOpen className="small-acc">
-
-                            <Accordion.Item eventKey="0">
-                                <Accordion.Header>Objet</Accordion.Header>
-                                <Accordion.Body>
-                                    <Form.Group className="mb-3">
-                                        <Form.Label>Name</Form.Label>
-                                        <Form.Control onChange={handleSetGameObjectName} value={name} />
-                                    </Form.Group>
-                                    <p>ID : {id}</p>
-                                    {gameObjectRef.current.transform.parent && (
-                                        <p>Parent : <Button variant="primary" size="sm" onClick={handleSelectParent}>{gameObjectRef.current.transform.parent.uniqueId}</Button> <Button onClick={handleUnparent} variant="danger" size="sm" disabled={!gameObjectRef.current.transform.parent.uniqueId}>Déparenter</Button></p>
-                                    )}
-
-                                    Qualifieur <Form.Select aria-label="Default select example">
-                                        <option value="1">Aucun</option>
-                                        <option value="2">Joueur</option>
-                                        <option value="3">Bon</option>
-                                    </Form.Select>
-
-                                </Accordion.Body>
-                            </Accordion.Item>
-                            <Accordion.Item eventKey="1">
-                                <Accordion.Header>Transformations</Accordion.Header>
-                                <Accordion.Body>
-                                    <TransformComponent gameObjectId={id} />
-                                </Accordion.Body>
-                            </Accordion.Item>
-                            {/* {Array.from(gameObjectRef.current.getAllComponents()).map((component, index) => {
-                                const InspectorComponent = (component as any).inspectorComponent;
-                                //TODO : voir si c'est plus performant d'utiliser l'id du component du gameObject au lieu de le passer dans la prop 
-                                if (InspectorComponent) {
-                                    return<>
-                                    <Accordion.Item eventKey={component.name} key={index}>
-                                        <InspectorComponent componentInstance={component}/> 
-                                    </Accordion.Item>
+                        <div className="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <div className="text-muted small">
+                                    ID : <code>{String(id)}</code>
+                                </div>
+                                { go && go?.parent && (
+                                    <>
+                                    Parent:
+                                    <Button variant="primary" size="sm" onClick={handleSelectParent}>{go?.parent.Id}</Button>
+                                    <Button onClick={handleUnparent} variant="danger" size="sm" disabled={!go!.parent}>Déparenter</Button>
                                     </>
-                                }
-                            })} */}
+                                )}
+                            </div>
+                        </div>
+                    </Accordion.Body>
+                </Accordion.Item>
 
-                            {fsms && fsms.length > 0 && (
-                            <Accordion.Item eventKey="2">
-                                <Accordion.Header>Automates Finis</Accordion.Header>
-                                <Accordion.Body>
-                                    <FSMComponent name={fsms[0].name}/>
-                                </Accordion.Body>
-                            </Accordion.Item>
-                            )}
+                {/* Onglet Transform */}
+                <Accordion.Item eventKey="1">
+                    <Accordion.Header>Transformations</Accordion.Header>
+                    <Accordion.Body>
+                        <TransformComponent gameObjectId={id} />
+                    </Accordion.Body>
+                </Accordion.Item>
 
+                {/* Onglet FSM */}
+                {hasFSM && go && (
+                    <Accordion.Item eventKey="2">
+                        <Accordion.Header>Automates Fini</Accordion.Header>
+                        <Accordion.Body>
+                            <FSMComponent
+                                name={go.getComponent(FiniteStateMachine)?.name}
+                                // onRemove={() => handleRemoveComponent(FiniteStateMachine)}
+                            />
+                        </Accordion.Body>
+                    </Accordion.Item>
+                )}
 
-                            {gameObjectRef.current.getComponentOfType<BoxCollider>("BoxCollider") && (
-                                <Accordion.Item eventKey="3">
-                                    <Accordion.Header>Collision</Accordion.Header>
-                                    <Accordion.Body>
-                                        <ColliderComponent gameObjectId={id} />
-                                    </Accordion.Body>
-                                </Accordion.Item>
-                            )}
+                {/* Onglet Collision */}
+                {hasCollider && (
+                    <Accordion.Item eventKey="3">
+                        <Accordion.Header>Collision</Accordion.Header>
+                        <Accordion.Body>
+                            <ColliderComponent
+                                gameObjectId={id}
+                                // onRemove={() => handleRemoveComponent(BoxCollider)}
+                            />
+                        </Accordion.Body>
+                    </Accordion.Item>
+                )}
 
-                            {gameObjectRef.current.getComponentOfType<Rigidbody>("Rigidbody") && (
-                            <Accordion.Item eventKey="4">
-                                <Accordion.Header>Physique</Accordion.Header>
-                                <Accordion.Body>
-                                    <PhysicComponent gameObjectId={id} />
-                                </Accordion.Body>
-                            </Accordion.Item>
-                            )}
-
-                        </Accordion>
-                    )}
-                    <Button onClick={handleAddRigidbody} disabled={!gameObjectRef.current || gameObjectRef.current!.getComponent(Rigidbody)}>Ajouter un corps physique à l'objet</Button>
-                {/* </Offcanvas.Body>
-            </Offcanvas> */}
-
+                {/* Onglet Physique */}
+                <Accordion.Item eventKey="4">
+                    <Accordion.Header>Physique</Accordion.Header>
+                    <Accordion.Body>
+                        {hasRigidbody && (
+                            <PhysicComponent
+                                gameObjectId={id}
+                                // onRemove={() => handleRemoveComponent(Rigidbody)}
+                            />
+                        )}
+                        {!hasRigidbody && (
+                            <div className="d-flex flex-column gap-2">
+                                <p className="text-muted small mb-1">
+                                    Aucun Rigidbody sur cet objet.
+                                </p>
+                                <Button
+                                    size="sm"
+                                    variant="secondary"
+                                    onClick={handleAddRigidbody}
+                                    disabled={hasRigidbody}
+                                >
+                                    <FontAwesomeIcon icon="cube" /> Ajouter un corps physique
+                                </Button>
+                            </div>
+                        )}
+                    </Accordion.Body>
+                </Accordion.Item>
+            </Accordion>
         </div>
     );
 };

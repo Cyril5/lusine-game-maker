@@ -22,6 +22,8 @@ const TransformComponent = ({ gameObjectId }) => {
     useEffect(() => {
         const go = editor.selectedGameObject;
 
+        console.log(go);
+
         // Nettoie les observables de l'ancien objet
         if (localObsRef.current) localObsRef.current.remove();
         if (worldObsRef.current) worldObsRef.current.remove();
